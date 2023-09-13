@@ -26,27 +26,23 @@ Gypsy.toggle = function()
 		return
 	end
 	if #chats == 1 then
-		chat = table.remove(chats, 1)
+		chat = chats[1]
 		local layout = chat.ui.layout
 		if layout.mounted then
 			if not layout.hidden and not layout.is_focused() then
 				layout.focus_last_win()
-				table.insert(chats, chat)
 				return
 			end
 			if layout.hidden and not layout.is_focused() then
 				layout.show()
-				table.insert(chats, chat)
 				return
 			end
 			if not layout.hidden and layout.is_focused() then
 				layout.hide()
-				table.insert(chats, chat)
 				return
 			end
 		else
 			layout.mount()
-			table.insert(chats, chat)
 			return
 		end
 	end
