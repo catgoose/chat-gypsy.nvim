@@ -13,6 +13,10 @@ Gypsy.setup = function(opts)
 	end
 end
 
+--  TODO: 2023-09-13 - should the chat class track the number of chats?
+--  Gypsy.open should open a new chat if a chat is hidden.  Chats should be able
+--  to be selected from using telescope or some other picker.
+
 local chat = {}
 local chats = {}
 
