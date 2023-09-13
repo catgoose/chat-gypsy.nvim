@@ -109,6 +109,7 @@ function Request:query(content, on_response_start, on_response_chunk, on_respons
 	local openai_params = cfg.openai_params
 	openai_params.messages[1].content = content
 
+	self.log.debug("query: open_api_params: " .. vim.inspect(openai_params))
 	local on_start = function()
 		self.log.debug("query: on_start")
 		-- events:pub("hook:request:start", content)
