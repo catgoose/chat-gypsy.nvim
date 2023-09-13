@@ -38,10 +38,13 @@ Config.opts = {
 	},
 }
 
-local sentence =
-	[[Write 3 haiku.  Use a numbered list.  Numbers should be on their own line.  Insert a period after each number.]]
+local prompt =
+	[[Write 3 haiku.  Use a numbered list.  Numbers should be on their own line.  Insert a period after each number.
+Then tell a joke.
+Tell a joke about a dog named mu.
+  ]]
 local message = {}
-for word in sentence:gmatch("%w+") do
+for word in prompt:gmatch("[^\n]+") do
 	table.insert(message, word)
 end
 
