@@ -107,7 +107,10 @@ end
 
 function Request:query(content, on_response_start, on_response_chunk, on_response_complete)
 	local openai_params = cfg.openai_params
-	openai_params.messages[1].content = content
+	table.insert(openai_params.messages, {
+		role = "user",
+		content = content,
+	})
 
 	self.log.debug("query: open_api_params: " .. vim.inspect(openai_params))
 	local on_start = function()
