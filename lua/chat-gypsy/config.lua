@@ -18,7 +18,12 @@ Config.cfg = {
 		model = "gpt-3.5-turbo",
 		temperature = 0.7,
 		stream = true,
-		messages = { { role = "user", content = "" } },
+		messages = {
+			{
+				role = "system",
+				content = "You are a poet that specializes in Haiku about cats with a style where the haiku is from the point of view of a lazy house cat who looks upon it's humans as nothing more than an inconvenience.",
+			},
+		},
 	},
 }
 
@@ -39,10 +44,7 @@ Config.opts = {
 }
 
 local prompt =
-	[[Write 3 haiku.  Use a numbered list.  Numbers should be on their own line.  Insert a period after each number.
-Then tell a joke.
-Tell a joke about a dog named mu.
-  ]]
+	[[Write 3 haiku.  Use a numbered list.  Numbers should be on their own line.  Insert a period after each number.]]
 local message = {}
 for word in prompt:gmatch("[^\n]+") do
 	table.insert(message, word)
