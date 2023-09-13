@@ -68,6 +68,17 @@ Gypsy.hide = function()
 	end
 end
 
+Gypsy.show = function()
+	if #chats == 1 then
+		chat = chats[1]
+		chat = table.remove(chats, 1)
+		local layout = chat.ui.layout
+		if layout.mounted and layout.hidden then
+			layout.show()
+		end
+	end
+end
+
 Gypsy.close = function()
 	chat = table.remove(chats, 1)
 	if chat.ui.layout.mounted then
@@ -79,5 +90,6 @@ vim.api.nvim_create_user_command("GypsyToggle", Gypsy.toggle, {})
 vim.api.nvim_create_user_command("GypsyOpen", Gypsy.open, {})
 vim.api.nvim_create_user_command("GypsyClose", Gypsy.close, {})
 vim.api.nvim_create_user_command("GypsyHide", Gypsy.hide, {})
+vim.api.nvim_create_user_command("GypsyShow", Gypsy.show, {})
 
 return Gypsy
