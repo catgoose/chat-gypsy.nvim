@@ -1,5 +1,5 @@
 ---@diagnostic disable: undefined-field
-local config = require("gypsy.config")
+local config = require("chat-gypsy.config")
 local cfg = config.cfg
 local opts = config.opts
 

@@ -3,10 +3,10 @@ local Gypsy = {}
 local log = {}
 
 Gypsy.setup = function(opts)
-	local cfg = require("gypsy.config")
+	local cfg = require("chat-gypsy.config")
 	cfg.init(opts)
 
-	log = require("gypsy.logger").init()
+	log = require("chat-gypsy.logger").init()
 
 	if cfg.opts.dev then
 		log.debug("Gypsy:setup: dev mode enabled")
@@ -50,10 +50,20 @@ end
 
 Gypsy.open = function()
 	if #chats == 0 then
-		chat = require("gypsy.chat").new(log)
+		chat = require("chat-gypsy.chat").new(log)
 		if not chat.ui.layout.mounted then
 			table.insert(chats, chat)
 			chat.ui.layout:mount()
+		end
+	end
+end
+
+Gypsy.hide = function()
+	if #chats == 1 then
+		chat = table.remove(chats, 1)
+		local layout = chat.ui.layout
+		if layout.mounted then
+			layout.hide()
 		end
 	end
 end
@@ -68,5 +78,6 @@ end
 vim.api.nvim_create_user_command("GypsyToggle", Gypsy.toggle, {})
 vim.api.nvim_create_user_command("GypsyOpen", Gypsy.open, {})
 vim.api.nvim_create_user_command("GypsyClose", Gypsy.close, {})
+vim.api.nvim_create_user_command("GypsyHide", Gypsy.hide, {})
 
 return Gypsy

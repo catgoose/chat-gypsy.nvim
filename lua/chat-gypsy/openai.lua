@@ -3,8 +3,8 @@ OpenAI.__index = OpenAI
 
 function OpenAI.new(log, queue, request)
 	local self = setmetatable({}, OpenAI)
-	self.queue = queue or require("gypsy.queue").new()
-	self.request = request or require("gypsy.request").new(log)
+	self.queue = queue or require("chat-gypsy.queue").new()
+	self.request = request or require("chat-gypsy.request").new(log)
 	self.log = log
 	return self
 end

@@ -1,6 +1,6 @@
 local log_levels = { "trace", "debug", "info", "warn", "error", "fatal" }
 local default_log_level = "warn"
--- local events = require("gypsy").events
+-- local events = require("chat-gypsy").events
 
 local Config = {}
 Config.cfg = {
