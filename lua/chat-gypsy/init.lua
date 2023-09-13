@@ -60,9 +60,9 @@ end
 
 Gypsy.hide = function()
 	if #chats == 1 then
-		chat = table.remove(chats, 1)
+		chat = chats[1]
 		local layout = chat.ui.layout
-		if layout.mounted then
+		if layout.mounted and not layout.hidden then
 			layout.hide()
 		end
 	end
