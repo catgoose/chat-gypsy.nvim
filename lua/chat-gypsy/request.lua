@@ -6,6 +6,7 @@ local Request = {}
 Request.__index = Request
 
 local log = require("chat-gypsy").log
+local events = require("chat-gypsy").events
 
 function Request.new()
 	local self = setmetatable({}, Request)
@@ -69,7 +70,7 @@ function Request.new()
 			end
 
 			on_chunk(path)
-			-- events:pub("hook:request:chunk", path)
+			events:pub("hook:request:chunk", path)
 			table.insert(self.chunks, path)
 			::continue::
 		end
@@ -136,7 +137,7 @@ function Request:query(content, on_response_start, on_response_chunk, on_respons
 	log.debug("query: open_api_params: " .. vim.inspect(self.openai_params))
 	local on_start = function()
 		log.debug("query: on_start")
-		-- events:pub("hook:request:start", content)
+		events:pub("hook:request:start", content)
 		on_response_start()
 	end
 

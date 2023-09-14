@@ -7,6 +7,7 @@ local Layout = {}
 Layout.__index = Layout
 
 local log = require("chat-gypsy").log
+local events = require("chat-gypsy").events
 
 function Layout.new(openai, ui)
 	local self = setmetatable({}, Layout)
@@ -162,7 +163,7 @@ function Layout:configure()
 			if self.chat.bufnr == chat_bufnr and self.chat.winid == chat_winid then
 				log.debug(string.format("on_complete: chunks: %s", vim.inspect(chunks)))
 				newl(chat_bufnr, 2)
-				-- events:pub("hook:request:complete", chat_lines)
+				events:pub("hook:request:complete", chat_lines)
 				vim.cmd.undojoin()
 			end
 		end
