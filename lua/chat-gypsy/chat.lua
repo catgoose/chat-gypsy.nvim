@@ -1,11 +1,11 @@
 local Chat = {}
 Chat.__index = Chat
 
-function Chat.new(log)
+function Chat.new()
 	local self = setmetatable({}, Chat)
 	local queue = require("chat-gypsy.queue").new()
-	local openai = require("chat-gypsy.openai").new(log, queue)
-	self.ui = require("chat-gypsy.ui").new(log, openai)
+	local openai = require("chat-gypsy.openai").new(queue)
+	self.ui = require("chat-gypsy.ui").new(openai)
 	return self
 end
 

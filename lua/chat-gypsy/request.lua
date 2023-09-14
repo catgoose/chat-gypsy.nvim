@@ -5,9 +5,10 @@ local opts = config.opts
 local Request = {}
 Request.__index = Request
 
-function Request.new(log)
+local log = require("chat-gypsy").log
+
+function Request.new()
 	local self = setmetatable({}, Request)
-	self.log = log
 	self.chunks = {}
 	self.content = ""
 	self.openai_params = opts.openai_params
@@ -17,7 +18,7 @@ function Request.new(log)
 	self.on_assistant_response = function()
 		self.content = table.concat(self.chunks, "")
 		self.join_content()
-		self.log.debug("on_user_prompt: " .. self.content)
+		log.debug("on_user_prompt: " .. self.content)
 		table.insert(self.openai_params.messages, {
 			role = "assistant",
 			content = self.content,
@@ -25,7 +26,7 @@ function Request.new(log)
 	end
 	self.on_user_prompt = function(content)
 		self.content = content
-		self.log.debug("on_user_prompt: " .. self.content)
+		log.debug("on_user_prompt: " .. self.content)
 		table.insert(self.openai_params.messages, {
 			role = "user",
 			content = self.content,
@@ -132,9 +133,9 @@ end
 function Request:query(content, on_response_start, on_response_chunk, on_response_complete)
 	self.on_user_prompt(content)
 
-	self.log.debug("query: open_api_params: " .. vim.inspect(self.openai_params))
+	log.debug("query: open_api_params: " .. vim.inspect(self.openai_params))
 	local on_start = function()
-		self.log.debug("query: on_start")
+		log.debug("query: on_start")
 		-- events:pub("hook:request:start", content)
 		on_response_start()
 	end
@@ -144,13 +145,13 @@ function Request:query(content, on_response_start, on_response_chunk, on_respons
 	end
 
 	local on_complete = function()
-		self.log.debug("query: on_complete")
+		log.debug("query: on_complete")
 		self.on_assistant_response()
 		on_response_complete(self.chunks)
 	end
 
 	local on_error = function(err)
-		self.log.warn(string.format("query: on_error: %s", err))
+		log.warn(string.format("query: on_error: %s", err))
 	end
 
 	self.on_new_request()
