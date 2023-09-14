@@ -3,10 +3,10 @@ OpenAI.__index = OpenAI
 
 local log = require("chat-gypsy").log
 
-function OpenAI.new(queue, request)
+function OpenAI.new()
 	local self = setmetatable({}, OpenAI)
-	self.queue = queue or require("chat-gypsy.queue").new()
-	self.request = request or require("chat-gypsy.request").new()
+	self.queue = require("chat-gypsy.queue").new()
+	self.request = require("chat-gypsy.request").new()
 	return self
 end
 

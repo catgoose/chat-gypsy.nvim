@@ -80,9 +80,9 @@ local function build_ui()
 	}
 end
 
-function UI.new(openai)
+function UI.new()
 	local self = setmetatable({}, UI)
-	self.layout = require("chat-gypsy.layout").new(openai, build_ui())
+	self.layout = require("chat-gypsy.layout").new(build_ui())
 	return self
 end
 

@@ -9,12 +9,9 @@ Layout.__index = Layout
 local log = require("chat-gypsy").log
 local events = require("chat-gypsy").events
 
-function Layout.new(openai, ui)
+function Layout.new(ui)
 	local self = setmetatable({}, Layout)
-	if not ui then
-		log.error("UI required")
-	end
-	self.openai = openai or require("chat-gypsy.openai").new(require("chat-gypsy.queue").new())
+	self.openai = require("chat-gypsy.openai").new()
 	self.layout = ui.layout
 	self.boxes = ui.boxes
 	self.chat = self.boxes.chat

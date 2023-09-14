@@ -25,7 +25,7 @@ Gypsy.toggle = function()
 	end
 	if #chats == 1 then
 		chat = chats[1]
-		local layout = chat.ui.layout
+		local layout = chat.layout
 		if layout.mounted then
 			if not layout.hidden and not layout.is_focused() then
 				layout.focus_last_win()
@@ -48,10 +48,10 @@ end
 
 Gypsy.open = function()
 	if #chats == 0 then
-		chat = require("chat-gypsy.chat").new()
-		if not chat.ui.layout.mounted then
+		chat = require("chat-gypsy.ui").new()
+		if not chat.layout.mounted then
 			table.insert(chats, chat)
-			chat.ui.layout:mount()
+			chat.layout:mount()
 		end
 	end
 end
@@ -59,7 +59,7 @@ end
 Gypsy.hide = function()
 	if #chats == 1 then
 		chat = chats[1]
-		local layout = chat.ui.layout
+		local layout = chat.layout
 		if layout.mounted and not layout.hidden then
 			layout.hide()
 		end
@@ -70,7 +70,7 @@ Gypsy.show = function()
 	if #chats == 1 then
 		chat = chats[1]
 		chat = table.remove(chats, 1)
-		local layout = chat.ui.layout
+		local layout = chat.layout
 		if layout.mounted and layout.hidden then
 			layout.show()
 		end
@@ -79,8 +79,8 @@ end
 
 Gypsy.close = function()
 	chat = table.remove(chats, 1)
-	if chat.ui.layout.mounted then
-		chat.ui.layout.unmount()
+	if chat.layout.mounted then
+		chat.layout.unmount()
 	end
 end
 
