@@ -38,20 +38,15 @@ Config.opts = {
 			complete = function(--[[response]]) end,
 		},
 	},
-}
-
-local prompt = [[]]
-local message = {}
-for word in prompt:gmatch("[^\n]+") do
-	table.insert(message, word)
-end
-
-Config.dev = {
-	prompt = {
-		message = message,
-		enabled = true,
+	dev_opts = {
+		prompt = {
+			user_prompt = "",
+			enabled = false,
+		},
 	},
 }
+
+Config.dev = Config.opts.dev_opts
 
 -- local event_hooks = function()
 -- 	local request = Config.opts.hooks.request
@@ -67,11 +62,17 @@ Config.init = function(opts)
 		local err_msg = string.format("opts:new: invalid opts: missing openai_key\nopts: %s", vim.inspect(opts))
 		error(err_msg)
 	end
-	if opts.dev then
-		Config.cfg.dev = true
-	end
 	Config.cfg.log_level = vim.tbl_contains(log_levels, opts.log_level) and opts.log_level or default_log_level
 	Config.opts = opts
+
+	if Config.opts.dev then
+		Config.cfg.dev = true
+		Config.dev = vim.tbl_deep_extend("force", Config.dev, Config.opts.dev_opts)
+		Config.dev.prompt.message = {}
+		for word in Config.dev.prompt.user_prompt:gmatch("[^\n]+") do
+			table.insert(Config.dev.prompt.message, word)
+		end
+	end
 
 	-- event_hooks()
 end
