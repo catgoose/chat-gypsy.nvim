@@ -2,12 +2,11 @@ local nui_lo = require("nui.layout")
 local ev = require("nui.utils.autocmd").event
 local config = require("chat-gypsy.config")
 local cfg, dev, opts = config.cfg, config.dev, config.opts
+local log = require("chat-gypsy").log
+local events = require("chat-gypsy").events
 
 local Layout = {}
 Layout.__index = Layout
-
-local log = require("chat-gypsy").log
-local events = require("chat-gypsy").events
 
 function Layout.new(ui)
 	local self = setmetatable({}, Layout)

@@ -1,12 +1,11 @@
 ---@diagnostic disable: undefined-field
 local config = require("chat-gypsy.config")
 local opts = config.opts
+local log = require("chat-gypsy").log
+local events = require("chat-gypsy").events
 
 local Request = {}
 Request.__index = Request
-
-local log = require("chat-gypsy").log
-local events = require("chat-gypsy").events
 
 function Request.new()
 	local self = setmetatable({}, Request)

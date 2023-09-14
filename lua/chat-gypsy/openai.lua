@@ -1,7 +1,7 @@
+local log = require("chat-gypsy").log
+
 local OpenAI = {}
 OpenAI.__index = OpenAI
-
-local log = require("chat-gypsy").log
 
 function OpenAI.new()
 	local self = setmetatable({}, OpenAI)
