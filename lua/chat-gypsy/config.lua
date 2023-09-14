@@ -21,7 +21,7 @@ Config.cfg = {
 		messages = {
 			{
 				role = "system",
-				content = "You are a poet that specializes in Haiku about cats with a style where the haiku is from the point of view of a lazy house cat who looks upon it's humans as nothing more than an inconvenience.",
+				content = "Hello, I am Gypsy.  I am a chatbot powered by openai.",
 			},
 		},
 	},
