@@ -51,7 +51,7 @@ Gypsy.open = function()
 		chat = require("chat-gypsy.ui").new()
 		if not chat.layout.mounted then
 			table.insert(chats, chat)
-			chat.layout:mount()
+			chat.layout.mount()
 		end
 	end
 end

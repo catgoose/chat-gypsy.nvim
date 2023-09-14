@@ -9,8 +9,16 @@ Config.cfg = {
 	log_level = default_log_level,
 	dev = false,
 	ui = {
-		prompt_height = 5,
-		max_lines = 6,
+		left = {
+			prompt_height = 8,
+		},
+		right = {
+			prompt_height = 8,
+		},
+		float = {
+			prompt_height = 5,
+			max_lines = 6,
+		},
 	},
 }
 

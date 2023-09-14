@@ -23,10 +23,10 @@ function Layout.new(ui)
 	self.prompt_winid = 0
 	self.chat_winid = 0
 	self.mounted = false
-	self.config = {
-		prompt_height = cfg.ui.prompt_height,
-		max_lines = cfg.ui.max_lines,
-	}
+	-- self.config = {
+	-- 	prompt_height = cfg.ui.prompt_height,
+	-- 	max_lines = cfg.ui.max_lines,
+	-- }
 
 	self.focus_chat = function()
 		vim.api.nvim_set_current_win(self.chat_winid)
@@ -190,16 +190,16 @@ function Layout:configure()
 		ev.TextChangedI,
 		ev.TextChanged,
 	}, function(e)
-		local n_lines = vim.api.nvim_buf_line_count(e.buf)
-		n_lines = n_lines < self.config.max_lines and n_lines or self.config.max_lines
-		self.layout:update(nui_lo.Box({
-			nui_lo.Box(self.chat, {
-				size = "100%",
-			}),
-			nui_lo.Box(self.prompt, {
-				size = n_lines + self.config.prompt_height - 1,
-			}),
-		}, { dir = "col" }))
+		-- local n_lines = vim.api.nvim_buf_line_count(e.buf)
+		-- n_lines = n_lines < self.config.max_lines and n_lines or self.config.max_lines
+		-- self.layout:update(nui_lo.Box({
+		-- 	nui_lo.Box(self.chat, {
+		-- 		size = "100%",
+		-- 	}),
+		-- 	nui_lo.Box(self.prompt, {
+		-- 		size = n_lines + self.config.prompt_height - 1,
+		-- 	}),
+		-- }, { dir = "col" }))
 	end)
 
 	-- Move between popups
