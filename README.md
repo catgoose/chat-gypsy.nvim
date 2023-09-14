@@ -2,6 +2,8 @@
 
 ## Usage
 
+### Calling with `:lua require('chat-gypsy)...`
+
 ```lua
 require('chat-gypsy').toggle()
 require("chat-gypsy").open()
@@ -9,6 +11,8 @@ require("chat-gypsy").close()
 require("chat-gypsy").hide()
 require("chat-gypsy").show()
 ```
+
+### Calling with vim user commands
 
 ```lua
 GypsyToggle
@@ -44,7 +48,7 @@ local opts = {
         messages = {
             {
             role = "system",
-            content = "Replace with default system prompt",
+            content = "",
             },
         },
     },
