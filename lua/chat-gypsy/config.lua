@@ -18,7 +18,7 @@ Config.cfg = {
 		messages = {
 			{
 				role = "system",
-				content = "Hello, I am Gypsy.  I am a chatbot powered by openai.",
+				content = "You are gypsy, a chatbot that can talk to anyone.",
 			},
 		},
 	},
