@@ -1,22 +1,19 @@
 local Gypsy = {}
 
-local log = {}
+Gypsy.log = {}
+Gypsy.events = require("chat-gypsy.events").new()
 
 Gypsy.setup = function(opts)
 	local cfg = require("chat-gypsy.config")
 	cfg.init(opts)
 
-	log = require("chat-gypsy.logger").init()
+	Gypsy.log = require("chat-gypsy.logger").init()
+	require("chat-gypsy.usercmd").init()
 
 	if cfg.opts.dev then
-		log.debug("Gypsy:setup: dev mode enabled")
+		Gypsy.log.debug("Gypsy:setup: dev mode enabled")
 	end
-	require("chat-gypsy.usercmd").init()
 end
-
---  TODO: 2023-09-13 - should the chat class track the number of chats?
---  Gypsy.open should open a new chat if a chat is hidden.  Chats should be able
---  to be selected from using telescope or some other picker.
 
 local chat = {}
 local chats = {}
@@ -51,7 +48,7 @@ end
 
 Gypsy.open = function()
 	if #chats == 0 then
-		chat = require("chat-gypsy.chat").new(log)
+		chat = require("chat-gypsy.chat").new()
 		if not chat.ui.layout.mounted then
 			table.insert(chats, chat)
 			chat.ui.layout:mount()

@@ -35,6 +35,32 @@ sent until the previous request is completed.
 Likewise, if a response is being generated the next prompt can be sent, but
 it will not clear the prompt buffer until the previous request is completed.
 
+### Event hooks
+
+Several event hooks are provided for customization:
+
+```lua
+    hooks = {
+        request = {
+            start = function(content)
+              vim.print(content)
+            end,
+            chunk = function(chunk)
+              vim.print(chunk)
+            end,
+            complete = function(response)
+              vim.print(response)
+            end,
+        },
+    },
+```
+
+| Hook             | Arguments | Description                           |
+| ---------------- | --------- | ------------------------------------- |
+| request.start    | content   | Content is sent from user prompt      |
+| request.chunk    | chunk     | Chunk is received from request stream |
+| request.complete | response  | Response is received from openai      |
+
 ## Installation
 
 ### Lazy.nvim
@@ -56,6 +82,13 @@ local opts = {
     ui = {
         prompt = {
             start_insert = true,
+        },
+    },
+    hooks = {
+        request = {
+            start = function(--[[content]]) end,
+            chunk = function(--[[chunk]]) end,
+            complete = function(--[[response]]) end,
         },
     },
 }

@@ -6,11 +6,13 @@ local cfg, dev, opts = config.cfg, config.dev, config.opts
 local Layout = {}
 Layout.__index = Layout
 
-function Layout.new(log, ui, openai)
+local log = require("chat-gypsy").log
+local events = require("chat-gypsy").events
+
+function Layout.new(openai, ui)
 	local self = setmetatable({}, Layout)
-	self.log = log
 	if not ui then
-		self.log.error("UI required")
+		log.error("UI required")
 	end
 	self.openai = openai or require("chat-gypsy.openai").new(require("chat-gypsy.queue").new())
 	self.layout = ui.layout
@@ -53,12 +55,12 @@ function Layout.new(log, ui, openai)
 	end
 
 	self.mount = function()
-		self.log.debug("Mounting UI")
+		log.debug("Mounting UI")
 		self.layout:mount()
 		self.mounted = true
 		self.set_winids()
 		self.focused_winid = self.prompt_winid
-		self.log.debug("Configuring boxes")
+		log.debug("Configuring boxes")
 		self:configure()
 		if opts.ui.prompt.start_insert then
 			vim.cmd.startinsert()
@@ -159,9 +161,9 @@ function Layout:configure()
 		end
 		local on_complete = function(chunks)
 			if self.chat.bufnr == chat_bufnr and self.chat.winid == chat_winid then
-				self.log.debug(string.format("on_complete: chunks: %s", vim.inspect(chunks)))
+				log.debug(string.format("on_complete: chunks: %s", vim.inspect(chunks)))
 				newl(chat_bufnr, 2)
-				-- events:pub("hook:request:complete", chat_lines)
+				events:pub("hook:request:complete", chat_lines)
 				vim.cmd.undojoin()
 			end
 		end

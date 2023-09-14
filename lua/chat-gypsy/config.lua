@@ -1,8 +1,10 @@
 local log_levels = { "trace", "debug", "info", "warn", "error", "fatal" }
 local default_log_level = "warn"
--- local events = require("chat-gypsy").events
 
 local Config = {}
+
+local events = require("chat-gypsy").events
+
 Config.cfg = {
 	plugin = "gypsy",
 	log_level = default_log_level,
@@ -48,12 +50,12 @@ Config.opts = {
 
 Config.dev = Config.opts.dev_opts
 
--- local event_hooks = function()
--- 	local request = Config.opts.hooks.request
--- 	for hook, _ in pairs(request) do
--- 		events:sub("hook:request:" .. hook, request[hook])
--- 	end
--- end
+local event_hooks = function()
+	local request = Config.opts.hooks.request
+	for hook, _ in pairs(request) do
+		events:sub("hook:request:" .. hook, request[hook])
+	end
+end
 
 Config.init = function(opts)
 	opts = opts or {}
@@ -74,7 +76,7 @@ Config.init = function(opts)
 		end
 	end
 
-	-- event_hooks()
+	event_hooks()
 end
 
 return Config
