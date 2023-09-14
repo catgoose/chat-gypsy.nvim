@@ -45,6 +45,7 @@ local opts = {
     openai_key = os.getenv("OPENAI_API_KEY"),
     openai_params = {
         model = "gpt-3.5-turbo",
+        temperature = 0.7,
         messages = {
             {
             role = "system",
