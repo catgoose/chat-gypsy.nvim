@@ -8,6 +8,9 @@ local events = require("chat-gypsy").events
 local Layout = {}
 Layout.__index = Layout
 
+--  TODO: 2023-09-14 - Before layout is mounted try to get the winids from
+--  current window and restore after unmounting/hiding
+
 function Layout.new(ui)
 	local self = setmetatable({}, Layout)
 	self.openai = require("chat-gypsy.openai").new()
