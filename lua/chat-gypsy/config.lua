@@ -11,9 +11,6 @@ Config.cfg = {
 		prompt_height = 5,
 		max_lines = 6,
 	},
-	api = {
-		queue_sleep_ms = 100,
-	},
 	openai_params = {
 		model = "gpt-3.5-turbo",
 		temperature = 0.7,
