@@ -1,5 +1,5 @@
 local nui_pu, nui_lo = require("nui.popup"), require("nui.layout")
-local config = require("gypsy.config")
+local config = require("chat-gypsy.config")
 local cfg = config.cfg
 
 local UI = {}
@@ -82,8 +82,8 @@ end
 
 function UI.new(log, openai)
 	local self = setmetatable({}, UI)
-	openai = openai or require("gypsy.openai").new(require("gypsy.queue").new())
-	self.layout = require("gypsy.layout").new(log, build_ui(), openai)
+	openai = openai or require("chat-gypsy.openai").new(require("chat-gypsy.queue").new())
+	self.layout = require("chat-gypsy.layout").new(log, build_ui(), openai)
 	return self
 end
 

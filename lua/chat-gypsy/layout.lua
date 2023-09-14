@@ -1,6 +1,6 @@
 local nui_lo = require("nui.layout")
 local ev = require("nui.utils.autocmd").event
-local config = require("gypsy.config")
+local config = require("chat-gypsy.config")
 local cfg, dev, opts = config.cfg, config.dev, config.opts
 
 local Layout = {}
@@ -12,7 +12,7 @@ function Layout.new(log, ui, openai)
 	if not ui then
 		self.log.error("UI required")
 	end
-	self.openai = openai or require("gypsy.openai").new(require("gypsy.queue").new())
+	self.openai = openai or require("chat-gypsy.openai").new(require("chat-gypsy.queue").new())
 	self.layout = ui.layout
 	self.boxes = ui.boxes
 	self.chat = self.boxes.chat

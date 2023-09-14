@@ -1,4 +1,4 @@
-local cfg = require("gypsy.config").cfg
+local cfg = require("chat-gypsy.config").cfg
 
 local Logger = {}
 Logger.log = {}
