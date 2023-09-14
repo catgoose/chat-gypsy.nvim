@@ -11,6 +11,10 @@ Config.cfg = {
 		prompt_height = 5,
 		max_lines = 6,
 	},
+}
+
+Config.opts = {
+	openai_key = os.getenv("OPENAI_API_KEY"),
 	openai_params = {
 		model = "gpt-3.5-turbo",
 		temperature = 0.7,
@@ -22,10 +26,6 @@ Config.cfg = {
 			},
 		},
 	},
-}
-
-Config.opts = {
-	openai_key = os.getenv("OPENAI_API_KEY"),
 	ui = {
 		prompt = {
 			start_insert = true,
@@ -40,8 +40,7 @@ Config.opts = {
 	},
 }
 
-local prompt =
-	[[Write 3 haiku.  Use a numbered list.  Numbers should be on their own line.  Insert a period after each number.]]
+local prompt = [[]]
 local message = {}
 for word in prompt:gmatch("[^\n]+") do
 	table.insert(message, word)
