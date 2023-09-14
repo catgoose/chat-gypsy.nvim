@@ -11,6 +11,7 @@ Gypsy.setup = function(opts)
 	if cfg.opts.dev then
 		log.debug("Gypsy:setup: dev mode enabled")
 	end
+	require("chat-gypsy.usercmd").init()
 end
 
 --  TODO: 2023-09-13 - should the chat class track the number of chats?
@@ -85,11 +86,5 @@ Gypsy.close = function()
 		chat.ui.layout.unmount()
 	end
 end
-
-vim.api.nvim_create_user_command("GypsyToggle", Gypsy.toggle, {})
-vim.api.nvim_create_user_command("GypsyOpen", Gypsy.open, {})
-vim.api.nvim_create_user_command("GypsyClose", Gypsy.close, {})
-vim.api.nvim_create_user_command("GypsyHide", Gypsy.hide, {})
-vim.api.nvim_create_user_command("GypsyShow", Gypsy.show, {})
 
 return Gypsy
