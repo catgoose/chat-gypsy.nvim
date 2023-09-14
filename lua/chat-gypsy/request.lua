@@ -1,6 +1,5 @@
 ---@diagnostic disable: undefined-field
 local config = require("chat-gypsy.config")
-local cfg = config.cfg
 local opts = config.opts
 
 local Request = {}
@@ -11,7 +10,7 @@ function Request.new(log)
 	self.log = log
 	self.chunks = {}
 	self.content = ""
-	self.openai_params = cfg.openai_params
+	self.openai_params = opts.openai_params
 	self.join_content = function()
 		self.content = table.concat(self.chunks, "")
 	end
