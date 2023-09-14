@@ -30,7 +30,6 @@ local function build_ui(layout_config)
 		},
 		win_options = {
 			cursorline = false,
-			winbar = nil,
 			winblend = 5,
 			winhighlight = "Normal:Normal,FloatBorder:FloatBorder",
 			wrap = true,
