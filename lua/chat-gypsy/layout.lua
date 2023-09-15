@@ -59,6 +59,17 @@ function Layout.new(ui)
 		self.prompt_bufnr = self.layout._.box.box[2].component.bufnr
 	end
 
+	self.set_lines = function(bufnr, line_start, line_end, lines)
+		if vim.api.nvim_buf_is_valid(bufnr) then
+			vim.api.nvim_buf_set_lines(bufnr, line_start, line_end, false, lines)
+		end
+	end
+	self.set_cursor = function(winid, pos)
+		if vim.api.nvim_win_is_valid(winid) then
+			vim.api.nvim_win_set_cursor(winid, pos)
+		end
+	end
+
 	self.mount = function()
 		log.debug("Mounting UI")
 		self.layout:mount()
