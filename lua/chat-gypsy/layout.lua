@@ -138,9 +138,6 @@ function Layout:configure()
 		end
 		local chat_lines = ""
 		local function newl(bufnr, n)
-			--  BUG: 2023-09-14 - When toggling chat, the winids are changing
-			vim.print(self.chat.bufnr == chat_bufnr)
-			vim.print(self.chat_winid == chat_winid)
 			if self.chat.bufnr == chat_bufnr and self.chat.winid == chat_winid then
 				n = n or 1
 				for _ = 1, n do
