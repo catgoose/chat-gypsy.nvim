@@ -120,11 +120,8 @@ function Layout:configure()
 
 	local line_n = 0
 	local line = ""
-	local prompt_send = function(prompt_lines, prompt_bufnr, chat_bufnr, chat_winid)
-		prompt_bufnr = prompt_bufnr or self.layout._.box.box[2].component.bufnr
-		chat_bufnr = chat_bufnr or self.layout._.box.box[1].component.bufnr
-		chat_winid = chat_winid or self.layout._.box.box[1].component.winid
-		prompt_lines = prompt_lines or vim.api.nvim_buf_get_lines(prompt_bufnr, 0, -1, false)
+	local prompt_send = function(prompt_lines)
+		prompt_lines = prompt_lines or vim.api.nvim_buf_get_lines(self.prompt_bufnr, 0, -1, false)
 		if prompt_lines[1] == "" and #prompt_lines == 1 then
 			return
 		end
