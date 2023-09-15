@@ -127,7 +127,6 @@ function Layout:configure()
 	local line_n = 0
 	local line = ""
 	local prompt_send = function(prompt_lines)
-		prompt_lines = prompt_lines or vim.api.nvim_buf_get_lines(self.prompt_bufnr, 0, -1, false)
 		if prompt_lines[1] == "" and #prompt_lines == 1 then
 			return
 		end
@@ -181,7 +180,9 @@ function Layout:configure()
 
 	-- Send prompt on enter
 	self.prompt:map("n", "<Enter>", function()
-		prompt_send()
+		local prompt_lines = vim.api.nvim_buf_get_lines(self.prompt_bufnr, 0, -1, false)
+		vim.api.nvim_buf_set_lines(self.prompt_bufnr, 0, -1, false, {})
+		prompt_send(prompt_lines)
 	end, {})
 	-- nui doesn't quite start on line 1 so we need to send an escape to
 	-- reinitialize
