@@ -18,6 +18,12 @@ end
 local chat = {}
 local chats = {}
 
+Gypsy.events:sub("layout:unmount", function()
+	Gypsy.log.debug("events: layout:unmount")
+	chat = nil
+	chats = {}
+end)
+
 Gypsy.toggle = function()
 	if #chats == 0 then
 		Gypsy.open()

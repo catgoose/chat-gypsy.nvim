@@ -92,6 +92,7 @@ function Layout.new(ui)
 		self.layout:unmount()
 		self.mounted = false
 		self.hidden = false
+		events:pub("layout:unmount")
 	end
 	self.hide = function()
 		self.layout:hide()
