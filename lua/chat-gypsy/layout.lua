@@ -166,7 +166,6 @@ function Layout:configure()
 			end
 		end
 		local on_start = function()
-			vim.api.nvim_buf_set_lines(self.chat_bufnr, 0, -1, false, {})
 			self.set_cursor(self.chat_winid, { line_n > 0 and line_n or 1, 0 })
 		end
 		local on_complete = function(chunks)
