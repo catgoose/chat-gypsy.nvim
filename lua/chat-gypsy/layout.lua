@@ -28,7 +28,7 @@ function Layout.new(ui)
 	-- self.config = {
 	-- 	prompt_height = cfg.ui.prompt_height,
 	-- 	max_lines = cfg.ui.max_lines,
-	-- }
+	--
 
 	self.focus_chat = function()
 		vim.api.nvim_set_current_win(self.chat_winid)
@@ -59,11 +59,6 @@ function Layout.new(ui)
 		self.prompt_bufnr = self.layout._.box.box[2].component.bufnr
 	end
 
-	self.set_lines = function(bufnr, line_start, line_end, lines)
-		if vim.api.nvim_buf_is_valid(bufnr) then
-			vim.api.nvim_buf_set_lines(bufnr, line_start, line_end, false, lines)
-		end
-	end
 	self.set_cursor = function(winid, pos)
 		if vim.api.nvim_win_is_valid(winid) then
 			vim.api.nvim_win_set_cursor(winid, pos)
@@ -142,14 +137,14 @@ function Layout:configure()
 			for _ = 1, n do
 				line_n = line_n + 1
 				line = ""
-				self.set_lines(bufnr, line_n, -1, { line })
+				vim.api.nvim_buf_set_lines(bufnr, line_n, -1, false, { line })
 				self.set_cursor(self.chat_winid, { line_n, 0 })
 			end
 		end
 		local function append(chunk)
 			line = line .. chunk
 			chat_lines = chat_lines .. chunk
-			self.set_lines(self.chat_bufnr, line_n, -1, { line })
+			vim.api.nvim_buf_set_lines(self.chat_bufnr, line_n, -1, false, { line })
 		end
 		local on_chunk = function(chunk)
 			if self.chat.bufnr == self.chat_bufnr then
@@ -168,7 +163,7 @@ function Layout:configure()
 			end
 		end
 		local on_start = function()
-			self.set_lines(self.prompt_bufnr, 0, -1, {})
+			vim.api.nvim_buf_set_lines(self.chat_bufnr, 0, -1, false, {})
 			self.set_cursor(self.chat_winid, { line_n > 0 and line_n or 1, 0 })
 		end
 		local on_complete = function(chunks)
