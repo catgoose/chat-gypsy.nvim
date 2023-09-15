@@ -65,6 +65,11 @@ function Layout.new(ui)
 		log.debug(string.format("prompt_bufnr: %s", self.prompt_bufnr))
 	end
 
+	self.set_lines = function(bufnr, line_start, line_end, lines)
+		if vim.api.nvim_buf_is_valid(bufnr) then
+			vim.api.nvim_buf_set_lines(bufnr, line_start, line_end, false, lines)
+		end
+	end
 	self.set_cursor = function(winid, pos)
 		if vim.api.nvim_win_is_valid(winid) then
 			vim.api.nvim_win_set_cursor(winid, pos)
@@ -136,14 +141,14 @@ function Layout:configure()
 			for _ = 1, n do
 				line_n = line_n + 1
 				line = ""
-				vim.api.nvim_buf_set_lines(bufnr, line_n, -1, false, { line })
+				self.set_lines(bufnr, line_n, -1, { line })
 				self.set_cursor(self.chat_winid, { line_n, 0 })
 			end
 		end
 		local function append(chunk)
 			line = line .. chunk
 			chat_lines = chat_lines .. chunk
-			vim.api.nvim_buf_set_lines(self.chat_bufnr, line_n, -1, false, { line })
+			self.set_lines(self.chat_bufnr, line_n, -1, { line })
 		end
 		local on_chunk = function(chunk)
 			if self.chat.bufnr == self.chat_bufnr then
@@ -181,7 +186,8 @@ function Layout:configure()
 	-- Send prompt on enter
 	self.prompt:map("n", "<Enter>", function()
 		local prompt_lines = vim.api.nvim_buf_get_lines(self.prompt_bufnr, 0, -1, false)
-		vim.api.nvim_buf_set_lines(self.prompt_bufnr, 0, -1, false, {})
+		-- vim.api.nvim_buf_set_lines(self.prompt_bufnr, 0, -1, false, {})
+		self.set_lines(self.prompt_bufnr, 0, -1, {})
 		prompt_send(prompt_lines)
 	end, {})
 	-- nui doesn't quite start on line 1 so we need to send an escape to
