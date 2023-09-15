@@ -133,9 +133,9 @@ end
 function Request:query(content, on_response_start, on_response_chunk, on_response_complete)
 	self.on_user_prompt(content)
 
-	log.debug("query: open_api_params: " .. vim.inspect(self.openai_params))
 	local on_start = function()
 		log.debug("query: on_start")
+		log.debug("query: openai_params: " .. vim.inspect(self.openai_params))
 		events:pub("hook:request:start", content)
 		on_response_start()
 	end
