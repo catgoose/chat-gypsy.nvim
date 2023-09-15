@@ -138,31 +138,26 @@ function Layout:configure()
 		end
 		local chat_lines = ""
 		local function newl(bufnr, n)
-			if self.chat.bufnr == chat_bufnr and self.chat.winid == chat_winid then
-				n = n or 1
-				for _ = 1, n do
-					line_n = line_n + 1
-					line = ""
-					vim.api.nvim_buf_set_lines(bufnr, line_n, -1, false, { line })
-					vim.api.nvim_win_set_cursor(chat_winid, { line_n, 0 })
-				end
+			n = n or 1
+			for _ = 1, n do
+				line_n = line_n + 1
+				line = ""
+				self.set_lines(bufnr, line_n, -1, { line })
+				self.set_cursor(self.chat_winid, { line_n, 0 })
 			end
 		end
 		local function append(chunk)
-			if self.chat.bufnr == chat_bufnr and self.chat.winid == chat_winid then
-				line = line .. chunk
-				chat_lines = chat_lines .. chunk
-				vim.api.nvim_buf_set_lines(chat_bufnr, line_n, -1, false, { line })
-				vim.api.nvim_win_set_cursor(chat_winid, { line_n > 0 and line_n or 1, 0 })
-			end
+			line = line .. chunk
+			chat_lines = chat_lines .. chunk
+			self.set_lines(self.chat_bufnr, line_n, -1, { line })
 		end
 		local on_chunk = function(chunk)
-			if self.chat.bufnr == chat_bufnr then
+			if self.chat.bufnr == self.chat_bufnr then
 				if string.match(chunk, "\n") then
 					for _chunk in chunk:gmatch(".") do
 						if string.match(_chunk, "\n") then
 							chat_lines = chat_lines .. "\n"
-							newl(chat_bufnr)
+							newl(self.chat_bufnr)
 						else
 							append(_chunk)
 						end
@@ -173,18 +168,14 @@ function Layout:configure()
 			end
 		end
 		local on_start = function()
-			if self.chat.bufnr == chat_bufnr and self.chat.winid == chat_winid then
-				vim.api.nvim_buf_set_lines(prompt_bufnr, 0, -1, false, {})
-				vim.api.nvim_win_set_cursor(chat_winid, { line_n > 0 and line_n or 1, 0 })
-			end
+			self.set_lines(self.prompt_bufnr, 0, -1, {})
+			self.set_cursor(self.chat_winid, { line_n > 0 and line_n or 1, 0 })
 		end
 		local on_complete = function(chunks)
-			if self.chat.bufnr == chat_bufnr and self.chat.winid == chat_winid then
-				log.debug(string.format("on_complete: chunks: %s", vim.inspect(chunks)))
-				newl(chat_bufnr, 2)
-				events:pub("hook:request:complete", chat_lines)
-				vim.cmd.undojoin()
-			end
+			log.debug(string.format("on_complete: chunks: %s", vim.inspect(chunks)))
+			newl(self.chat_bufnr, 2)
+			events:pub("hook:request:complete", chat_lines)
+			vim.cmd.undojoin()
 		end
 
 		self.openai:sendPrompt(prompt_lines, on_start, on_chunk, on_complete)
