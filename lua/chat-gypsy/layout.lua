@@ -50,13 +50,22 @@ function Layout.new(ui)
 		return vim.tbl_contains({ self.prompt_winid, self.chat_winid }, vim.api.nvim_get_current_win())
 	end
 
-	self.set_winids = function()
-		self.chat_winid = self.layout._.box.box[1].component.winid
-		self.prompt_winid = self.layout._.box.box[2].component.winid
-	end
-	self.set_bufnrs = function()
-		self.chat_bufnr = self.layout._.box.box[1].component.bufnr
-		self.prompt_bufnr = self.layout._.box.box[2].component.bufnr
+	self.set_ids = function()
+		local set_winids = function()
+			self.chat_winid = self.layout._.box.box[1].component.winid
+			self.prompt_winid = self.layout._.box.box[2].component.winid
+		end
+		local set_bufnrs = function()
+			self.chat_bufnr = self.layout._.box.box[1].component.bufnr
+			self.prompt_bufnr = self.layout._.box.box[2].component.bufnr
+		end
+		set_winids()
+		set_bufnrs()
+		log.debug("Setting winids and bufnrs for mounted layout")
+		log.debug(string.format("chat_winid: %s", self.chat_winid))
+		log.debug(string.format("prompt_winid: %s", self.prompt_winid))
+		log.debug(string.format("chat_bufnr: %s", self.chat_bufnr))
+		log.debug(string.format("prompt_bufnr: %s", self.prompt_bufnr))
 	end
 
 	self.set_cursor = function(winid, pos)
@@ -69,13 +78,7 @@ function Layout.new(ui)
 		log.debug("Mounting UI")
 		self.layout:mount()
 		self.mounted = true
-		self.set_winids()
-		self.set_bufnrs()
-		log.debug("Setting winids and bufnrs for mounted layout")
-		log.debug(string.format("chat_winid: %s", self.chat_winid))
-		log.debug(string.format("prompt_winid: %s", self.prompt_winid))
-		log.debug(string.format("chat_bufnr: %s", self.chat_bufnr))
-		log.debug(string.format("prompt_bufnr: %s", self.prompt_bufnr))
+		self.set_ids()
 		self.focused_winid = self.prompt_winid
 		log.debug("Configuring boxes")
 		self:configure()
@@ -95,7 +98,7 @@ function Layout.new(ui)
 	self.show = function()
 		self.layout:show()
 		self.hidden = false
-		self.set_winids()
+		self.set_ids()
 		self.focus_last_win()
 	end
 	return self
