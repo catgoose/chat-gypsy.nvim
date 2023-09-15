@@ -22,6 +22,8 @@ function Layout.new(ui)
 	self.focused_win = "prompt"
 	self.prompt_winid = 0
 	self.chat_winid = 0
+	self.prompt_bufnr = 0
+	self.chat_bufnr = 0
 	self.mounted = false
 	-- self.config = {
 	-- 	prompt_height = cfg.ui.prompt_height,
@@ -52,12 +54,22 @@ function Layout.new(ui)
 		self.chat_winid = self.layout._.box.box[1].component.winid
 		self.prompt_winid = self.layout._.box.box[2].component.winid
 	end
+	self.set_bufnrs = function()
+		self.chat_bufnr = self.layout._.box.box[1].component.bufnr
+		self.prompt_bufnr = self.layout._.box.box[2].component.bufnr
+	end
 
 	self.mount = function()
 		log.debug("Mounting UI")
 		self.layout:mount()
 		self.mounted = true
 		self.set_winids()
+		self.set_bufnrs()
+		log.debug("Setting winids and bufnrs for mounted layout")
+		log.debug(string.format("chat_winid: %s", self.chat_winid))
+		log.debug(string.format("prompt_winid: %s", self.prompt_winid))
+		log.debug(string.format("chat_bufnr: %s", self.chat_bufnr))
+		log.debug(string.format("prompt_bufnr: %s", self.prompt_bufnr))
 		self.focused_winid = self.prompt_winid
 		log.debug("Configuring boxes")
 		self:configure()
