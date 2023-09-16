@@ -24,9 +24,9 @@ function Layout.new(ui)
 	local self = setmetatable({}, Layout)
 	self.layout = ui.layout
 	self.boxes = ui.boxes
+	self.openai = require("chat-gypsy.openai").new()
 	self.reset_layout = function()
 		self.state = utils.deepcopy(default_state)
-		self.openai = require("chat-gypsy.openai").new()
 	end
 	self.reset_layout()
 
