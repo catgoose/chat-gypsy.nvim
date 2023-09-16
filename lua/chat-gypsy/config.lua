@@ -8,6 +8,8 @@ Config.cfg = {
 	plugin = "gypsy",
 	log_level = default_log_level,
 	dev = false,
+	--  TODO: 2023-09-15 - move some of this to opts so it can be configured by
+	--  plugin consumer
 	ui = {
 		config = {
 			zindex = 50,
