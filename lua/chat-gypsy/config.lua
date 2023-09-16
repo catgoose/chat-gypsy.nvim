@@ -9,15 +9,53 @@ Config.cfg = {
 	log_level = default_log_level,
 	dev = false,
 	ui = {
-		left = {
-			prompt_height = 8,
+		config = {
+			zindex = 50,
+			border = {
+				style = "rounded",
+				text = {
+					top_align = "left",
+				},
+				padding = {
+					top = 1,
+					left = 2,
+					right = 2,
+				},
+			},
+			win_options = {
+				cursorline = false,
+				winblend = 5,
+				winhighlight = "Normal:Normal,FloatBorder:FloatBorder",
+				wrap = true,
+			},
 		},
-		right = {
-			prompt_height = 8,
-		},
-		float = {
-			prompt_height = 5,
-			max_lines = 6,
+		layout = {
+			left = {
+				prompt_height = 8,
+				size = {
+					width = "35%",
+					height = "100%",
+				},
+				position = {
+					row = "0%",
+					col = "0%",
+				},
+			},
+			right = {
+				prompt_height = 8,
+				size = {
+					width = "35%",
+					height = "100%",
+				},
+				position = {
+					row = "0%",
+					col = "100%",
+				},
+			},
+			float = {
+				prompt_height = 5,
+				max_lines = 6,
+			},
 		},
 	},
 }
