@@ -45,6 +45,8 @@ local function build_ui(layout_config)
 
 	local prompt = nui_pu(prompt_config)
 	local chat = nui_pu(chat_config)
+
+	local layout_strategy = function(_layout_config)
 		local float = nui_lo(
 			{
 				position = {
@@ -63,51 +65,51 @@ local function build_ui(layout_config)
 				}),
 				nui_lo.Box(prompt, {
 					size = {
-						height = cfg.ui.float.prompt_height,
+						height = cfg.ui.layout.float.prompt_height,
 					},
 				}),
 			}, { dir = "col" })
 		)
 
-		local left = nui_lo(
-			{
-				position = {
-					row = "0%",
-					col = "0%",
-				},
-				size = {
-					width = "40%",
-					height = "100%",
-				},
-				relative = "editor",
-			},
-			nui_lo.Box({
-				nui_lo.Box(chat, {
-					size = {
-						height = vim.o.lines - cfg.ui.left.prompt_height - 1,
-					},
-				}),
-				nui_lo.Box(prompt, {
-					size = {
-						height = cfg.ui.left.prompt_height,
-					},
-				}),
-			}, { dir = "col" })
-		)
+		local create_side_layout = function(side)
+			if side ~= "left" and side ~= "right" then
+				side = "left"
+			end
+			local side_config = cfg.ui[side]
+			local side_layout = nui_lo(
+				vim.tbl_deep_extend("force", {
+					relative = "editor",
+				}, side_config),
+				nui_lo.Box({
+					nui_lo.Box(chat, {
+						size = {
+							height = vim.o.lines - cfg.ui.layout[side].prompt_height - 1,
+						},
+					}),
+					nui_lo.Box(prompt, {
+						size = {
+							height = cfg.ui.layout[side].prompt_height,
+						},
+					}),
+				}, { dir = "col" })
+			)
+			return side_layout
+		end
 
-		if lc.layout == "float" then
+		if _layout_config.layout == "float" then
 			return float
 		end
-		if lc.layout == "right" then
-			return left
+		if _layout_config.layout == "right" then
+			return create_side_layout(_layout_config.layout)
 		end
-		if lc.layout == "left" then
-			return left
+		if _layout_config.layout == "left" then
+			return create_side_layout(_layout_config.layout)
 		end
 	end
 	local layout = layout_strategy(layout_config)
 	return {
 		layout = layout,
+		layout_config = layout_config,
 		boxes = { chat = chat, prompt = prompt },
 	}
 end
