@@ -25,10 +25,6 @@ function Layout.new(ui)
 	self.layout = ui.layout
 	self.boxes = ui.boxes
 	self.openai = require("chat-gypsy.openai").new()
-	self.reset_layout = function()
-		self.state = utils.deepcopy(default_state)
-	end
-	self.reset_layout()
 
 	self.focus_chat = function()
 		vim.api.nvim_set_current_win(self.state.chat_winid)
@@ -106,6 +102,12 @@ function Layout.new(ui)
 		self.set_ids()
 		self.focus_last_win()
 	end
+
+	self.reset_layout = function()
+		self.state = utils.deepcopy(default_state)
+		self.set_ids()
+	end
+	self.reset_layout()
 	return self
 end
 
