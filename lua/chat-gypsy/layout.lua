@@ -201,18 +201,20 @@ function Layout:configure()
 		ev.TextChangedI,
 		ev.TextChanged,
 	}, function(e)
-		--  TODO: 2023-09-15 - reimplement prompt space growth when layout_config ==
-		--  'float'
-		-- local n_lines = vim.api.nvim_buf_line_count(e.buf)
-		-- n_lines = n_lines < self.config.max_lines and n_lines or self.config.max_lines
-		-- self.layout:update(nui_lo.Box({
-		-- 	nui_lo.Box(self.chat, {
-		-- 		size = "100%",
-		-- 	}),
-		-- 	nui_lo.Box(self.prompt, {
-		-- 		size = n_lines + self.config.prompt_height - 1,
-		-- 	}),
-		-- }, { dir = "col" }))
+		if self.state.layout == "float" then
+			local n_lines = vim.api.nvim_buf_line_count(e.buf)
+			local float = cfg.ui.layout.float
+			vim.print(float)
+			n_lines = n_lines < float.max_lines and n_lines or float.max_lines
+			self.layout:update(nui_lo.Box({
+				nui_lo.Box(self.chat, {
+					size = "100%",
+				}),
+				nui_lo.Box(self.prompt, {
+					size = n_lines + float.prompt_height - 1,
+				}),
+			}, { dir = "col" }))
+		end
 	end)
 
 	-- Move between popups
