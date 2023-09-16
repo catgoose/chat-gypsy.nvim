@@ -203,6 +203,8 @@ function Layout:configure()
 		ev.TextChangedI,
 		ev.TextChanged,
 	}, function(e)
+		--  TODO: 2023-09-15 - reimplement prompt space growth when layout_config ==
+		--  'float'
 		-- local n_lines = vim.api.nvim_buf_line_count(e.buf)
 		-- n_lines = n_lines < self.config.max_lines and n_lines or self.config.max_lines
 		-- self.layout:update(nui_lo.Box({
