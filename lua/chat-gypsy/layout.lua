@@ -174,7 +174,7 @@ function Layout:configure()
 			Log.debug(string.format("on_complete: chunks: %s", vim.inspect(chunks)))
 			newl(self.chat_bufnr, 2)
 			Events:pub("hook:request:complete", chat_lines)
-			vim.cmd.undojoin()
+			vim.cmd("silent! undojoin")
 		end
 
 		self.openai:sendPrompt(prompt_lines, on_start, on_chunk, on_complete)
