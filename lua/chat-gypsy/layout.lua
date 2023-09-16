@@ -117,7 +117,6 @@ function Layout:configure()
 			self.unmount()
 		end, { noremap = true })
 
-		-- protects against loading other buffers in the prompt window
 		box:on(ev.BufLeave, function(e)
 			vim.schedule(function()
 				if box.winid and vim.api.nvim_win_is_valid(box.winid) and self.layout._.mounted == true then
@@ -126,7 +125,6 @@ function Layout:configure()
 			end)
 		end)
 
-		-- Destroy UI when any layout buffer is deleted
 		box:on({
 			ev.BufDelete,
 		}, function()
@@ -186,20 +184,16 @@ function Layout:configure()
 		prompt_send(dev.prompt.message)
 	end
 
-	-- Send prompt on enter
 	self.boxes.prompt:map("n", "<Enter>", function()
 		local prompt_lines = vim.api.nvim_buf_get_lines(self.state.prompt_bufnr, 0, -1, false)
 		self.set_lines(self.state.prompt_bufnr, 0, -1, {})
 		prompt_send(prompt_lines)
 	end, {})
-	-- nui doesn't quite start on line 1 so we need to send an escape to
-	-- reinitialize
 	self.boxes.prompt:on(ev.InsertEnter, function()
 		local esc = vim.api.nvim_replace_termcodes("<ESC>", true, false, true)
 		vim.api.nvim_feedkeys(esc, "n", true)
 		vim.api.nvim_feedkeys("i", "n", true)
 	end, { once = true })
-	-- Expand prompt size until max_lines is reached in height
 	self.boxes.prompt:on({
 		ev.TextChangedI,
 		ev.TextChanged,
