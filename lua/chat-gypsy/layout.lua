@@ -188,20 +188,20 @@ function Layout:configure()
 	end
 
 	-- Send prompt on enter
-	self.prompt:map("n", "<Enter>", function()
+	self.boxes.prompt:map("n", "<Enter>", function()
 		local prompt_lines = vim.api.nvim_buf_get_lines(self.state.prompt_bufnr, 0, -1, false)
 		self.set_lines(self.state.prompt_bufnr, 0, -1, {})
 		prompt_send(prompt_lines)
 	end, {})
 	-- nui doesn't quite start on line 1 so we need to send an escape to
 	-- reinitialize
-	self.prompt:on(ev.InsertEnter, function()
+	self.boxes.prompt:on(ev.InsertEnter, function()
 		local esc = vim.api.nvim_replace_termcodes("<ESC>", true, false, true)
 		vim.api.nvim_feedkeys(esc, "n", true)
 		vim.api.nvim_feedkeys("i", "n", true)
 	end, { once = true })
 	-- Expand prompt size until max_lines is reached in height
-	self.prompt:on({
+	self.boxes.prompt:on({
 		ev.TextChangedI,
 		ev.TextChanged,
 	}, function(e)
@@ -211,10 +211,10 @@ function Layout:configure()
 			vim.print(float)
 			n_lines = n_lines < float.max_lines and n_lines or float.max_lines
 			self.layout:update(nui_lo.Box({
-				nui_lo.Box(self.chat, {
+				nui_lo.Box(self.boxes.chat, {
 					size = "100%",
 				}),
-				nui_lo.Box(self.prompt, {
+				nui_lo.Box(self.boxes.prompt, {
 					size = n_lines + float.prompt_height - 1,
 				}),
 			}, { dir = "col" }))
@@ -224,10 +224,10 @@ function Layout:configure()
 	-- Move between popups
 	local modes = { "n", "i" }
 	for _, mode in ipairs(modes) do
-		self.prompt:map(mode, "<C-k>", function()
+		self.boxes.prompt:map(mode, "<C-k>", function()
 			self.focus_chat()
 		end, { noremap = true, silent = true })
-		self.chat:map(mode, "<C-j>", function()
+		self.boxes.chat:map(mode, "<C-j>", function()
 			self.focus_prompt()
 		end, { noremap = true, silent = true })
 	end
