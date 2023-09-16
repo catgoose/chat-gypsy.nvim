@@ -85,7 +85,6 @@ function Layout.new(ui)
 		self.reset_layout()
 		self.state.mounted = true
 		self.set_ids()
-		self.state.focused_winid = self.state.prompt_winid
 		Log.debug("Configuring boxes")
 		self:configure()
 		if opts.ui.prompt.start_insert then
