@@ -18,7 +18,8 @@ local function build_ui(layout_config)
 
 	local popup_base = vim.tbl_deep_extend("force", cfg.ui.config, {
 		zindex = 50,
-	local prompt = nui_pu(vim.tbl_deep_extend("force", popup_base, {
+	})
+	local prompt_config = vim.tbl_deep_extend("force", popup_base, {
 		buf_options = {
 			filetype = "prompt",
 		},
@@ -28,8 +29,8 @@ local function build_ui(layout_config)
 			},
 		},
 		enter = true,
-	}))
-	local chat = nui_pu(vim.tbl_deep_extend("force", popup_base, {
+	})
+	local chat_config = vim.tbl_deep_extend("force", popup_base, {
 		buf_options = {
 			filetype = "markdown",
 		},
@@ -40,9 +41,10 @@ local function build_ui(layout_config)
 				bottom_align = "right",
 			},
 		},
-	}))
+	})
 
-	local layout_strategy = function(lc)
+	local prompt = nui_pu(prompt_config)
+	local chat = nui_pu(chat_config)
 		local float = nui_lo(
 			{
 				position = {
