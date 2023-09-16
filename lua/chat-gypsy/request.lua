@@ -1,8 +1,8 @@
 ---@diagnostic disable: undefined-field
 local config = require("chat-gypsy.config")
 local opts = config.opts
-local events = require("chat-gypsy").events
 local Log = require("chat-gypsy").Log
+local Events = require("chat-gypsy").Events
 
 local Request = {}
 Request.__index = Request
@@ -69,7 +69,7 @@ function Request.new()
 			end
 
 			on_chunk(path)
-			events:pub("hook:request:chunk", path)
+			Events:pub("hook:request:chunk", path)
 			table.insert(self.chunks, path)
 			::continue::
 		end
@@ -134,8 +134,8 @@ function Request:query(content, on_response_start, on_response_chunk, on_respons
 	self.on_user_prompt(content)
 
 	local on_start = function()
-		events:pub("hook:request:start", content)
 		Log.debug("query: on_start")
+		Events:pub("hook:request:start", content)
 		on_response_start()
 	end
 

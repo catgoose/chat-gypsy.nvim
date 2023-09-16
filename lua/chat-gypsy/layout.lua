@@ -2,8 +2,8 @@ local nui_lo = require("nui.layout")
 local ev = require("nui.utils.autocmd").event
 local config = require("chat-gypsy.config")
 local cfg, dev, opts = config.cfg, config.dev, config.opts
-local events = require("chat-gypsy").events
 local Log = require("chat-gypsy").Log
+local Events = require("chat-gypsy").Events
 
 local Layout = {}
 Layout.__index = Layout
@@ -92,7 +92,7 @@ function Layout.new(ui)
 		self.layout:unmount()
 		self.mounted = false
 		self.hidden = false
-		events:pub("layout:unmount")
+		Events:pub("layout:unmount")
 	end
 	self.hide = function()
 		self.layout:hide()
@@ -173,7 +173,7 @@ function Layout:configure()
 		local on_complete = function(chunks)
 			Log.debug(string.format("on_complete: chunks: %s", vim.inspect(chunks)))
 			newl(self.chat_bufnr, 2)
-			events:pub("hook:request:complete", chat_lines)
+			Events:pub("hook:request:complete", chat_lines)
 			vim.cmd.undojoin()
 		end
 
