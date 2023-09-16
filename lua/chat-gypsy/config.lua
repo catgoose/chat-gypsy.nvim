@@ -1,17 +1,64 @@
 local log_levels = { "trace", "debug", "info", "warn", "error", "fatal" }
 local default_log_level = "warn"
+local Events = require("chat-gypsy").Events
 
 local Config = {}
-
-local events = require("chat-gypsy").events
 
 Config.cfg = {
 	plugin = "gypsy",
 	log_level = default_log_level,
 	dev = false,
+	--  TODO: 2023-09-15 - move some of this to opts so it can be configured by
+	--  plugin consumer
 	ui = {
-		prompt_height = 5,
-		max_lines = 6,
+		config = {
+			zindex = 50,
+			border = {
+				style = "rounded",
+				text = {
+					top_align = "left",
+				},
+				padding = {
+					top = 1,
+					left = 2,
+					right = 2,
+				},
+			},
+			win_options = {
+				cursorline = false,
+				winblend = 5,
+				winhighlight = "Normal:Normal,FloatBorder:FloatBorder",
+				wrap = true,
+			},
+		},
+		layout = {
+			left = {
+				prompt_height = 8,
+				size = {
+					width = "35%",
+					height = "100%",
+				},
+				position = {
+					row = "0%",
+					col = "0%",
+				},
+			},
+			right = {
+				prompt_height = 8,
+				size = {
+					width = "35%",
+					height = "100%",
+				},
+				position = {
+					row = "0%",
+					col = "100%",
+				},
+			},
+			float = {
+				prompt_height = 5,
+				max_lines = 6,
+			},
+		},
 	},
 }
 
@@ -53,7 +100,7 @@ Config.dev = Config.opts.dev_opts
 local event_hooks = function()
 	local request = Config.opts.hooks.request
 	for hook, _ in pairs(request) do
-		events:sub("hook:request:" .. hook, request[hook])
+		Events:sub("hook:request:" .. hook, request[hook])
 	end
 end
 

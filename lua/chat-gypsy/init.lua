@@ -1,22 +1,28 @@
 local Gypsy = {}
 
-Gypsy.log = {}
-Gypsy.events = require("chat-gypsy.events").new()
+Gypsy.Log = {}
+Gypsy.Events = require("chat-gypsy.events").new()
 
 Gypsy.setup = function(opts)
 	local cfg = require("chat-gypsy.config")
 	cfg.init(opts)
 
-	Gypsy.log = require("chat-gypsy.logger").init()
+	Gypsy.Log = require("chat-gypsy.logger").init()
 	require("chat-gypsy.usercmd").init()
 
 	if cfg.opts.dev then
-		Gypsy.log.debug("Gypsy:setup: dev mode enabled")
+		Gypsy.Log.debug("Gypsy:setup: dev mode enabled")
 	end
 end
 
 local chat = {}
 local chats = {}
+
+Gypsy.Events:sub("layout:unmount", function()
+	Gypsy.Log.debug("Events: layout:unmount")
+	chat = {}
+	chats = {}
+end)
 
 Gypsy.toggle = function()
 	if #chats == 0 then
@@ -26,16 +32,16 @@ Gypsy.toggle = function()
 	if #chats == 1 then
 		chat = chats[1]
 		local layout = chat.layout
-		if layout.mounted then
-			if not layout.hidden and not layout.is_focused() then
+		if layout.state.mounted then
+			if not layout.state.hidden and not layout.is_focused() then
 				layout.focus_last_win()
 				return
 			end
-			if layout.hidden and not layout.is_focused() then
+			if layout.state.hidden and not layout.is_focused() then
 				layout.show()
 				return
 			end
-			if not layout.hidden and layout.is_focused() then
+			if not layout.state.hidden and layout.is_focused() then
 				layout.hide()
 				return
 			end
@@ -49,9 +55,9 @@ end
 Gypsy.open = function()
 	if #chats == 0 then
 		chat = require("chat-gypsy.ui").new()
-		if not chat.layout.mounted then
+		if not chat.layout.state.mounted then
 			table.insert(chats, chat)
-			chat.layout:mount()
+			chat.layout.mount()
 		end
 	end
 end
@@ -60,7 +66,7 @@ Gypsy.hide = function()
 	if #chats == 1 then
 		chat = chats[1]
 		local layout = chat.layout
-		if layout.mounted and not layout.hidden then
+		if layout.state.mounted and not layout.state.hidden then
 			layout.hide()
 		end
 	end
@@ -71,7 +77,7 @@ Gypsy.show = function()
 		chat = chats[1]
 		chat = table.remove(chats, 1)
 		local layout = chat.layout
-		if layout.mounted and layout.hidden then
+		if layout.state.mounted and layout.state.hidden then
 			layout.show()
 		end
 	end
@@ -79,7 +85,7 @@ end
 
 Gypsy.close = function()
 	chat = table.remove(chats, 1)
-	if chat.layout.mounted then
+	if chat.layout.state.mounted then
 		chat.layout.unmount()
 	end
 end
