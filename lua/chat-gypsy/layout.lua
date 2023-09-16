@@ -4,27 +4,31 @@ local config = require("chat-gypsy.config")
 local cfg, dev, opts = config.cfg, config.dev, config.opts
 local Log = require("chat-gypsy").Log
 local Events = require("chat-gypsy").Events
+local utils = require("chat-gypsy.utils")
 
 local Layout = {}
 Layout.__index = Layout
 
+local default_state = {
+	hidden = false,
+	focused_win = "prompt",
+	prompt_winid = 0,
+	chat_winid = 0,
+	prompt_bufnr = 0,
+	chat_bufnr = 0,
+	mounted = false,
+	layout = "float",
+}
+
 function Layout.new(ui)
 	local self = setmetatable({}, Layout)
-	self.openai = require("chat-gypsy.openai").new()
 	self.layout = ui.layout
 	self.boxes = ui.boxes
-	self.chat = self.boxes.chat
-	self.prompt = self.boxes.prompt
-	self.state = {
-		hidden = false,
-		focused_win = "prompt",
-		prompt_winid = 0,
-		chat_winid = 0,
-		prompt_bufnr = 0,
-		chat_bufnr = 0,
-		mounted = false,
-		layout = ui.layout_config.layout,
-	}
+	self.reset_layout = function()
+		self.state = utils.deepcopy(default_state)
+		self.openai = require("chat-gypsy.openai").new()
+	end
+	self.reset_layout()
 
 	self.focus_chat = function()
 		vim.api.nvim_set_current_win(self.state.chat_winid)
@@ -78,6 +82,7 @@ function Layout.new(ui)
 	self.mount = function()
 		Log.debug("Mounting UI")
 		self.layout:mount()
+		self.reset_layout()
 		self.state.mounted = true
 		self.set_ids()
 		self.state.focused_winid = self.state.prompt_winid
@@ -89,8 +94,7 @@ function Layout.new(ui)
 	end
 	self.unmount = function()
 		self.layout:unmount()
-		self.state.mounted = false
-		self.state.hidden = false
+		self.reset_layout()
 		Events:pub("layout:unmount")
 	end
 	self.hide = function()
