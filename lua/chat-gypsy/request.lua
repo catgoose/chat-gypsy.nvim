@@ -2,6 +2,7 @@
 local config = require("chat-gypsy.config")
 local opts = config.opts
 local Log = require("chat-gypsy").Log
+local utils = require("chat-gypsy.utils")
 local Events = require("chat-gypsy").Events
 
 local Request = {}
@@ -11,7 +12,7 @@ function Request.new()
 	local self = setmetatable({}, Request)
 	self.chunks = {}
 	self.content = ""
-	self.openai_params = opts.openai_params
+	self.openai_params = utils.deepcopy(opts.openai_params)
 	self.join_content = function()
 		self.content = table.concat(self.chunks, "")
 	end
