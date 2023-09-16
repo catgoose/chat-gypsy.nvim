@@ -16,27 +16,8 @@ local function build_ui(layout_config)
 		layout_config.layout = "float"
 	end
 
-	local popup_base = {
+	local popup_base = vim.tbl_deep_extend("force", cfg.ui.config, {
 		zindex = 50,
-		focusable = true,
-		border = {
-			style = "rounded",
-			text = {
-				top_align = "left",
-			},
-			padding = {
-				top = 1,
-				left = 2,
-				right = 2,
-			},
-		},
-		win_options = {
-			cursorline = false,
-			winblend = 5,
-			winhighlight = "Normal:Normal,FloatBorder:FloatBorder",
-			wrap = true,
-		},
-	}
 	local prompt = nui_pu(vim.tbl_deep_extend("force", popup_base, {
 		buf_options = {
 			filetype = "prompt",
