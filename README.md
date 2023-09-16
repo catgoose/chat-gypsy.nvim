@@ -1,5 +1,25 @@
 # Gypsy
 
+## About
+
+### Meta-Synthesis
+
+Chat-Gypsy is an intra-textual conversational apparatus, designed to facilitate
+unidirectional code-editor synergies with OpenAI's GPT modules.
+
+### Protocol Specifications
+
+1. **Poly-Morphic Layouts**: Dual-axis interface vectors enable floating, left-
+   aligned, and right-aligned GUI paradigms.
+2. **Dynamic Meta-UI**: Real-time UI manipulability by generative algorithms
+   ensures a fluidic dialogue matrix.
+3. **OpenAI Unification Schema**: Seamless integration protocol for request-
+   response loop execution with OpenAI's proprietary lexico-syntactic engines.
+4. **Hyper-Configurability**: Over-engineered parameterization metrics for
+   subjective UI/UX equilibrium modulation.
+5. **Intuitive Operability**: Minimally-intrusive commandlets for instantiation,
+   visibility toggling, and focus transference in multi-windowed conversational environments.
+
 ## Usage
 
 ### Calling with `:lua require('chat-gypsy)...`
@@ -42,54 +62,102 @@ it will not clear the prompt buffer until the previous request is completed.
 ```lua
 -- defaults
 local opts = {
-    openai_key = os.getenv("OPENAI_API_KEY"),
-    openai_params = {
-        model = "gpt-3.5-turbo",
-        temperature = 0.7,
-        messages = {
-            {
-            role = "system",
-            content = "",
-            },
-        },
+  openai_key = os.getenv("OPENAI_API_KEY"),
+  openai_params = {
+    model = "gpt-3.5-turbo",
+    temperature = 0.7,
+    messages = {
+      {
+        role = "system",
+        content = "",
+      },
     },
-    log_level = "warn", -- trace, debug, info, warn, error, fatal
-    ui = {
-        prompt = {
-            start_insert = true,
-        },
+  },
+  log_level = "warn", -- trace, debug, info, warn, error, fatal
+  ui = {
+    prompt = {
+      start_insert = true,
     },
-    hooks = {
-        request = {
-            start = function(--[[content]]) end,
-            chunk = function(--[[chunk]]) end,
-            complete = function(--[[response]]) end,
+    config = {
+      zindex = 50,
+      border = {
+        style = "rounded",
+        text = {
+          top_align = "left",
         },
+        padding = {
+          top = 1,
+          left = 2,
+          right = 2,
+        },
+      },
+      win_options = {
+        cursorline = false,
+        winblend = 5,
+        winhighlight = "Normal:Normal,FloatBorder:FloatBorder",
+        wrap = true,
+      },
     },
+    layout = {
+      left = {
+        prompt_height = 8,
+        size = {
+          width = "35%",
+          height = "100%",
+        },
+        position = {
+          row = "0%",
+          col = "0%",
+        },
+      },
+      right = {
+        prompt_height = 8,
+        size = {
+          width = "35%",
+          height = "100%",
+        },
+        position = {
+          row = "0%",
+          col = "100%",
+        },
+      },
+      float = {
+        prompt_height = 5,
+        max_lines = 6,
+      },
+    },
+  },
+  hooks = {
+    request = {
+      start = function(--[[content]]) end,
+      chunk = function(--[[chunk]]) end,
+      complete = function(--[[response]]) end,
+    },
+  },
 }
 
 return {
-    opts = opts,
-    dependencies = {
-        "nvim-lua/plenary.nvim",
-        "MunifTanjim/nui.nvim",
+  opts = opts,
+  dependencies = {
+    "nvim-lua/plenary.nvim",
+    "MunifTanjim/nui.nvim",
+  },
+  keys = {
+    {
+    "<leader>x",
+    "<cmd>GypsyToggle<cr>"
+      --"<cmd>lua require('chat-gypsy').toggle()<cr>",
+    desc = "Gypsy",
+    mode = { "n" }
     },
-    keys = {
-        {
-            "<leader>x",
-            "<cmd>GypsyToggle<cr>"
-            --"<cmd>lua require('chat-gypsy').toggle()<cr>",
-            desc = "Gypsy",
-            mode = { "n" }
-        },
-    },
-    cmd = {
-        "GypsyToggle",
-        "GypsyOpen",
-        "GypsyClose",
-        "GypsyOpen",
-        "GypsyCLose"
-    }
+  },
+  cmd = {
+    "GypsyToggle",
+    "GypsyOpen",
+    "GypsyClose",
+    "GypsyOpen",
+    "GypsyCLose"
+  }
 }
 ```
 
@@ -115,8 +183,8 @@ Several event hooks are provided for customization:
 --- ... rest of lazy config
 ```
 
-| Hook             | Arguments | Description                           |
-| ---------------- | --------- | ------------------------------------- |
-| request.start    | content   | Content is sent from user prompt      |
-| request.chunk    | chunk     | Chunk is received from request stream |
-| request.complete | response  | Response is received from openai      |
+| Hook             | Argument(s) | Description                           |
+| ---------------- | ----------- | ------------------------------------- |
+| request.start    | content     | Content is sent from user prompt      |
+| request.chunk    | chunk       | Chunk is received from request stream |
+| request.complete | response    | Response is received from openai      |

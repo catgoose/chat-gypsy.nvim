@@ -4,13 +4,29 @@ local Events = require("chat-gypsy").Events
 
 local Config = {}
 
-Config.cfg = {
-	plugin = "gypsy",
+Config.plugin_cfg = {
+	name = "gypsy",
 	log_level = default_log_level,
 	dev = false,
-	--  TODO: 2023-09-15 - move some of this to opts so it can be configured by
-	--  plugin consumer
+}
+
+Config.opts = {
+	openai_key = os.getenv("OPENAI_API_KEY"),
+	openai_params = {
+		model = "gpt-3.5-turbo",
+		temperature = 0.7,
+		stream = true,
+		messages = {
+			{
+				role = "system",
+				content = "You are gypsy, a chatbot that can talk to anyone.",
+			},
+		},
+	},
 	ui = {
+		prompt = {
+			start_insert = true,
+		},
 		config = {
 			zindex = 50,
 			border = {
@@ -60,26 +76,6 @@ Config.cfg = {
 			},
 		},
 	},
-}
-
-Config.opts = {
-	openai_key = os.getenv("OPENAI_API_KEY"),
-	openai_params = {
-		model = "gpt-3.5-turbo",
-		temperature = 0.7,
-		stream = true,
-		messages = {
-			{
-				role = "system",
-				content = "You are gypsy, a chatbot that can talk to anyone.",
-			},
-		},
-	},
-	ui = {
-		prompt = {
-			start_insert = true,
-		},
-	},
 	hooks = {
 		request = {
 			start = function(--[[content]]) end,
@@ -97,7 +93,7 @@ Config.opts = {
 
 Config.dev = Config.opts.dev_opts
 
-local event_hooks = function()
+local init_event_hooks = function()
 	local request = Config.opts.hooks.request
 	for hook, _ in pairs(request) do
 		Events:sub("hook:request:" .. hook, request[hook])
@@ -111,11 +107,11 @@ Config.init = function(opts)
 		local err_msg = string.format("opts:new: invalid opts: missing openai_key\nopts: %s", vim.inspect(opts))
 		error(err_msg)
 	end
-	Config.cfg.log_level = vim.tbl_contains(log_levels, opts.log_level) and opts.log_level or default_log_level
+	Config.plugin_cfg.log_level = vim.tbl_contains(log_levels, opts.log_level) and opts.log_level or default_log_level
 	Config.opts = opts
 
-	if Config.opts.dev then
-		Config.cfg.dev = true
+	Config.plugin_cfg.dev = Config.plugin_cfg.dev or Config.opts.dev
+	if Config.plugin_cfg.dev then
 		Config.dev = vim.tbl_deep_extend("force", Config.dev, Config.opts.dev_opts)
 		Config.dev.prompt.message = {}
 		for word in Config.dev.prompt.user_prompt:gmatch("[^\n]+") do
@@ -123,7 +119,7 @@ Config.init = function(opts)
 		end
 	end
 
-	event_hooks()
+	init_event_hooks()
 end
 
 return Config

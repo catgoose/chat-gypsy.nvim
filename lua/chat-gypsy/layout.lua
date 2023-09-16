@@ -1,7 +1,7 @@
 local nui_lo = require("nui.layout")
 local ev = require("nui.utils.autocmd").event
 local config = require("chat-gypsy.config")
-local cfg, dev, opts = config.cfg, config.dev, config.opts
+local plugin_cfg, dev, opts = config.plugin_cfg, config.dev, config.opts
 local Log = require("chat-gypsy").Log
 local Events = require("chat-gypsy").Events
 local utils = require("chat-gypsy.utils")
@@ -58,7 +58,7 @@ function Layout.new(ui)
 		end
 		set_winids()
 		set_bufnrs()
-		Log.debug("Setting winids and bufnrs for mounted layout")
+		Log.trace("Setting winids and bufnrs for mounted layout")
 		Log.debug(string.format("chat_winid: %s", self._.chat_winid))
 		Log.debug(string.format("prompt_winid: %s", self._.prompt_winid))
 		Log.debug(string.format("chat_bufnr: %s", self._.chat_bufnr))
@@ -77,12 +77,12 @@ function Layout.new(ui)
 	end
 
 	self.mount = function()
-		Log.debug("Mounting UI")
+		Log.trace("Mounting UI")
 		self.layout:mount()
 		self.reset_layout()
 		self._.mounted = true
 		self.set_ids()
-		Log.debug("Configuring boxes")
+		Log.trace("Configuring boxes")
 		self:configure()
 		if opts.ui.prompt.start_insert then
 			vim.cmd.startinsert()
@@ -171,7 +171,7 @@ function Layout:configure()
 			self.set_cursor(self._.chat_winid, { line_n > 0 and line_n or 1, 0 })
 		end
 		local on_complete = function(chunks)
-			Log.debug(string.format("on_complete: chunks: %s", vim.inspect(chunks)))
+			Log.trace(string.format("on_complete: chunks: %s", vim.inspect(chunks)))
 			newln(2)
 			Events:pub("hook:request:complete", chat_lines)
 			vim.cmd("silent! undojoin")
@@ -180,7 +180,7 @@ function Layout:configure()
 		self.openai:sendPrompt(prompt_lines, on_start, on_chunk, on_complete)
 	end
 
-	if cfg.dev and dev.prompt.enabled then
+	if plugin_cfg.dev and dev.prompt.enabled then
 		prompt_send(dev.prompt.message)
 	end
 
@@ -200,7 +200,7 @@ function Layout:configure()
 	}, function(e)
 		if self._.layout == "float" then
 			local n_lines = vim.api.nvim_buf_line_count(e.buf)
-			local float = cfg.ui.layout.float
+			local float = opts.ui.layout.float
 			n_lines = n_lines < float.max_lines and n_lines or float.max_lines
 			self.layout:update(nui_lo.Box({
 				nui_lo.Box(self.boxes.chat, {
