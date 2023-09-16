@@ -156,20 +156,17 @@ function Layout:configure()
 			self.set_lines(self.state.chat_bufnr, line_n, -1, { line })
 		end
 		local on_chunk = function(chunk)
-			--  TODO: 2023-09-16 - is this check required?
-			if self.boxes.chat.bufnr == self.state.chat_bufnr then
-				if string.match(chunk, "\n") then
-					for _chunk in chunk:gmatch(".") do
-						if string.match(_chunk, "\n") then
-							chat_lines = chat_lines .. "\n"
-							newl(self.state.chat_bufnr)
-						else
-							append(_chunk)
-						end
+			if string.match(chunk, "\n") then
+				for _chunk in chunk:gmatch(".") do
+					if string.match(_chunk, "\n") then
+						chat_lines = chat_lines .. "\n"
+						newln()
+					else
+						append(_chunk)
 					end
-				else
-					append(chunk)
 				end
+			else
+				append(chunk)
 			end
 		end
 		local on_start = function()
