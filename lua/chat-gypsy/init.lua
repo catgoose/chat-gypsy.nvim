@@ -18,7 +18,6 @@ end
 local chat = {}
 local chats = {}
 
-	Gypsy.log.debug("events: layout:unmount")
 	chat = nil
 Gypsy.Events:sub("layout:unmount", function()
 	Gypsy.Log.debug("Events: layout:unmount")
