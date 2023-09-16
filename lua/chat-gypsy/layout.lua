@@ -27,41 +27,41 @@ function Layout.new(ui)
 	self.openai = require("chat-gypsy.openai").new()
 
 	self.focus_chat = function()
-		vim.api.nvim_set_current_win(self.state.chat_winid)
-		self.state.focused_win = "chat"
+		vim.api.nvim_set_current_win(self._.chat_winid)
+		self._.focused_win = "chat"
 	end
 	self.focus_prompt = function()
-		vim.api.nvim_set_current_win(self.state.prompt_winid)
-		self.state.focused_win = "prompt"
+		vim.api.nvim_set_current_win(self._.prompt_winid)
+		self._.focused_win = "prompt"
 	end
 	self.focus_last_win = function()
-		if self.state.focused_win == "chat" then
-			vim.api.nvim_set_current_win(self.state.chat_winid)
+		if self._.focused_win == "chat" then
+			vim.api.nvim_set_current_win(self._.chat_winid)
 		end
-		if self.state.focused_win == "prompt" then
-			vim.api.nvim_set_current_win(self.state.prompt_winid)
+		if self._.focused_win == "prompt" then
+			vim.api.nvim_set_current_win(self._.prompt_winid)
 		end
 	end
 	self.is_focused = function()
-		return vim.tbl_contains({ self.state.prompt_winid, self.state.chat_winid }, vim.api.nvim_get_current_win())
+		return vim.tbl_contains({ self._.prompt_winid, self._.chat_winid }, vim.api.nvim_get_current_win())
 	end
 
 	self.set_ids = function()
 		local set_winids = function()
-			self.state.chat_winid = self.layout._.box.box[1].component.winid
-			self.state.prompt_winid = self.layout._.box.box[2].component.winid
+			self._.chat_winid = self.layout._.box.box[1].component.winid
+			self._.prompt_winid = self.layout._.box.box[2].component.winid
 		end
 		local set_bufnrs = function()
-			self.state.chat_bufnr = self.layout._.box.box[1].component.bufnr
-			self.state.prompt_bufnr = self.layout._.box.box[2].component.bufnr
+			self._.chat_bufnr = self.layout._.box.box[1].component.bufnr
+			self._.prompt_bufnr = self.layout._.box.box[2].component.bufnr
 		end
 		set_winids()
 		set_bufnrs()
 		Log.debug("Setting winids and bufnrs for mounted layout")
-		Log.debug(string.format("chat_winid: %s", self.state.chat_winid))
-		Log.debug(string.format("prompt_winid: %s", self.state.prompt_winid))
-		Log.debug(string.format("chat_bufnr: %s", self.state.chat_bufnr))
-		Log.debug(string.format("prompt_bufnr: %s", self.state.prompt_bufnr))
+		Log.debug(string.format("chat_winid: %s", self._.chat_winid))
+		Log.debug(string.format("prompt_winid: %s", self._.prompt_winid))
+		Log.debug(string.format("chat_bufnr: %s", self._.chat_bufnr))
+		Log.debug(string.format("prompt_bufnr: %s", self._.prompt_bufnr))
 	end
 
 	self.set_lines = function(bufnr, line_start, line_end, lines)
@@ -79,7 +79,7 @@ function Layout.new(ui)
 		Log.debug("Mounting UI")
 		self.layout:mount()
 		self.reset_layout()
-		self.state.mounted = true
+		self._.mounted = true
 		self.set_ids()
 		Log.debug("Configuring boxes")
 		self:configure()
@@ -94,17 +94,17 @@ function Layout.new(ui)
 	end
 	self.hide = function()
 		self.layout:hide()
-		self.state.hidden = true
+		self._.hidden = true
 	end
 	self.show = function()
 		self.layout:show()
-		self.state.hidden = false
+		self._.hidden = false
 		self.set_ids()
 		self.focus_last_win()
 	end
 
 	self.reset_layout = function()
-		self.state = utils.deepcopy(default_state)
+		self._ = utils.deepcopy(default_state)
 		self.set_ids()
 	end
 	self.reset_layout()
@@ -144,14 +144,14 @@ function Layout:configure()
 			for _ = 1, n do
 				line_n = line_n + 1
 				line = ""
-				self.set_lines(self.state.chat_bufnr, line_n, -1, { line })
-				self.set_cursor(self.state.chat_winid, { line_n, 0 })
+				self.set_lines(self._.chat_bufnr, line_n, -1, { line })
+				self.set_cursor(self._.chat_winid, { line_n, 0 })
 			end
 		end
 		local function append(chunk)
 			line = line .. chunk
 			chat_lines = chat_lines .. chunk
-			self.set_lines(self.state.chat_bufnr, line_n, -1, { line })
+			self.set_lines(self._.chat_bufnr, line_n, -1, { line })
 		end
 		local on_chunk = function(chunk)
 			if string.match(chunk, "\n") then
@@ -168,7 +168,7 @@ function Layout:configure()
 			end
 		end
 		local on_start = function()
-			self.set_cursor(self.state.chat_winid, { line_n > 0 and line_n or 1, 0 })
+			self.set_cursor(self._.chat_winid, { line_n > 0 and line_n or 1, 0 })
 		end
 		local on_complete = function(chunks)
 			Log.debug(string.format("on_complete: chunks: %s", vim.inspect(chunks)))
@@ -185,8 +185,8 @@ function Layout:configure()
 	end
 
 	self.boxes.prompt:map("n", "<Enter>", function()
-		local prompt_lines = vim.api.nvim_buf_get_lines(self.state.prompt_bufnr, 0, -1, false)
-		self.set_lines(self.state.prompt_bufnr, 0, -1, {})
+		local prompt_lines = vim.api.nvim_buf_get_lines(self._.prompt_bufnr, 0, -1, false)
+		self.set_lines(self._.prompt_bufnr, 0, -1, {})
 		prompt_send(prompt_lines)
 	end, {})
 	self.boxes.prompt:on(ev.InsertEnter, function()
@@ -198,7 +198,7 @@ function Layout:configure()
 		ev.TextChangedI,
 		ev.TextChanged,
 	}, function(e)
-		if self.state.layout == "float" then
+		if self._.layout == "float" then
 			local n_lines = vim.api.nvim_buf_line_count(e.buf)
 			local float = cfg.ui.layout.float
 			n_lines = n_lines < float.max_lines and n_lines or float.max_lines
