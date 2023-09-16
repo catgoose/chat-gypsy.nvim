@@ -58,7 +58,7 @@ function Layout.new(ui)
 		end
 		set_winids()
 		set_bufnrs()
-		Log.debug("Setting winids and bufnrs for mounted layout")
+		Log.trace("Setting winids and bufnrs for mounted layout")
 		Log.debug(string.format("chat_winid: %s", self._.chat_winid))
 		Log.debug(string.format("prompt_winid: %s", self._.prompt_winid))
 		Log.debug(string.format("chat_bufnr: %s", self._.chat_bufnr))
@@ -77,12 +77,12 @@ function Layout.new(ui)
 	end
 
 	self.mount = function()
-		Log.debug("Mounting UI")
+		Log.trace("Mounting UI")
 		self.layout:mount()
 		self.reset_layout()
 		self._.mounted = true
 		self.set_ids()
-		Log.debug("Configuring boxes")
+		Log.trace("Configuring boxes")
 		self:configure()
 		if opts.ui.prompt.start_insert then
 			vim.cmd.startinsert()
@@ -171,7 +171,7 @@ function Layout:configure()
 			self.set_cursor(self._.chat_winid, { line_n > 0 and line_n or 1, 0 })
 		end
 		local on_complete = function(chunks)
-			Log.debug(string.format("on_complete: chunks: %s", vim.inspect(chunks)))
+			Log.trace(string.format("on_complete: chunks: %s", vim.inspect(chunks)))
 			newln(2)
 			Events:pub("hook:request:complete", chat_lines)
 			vim.cmd("silent! undojoin")

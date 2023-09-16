@@ -120,7 +120,7 @@ function UI.new()
 		layout = "float",
 	}
 	local ui = build_ui(layout_config)
-	Log.debug(string.format("Building new ui with layout config: \n%s", vim.inspect(layout_config)))
+	Log.trace(string.format("Building new ui with layout config: \n%s", vim.inspect(layout_config)))
 	self.layout = require("chat-gypsy.layout").new(ui)
 	return self
 end

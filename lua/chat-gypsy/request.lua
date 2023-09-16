@@ -19,7 +19,7 @@ function Request.new()
 	self.on_assistant_response = function()
 		self.content = table.concat(self.chunks, "")
 		self.join_content()
-		Log.debug("on_user_prompt: " .. self.content)
+		Log.trace("on_user_prompt: " .. self.content)
 		table.insert(self.openai_params.messages, {
 			role = "assistant",
 			content = self.content,
@@ -27,7 +27,7 @@ function Request.new()
 	end
 	self.on_user_prompt = function(content)
 		self.content = content
-		Log.debug("on_user_prompt: " .. self.content)
+		Log.trace("on_user_prompt: " .. self.content)
 		table.insert(self.openai_params.messages, {
 			role = "user",
 			content = self.content,
@@ -135,7 +135,7 @@ function Request:query(content, on_response_start, on_response_chunk, on_respons
 	self.on_user_prompt(content)
 
 	local on_start = function()
-		Log.debug("query: on_start")
+		Log.trace("query: on_start")
 		Events:pub("hook:request:start", content)
 		on_response_start()
 	end
@@ -145,7 +145,7 @@ function Request:query(content, on_response_start, on_response_chunk, on_respons
 	end
 
 	local on_complete = function()
-		Log.debug("query: on_complete")
+		Log.trace("query: on_complete")
 		self.on_assistant_response()
 		Log.debug("query: openai_params: " .. vim.inspect(self.openai_params))
 		on_response_complete(self.chunks)
