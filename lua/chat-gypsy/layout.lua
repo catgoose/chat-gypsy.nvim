@@ -141,12 +141,12 @@ function Layout:configure()
 			return
 		end
 		local chat_lines = ""
-		local function newl(bufnr, n)
+		local function newln(n)
 			n = n or 1
 			for _ = 1, n do
 				line_n = line_n + 1
 				line = ""
-				self.set_lines(bufnr, line_n, -1, { line })
+				self.set_lines(self.state.chat_bufnr, line_n, -1, { line })
 				self.set_cursor(self.state.chat_winid, { line_n, 0 })
 			end
 		end
@@ -177,7 +177,7 @@ function Layout:configure()
 		end
 		local on_complete = function(chunks)
 			Log.debug(string.format("on_complete: chunks: %s", vim.inspect(chunks)))
-			newl(self.state.chat_bufnr, 2)
+			newln(2)
 			Events:pub("hook:request:complete", chat_lines)
 			vim.cmd("silent! undojoin")
 		end
