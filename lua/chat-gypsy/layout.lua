@@ -119,7 +119,7 @@ function Layout:configure()
 
 		box:on(ev.BufLeave, function(e)
 			vim.schedule(function()
-				if box.winid and vim.api.nvim_win_is_valid(box.winid) and self.layout._.mounted == true then
+				if box.winid and vim.api.nvim_win_is_valid(box.winid) then
 					vim.api.nvim_win_set_buf(box.winid, e.buf)
 				end
 			end)
