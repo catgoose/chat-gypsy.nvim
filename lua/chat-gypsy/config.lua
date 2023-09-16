@@ -93,7 +93,7 @@ Config.opts = {
 
 Config.dev = Config.opts.dev_opts
 
-local event_hooks = function()
+local init_event_hooks = function()
 	local request = Config.opts.hooks.request
 	for hook, _ in pairs(request) do
 		Events:sub("hook:request:" .. hook, request[hook])
@@ -119,7 +119,7 @@ Config.init = function(opts)
 		end
 	end
 
-	event_hooks()
+	init_event_hooks()
 end
 
 return Config
