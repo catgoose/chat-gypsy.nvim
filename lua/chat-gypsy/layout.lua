@@ -2,8 +2,8 @@ local nui_lo = require("nui.layout")
 local ev = require("nui.utils.autocmd").event
 local config = require("chat-gypsy.config")
 local cfg, dev, opts = config.cfg, config.dev, config.opts
-local log = require("chat-gypsy").log
 local events = require("chat-gypsy").events
+local Log = require("chat-gypsy").Log
 
 local Layout = {}
 Layout.__index = Layout
@@ -58,11 +58,11 @@ function Layout.new(ui)
 		end
 		set_winids()
 		set_bufnrs()
-		log.debug("Setting winids and bufnrs for mounted layout")
-		log.debug(string.format("chat_winid: %s", self.chat_winid))
-		log.debug(string.format("prompt_winid: %s", self.prompt_winid))
-		log.debug(string.format("chat_bufnr: %s", self.chat_bufnr))
-		log.debug(string.format("prompt_bufnr: %s", self.prompt_bufnr))
+		Log.debug("Setting winids and bufnrs for mounted layout")
+		Log.debug(string.format("chat_winid: %s", self.chat_winid))
+		Log.debug(string.format("prompt_winid: %s", self.prompt_winid))
+		Log.debug(string.format("chat_bufnr: %s", self.chat_bufnr))
+		Log.debug(string.format("prompt_bufnr: %s", self.prompt_bufnr))
 	end
 
 	self.set_lines = function(bufnr, line_start, line_end, lines)
@@ -77,12 +77,12 @@ function Layout.new(ui)
 	end
 
 	self.mount = function()
-		log.debug("Mounting UI")
+		Log.debug("Mounting UI")
 		self.layout:mount()
 		self.mounted = true
 		self.set_ids()
 		self.focused_winid = self.prompt_winid
-		log.debug("Configuring boxes")
+		Log.debug("Configuring boxes")
 		self:configure()
 		if opts.ui.prompt.start_insert then
 			vim.cmd.startinsert()
@@ -171,7 +171,7 @@ function Layout:configure()
 			self.set_cursor(self.chat_winid, { line_n > 0 and line_n or 1, 0 })
 		end
 		local on_complete = function(chunks)
-			log.debug(string.format("on_complete: chunks: %s", vim.inspect(chunks)))
+			Log.debug(string.format("on_complete: chunks: %s", vim.inspect(chunks)))
 			newl(self.chat_bufnr, 2)
 			events:pub("hook:request:complete", chat_lines)
 			vim.cmd.undojoin()

@@ -1,17 +1,17 @@
 local Gypsy = {}
 
-Gypsy.log = {}
 Gypsy.events = require("chat-gypsy.events").new()
+Gypsy.Log = {}
 
 Gypsy.setup = function(opts)
 	local cfg = require("chat-gypsy.config")
 	cfg.init(opts)
 
-	Gypsy.log = require("chat-gypsy.logger").init()
+	Gypsy.Log = require("chat-gypsy.logger").init()
 	require("chat-gypsy.usercmd").init()
 
 	if cfg.opts.dev then
-		Gypsy.log.debug("Gypsy:setup: dev mode enabled")
+		Gypsy.Log.debug("Gypsy:setup: dev mode enabled")
 	end
 end
 
@@ -21,6 +21,7 @@ local chats = {}
 Gypsy.events:sub("layout:unmount", function()
 	Gypsy.log.debug("events: layout:unmount")
 	chat = nil
+	Gypsy.Log.debug("Events: layout:unmount")
 	chats = {}
 end)
 

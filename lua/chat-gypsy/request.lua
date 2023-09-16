@@ -1,8 +1,8 @@
 ---@diagnostic disable: undefined-field
 local config = require("chat-gypsy.config")
 local opts = config.opts
-local log = require("chat-gypsy").log
 local events = require("chat-gypsy").events
+local Log = require("chat-gypsy").Log
 
 local Request = {}
 Request.__index = Request
@@ -18,7 +18,7 @@ function Request.new()
 	self.on_assistant_response = function()
 		self.content = table.concat(self.chunks, "")
 		self.join_content()
-		log.debug("on_user_prompt: " .. self.content)
+		Log.debug("on_user_prompt: " .. self.content)
 		table.insert(self.openai_params.messages, {
 			role = "assistant",
 			content = self.content,
@@ -26,7 +26,7 @@ function Request.new()
 	end
 	self.on_user_prompt = function(content)
 		self.content = content
-		log.debug("on_user_prompt: " .. self.content)
+		Log.debug("on_user_prompt: " .. self.content)
 		table.insert(self.openai_params.messages, {
 			role = "user",
 			content = self.content,
@@ -134,9 +134,8 @@ function Request:query(content, on_response_start, on_response_chunk, on_respons
 	self.on_user_prompt(content)
 
 	local on_start = function()
-		log.debug("query: on_start")
-		log.debug("query: openai_params: " .. vim.inspect(self.openai_params))
 		events:pub("hook:request:start", content)
+		Log.debug("query: on_start")
 		on_response_start()
 	end
 
@@ -145,13 +144,14 @@ function Request:query(content, on_response_start, on_response_chunk, on_respons
 	end
 
 	local on_complete = function()
-		log.debug("query: on_complete")
+		Log.debug("query: on_complete")
 		self.on_assistant_response()
+		Log.debug("query: openai_params: " .. vim.inspect(self.openai_params))
 		on_response_complete(self.chunks)
 	end
 
 	local on_error = function(err)
-		log.warn(string.format("query: on_error: %s", err))
+		Log.warn(string.format("query: on_error: %s", err))
 	end
 
 	self.on_new_request()
