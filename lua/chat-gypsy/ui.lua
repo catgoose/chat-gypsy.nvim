@@ -1,6 +1,6 @@
 local nui_pu, nui_lo = require("nui.popup"), require("nui.layout")
 local config = require("chat-gypsy.config")
-local cfg = config.cfg
+local opts = config.opts
 local Log = require("chat-gypsy").Log
 
 local UI = {}
@@ -16,7 +16,7 @@ local function build_ui(layout_config)
 		layout_config.layout = "float"
 	end
 
-	local popup_base = vim.tbl_deep_extend("force", cfg.ui.config, {
+	local popup_base = vim.tbl_deep_extend("force", opts.ui.config, {
 		zindex = 50,
 	})
 	local prompt_config = vim.tbl_deep_extend("force", popup_base, {
@@ -65,7 +65,7 @@ local function build_ui(layout_config)
 				}),
 				nui_lo.Box(prompt, {
 					size = {
-						height = cfg.ui.layout.float.prompt_height,
+						height = opts.ui.layout.float.prompt_height,
 					},
 				}),
 			}, { dir = "col" })
@@ -75,7 +75,7 @@ local function build_ui(layout_config)
 			if side ~= "left" and side ~= "right" then
 				side = "left"
 			end
-			local side_config = cfg.ui[side]
+			local side_config = opts.ui[side]
 			local side_layout = nui_lo(
 				vim.tbl_deep_extend("force", {
 					relative = "editor",
@@ -83,12 +83,12 @@ local function build_ui(layout_config)
 				nui_lo.Box({
 					nui_lo.Box(chat, {
 						size = {
-							height = vim.o.lines - cfg.ui.layout[side].prompt_height - 1,
+							height = vim.o.lines - opts.ui.layout[side].prompt_height - 1,
 						},
 					}),
 					nui_lo.Box(prompt, {
 						size = {
-							height = cfg.ui.layout[side].prompt_height,
+							height = opts.ui.layout[side].prompt_height,
 						},
 					}),
 				}, { dir = "col" })

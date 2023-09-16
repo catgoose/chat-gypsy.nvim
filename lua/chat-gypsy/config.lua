@@ -8,7 +8,25 @@ Config.cfg = {
 	plugin = "gypsy",
 	log_level = default_log_level,
 	dev = false,
+}
+
+Config.opts = {
+	openai_key = os.getenv("OPENAI_API_KEY"),
+	openai_params = {
+		model = "gpt-3.5-turbo",
+		temperature = 0.7,
+		stream = true,
+		messages = {
+			{
+				role = "system",
+				content = "You are gypsy, a chatbot that can talk to anyone.",
+			},
+		},
+	},
 	ui = {
+		prompt = {
+			start_insert = true,
+		},
 		config = {
 			zindex = 50,
 			border = {
@@ -56,26 +74,6 @@ Config.cfg = {
 				prompt_height = 5,
 				max_lines = 6,
 			},
-		},
-	},
-}
-
-Config.opts = {
-	openai_key = os.getenv("OPENAI_API_KEY"),
-	openai_params = {
-		model = "gpt-3.5-turbo",
-		temperature = 0.7,
-		stream = true,
-		messages = {
-			{
-				role = "system",
-				content = "You are gypsy, a chatbot that can talk to anyone.",
-			},
-		},
-	},
-	ui = {
-		prompt = {
-			start_insert = true,
 		},
 	},
 	hooks = {
