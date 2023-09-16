@@ -110,8 +110,8 @@ Config.init = function(opts)
 	Config.cfg.log_level = vim.tbl_contains(log_levels, opts.log_level) and opts.log_level or default_log_level
 	Config.opts = opts
 
-	if Config.opts.dev then
-		Config.cfg.dev = true
+	Config.cfg.dev = Config.cfg.dev or Config.opts.dev
+	if Config.cfg.dev then
 		Config.dev = vim.tbl_deep_extend("force", Config.dev, Config.opts.dev_opts)
 		Config.dev.prompt.message = {}
 		for word in Config.dev.prompt.user_prompt:gmatch("[^\n]+") do
