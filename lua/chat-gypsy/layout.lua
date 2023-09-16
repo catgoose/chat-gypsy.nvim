@@ -1,7 +1,7 @@
 local nui_lo = require("nui.layout")
 local ev = require("nui.utils.autocmd").event
 local config = require("chat-gypsy.config")
-local cfg, dev, opts = config.cfg, config.dev, config.opts
+local plugin_cfg, dev, opts = config.plugin_cfg, config.dev, config.opts
 local Log = require("chat-gypsy").Log
 local Events = require("chat-gypsy").Events
 local utils = require("chat-gypsy.utils")
@@ -180,7 +180,7 @@ function Layout:configure()
 		self.openai:sendPrompt(prompt_lines, on_start, on_chunk, on_complete)
 	end
 
-	if cfg.dev and dev.prompt.enabled then
+	if plugin_cfg.dev and dev.prompt.enabled then
 		prompt_send(dev.prompt.message)
 	end
 

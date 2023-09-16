@@ -4,8 +4,8 @@ local Events = require("chat-gypsy").Events
 
 local Config = {}
 
-Config.cfg = {
-	plugin = "gypsy",
+Config.plugin_cfg = {
+	name = "gypsy",
 	log_level = default_log_level,
 	dev = false,
 }
@@ -107,11 +107,11 @@ Config.init = function(opts)
 		local err_msg = string.format("opts:new: invalid opts: missing openai_key\nopts: %s", vim.inspect(opts))
 		error(err_msg)
 	end
-	Config.cfg.log_level = vim.tbl_contains(log_levels, opts.log_level) and opts.log_level or default_log_level
+	Config.plugin_cfg.log_level = vim.tbl_contains(log_levels, opts.log_level) and opts.log_level or default_log_level
 	Config.opts = opts
 
-	Config.cfg.dev = Config.cfg.dev or Config.opts.dev
-	if Config.cfg.dev then
+	Config.plugin_cfg.dev = Config.plugin_cfg.dev or Config.opts.dev
+	if Config.plugin_cfg.dev then
 		Config.dev = vim.tbl_deep_extend("force", Config.dev, Config.opts.dev_opts)
 		Config.dev.prompt.message = {}
 		for word in Config.dev.prompt.user_prompt:gmatch("[^\n]+") do
