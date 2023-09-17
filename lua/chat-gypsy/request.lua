@@ -4,6 +4,7 @@ local opts = config.opts
 local Log = require("chat-gypsy").Log
 local utils = require("chat-gypsy.utils")
 local Events = require("chat-gypsy").Events
+local curl = require("plenary.curl")
 
 local Request = {}
 Request.__index = Request
@@ -20,6 +21,9 @@ function Request.new()
 		self.content = table.concat(self.chunks, "")
 		self.join_content()
 		Log.trace("on_user_prompt: " .. self.content)
+		--  TODO: 2023-09-17 - create chat module to handle chat history,
+		--  saving chats to disk, and providing an interface for telescope
+		--  picker to choose from previous chats
 		table.insert(self.openai_params.messages, {
 			role = "assistant",
 			content = self.content,
