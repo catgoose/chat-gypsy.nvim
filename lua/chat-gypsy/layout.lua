@@ -24,7 +24,8 @@ function Layout.new(ui)
 	local self = setmetatable({}, Layout)
 	self.layout = ui.layout
 	self.boxes = ui.boxes
-	self.openai = require("chat-gypsy.openai").new()
+	self.events = require("chat-gypsy.events").new()
+	self.openai = require("chat-gypsy.openai").new(self.events)
 	self._ = {}
 
 	self.focus_chat = function()
@@ -92,6 +93,7 @@ function Layout.new(ui)
 		self.layout:unmount()
 		self.reset_layout()
 		Events:pub("layout:unmount")
+		self.events:pub("layout:unmount")
 	end
 	self.hide = function()
 		self.layout:hide()

@@ -9,10 +9,12 @@ local curl = require("plenary.curl")
 local Request = {}
 Request.__index = Request
 
-function Request.new()
+function Request.new(events)
 	local self = setmetatable({}, Request)
+	self.events = events
 	self.chunks = {}
 	self.content = ""
+	self.handler = nil
 	self.openai_params = utils.deepcopy(opts.openai_params)
 	self.join_content = function()
 		self.content = table.concat(self.chunks, "")
@@ -37,10 +39,14 @@ function Request.new()
 			content = self.content,
 		})
 	end
-	self.on_new_request = function()
+	self.reset = function()
 		self.chunks = {}
-		self.handler = nil
 		self.content = ""
+		if self.handler ~= nil then
+			Log.debug("shutting down plenary.curl handler")
+			self.handler:shutdown()
+			self.handler = nil
+		end
 	end
 
 	self.extract_data = function(chunk, on_chunk)
@@ -104,6 +110,10 @@ function Request.new()
 		})
 	end
 
+	self.events:sub("layout:unmount", function()
+		self:reset()
+	end)
+
 	return self
 end
 
@@ -131,7 +141,7 @@ function Request:query(content, on_response_start, on_response_chunk, on_respons
 		Log.error(string.format("query: on_error: %s", err))
 	end
 
-	self.on_new_request()
+	self.reset()
 	self.post(on_start, on_chunk, on_complete, on_error)
 end
 
