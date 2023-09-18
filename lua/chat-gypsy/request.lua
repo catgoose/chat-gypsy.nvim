@@ -43,7 +43,7 @@ function Request.new(events)
 		self.chunks = {}
 		self.content = ""
 		if self.handler ~= nil then
-			Log.trace("shutting down plenary.curl handler")
+			Log.debug("shutting down plenary.curl handler")
 			self.handler:shutdown()
 			self.handler = nil
 		end
