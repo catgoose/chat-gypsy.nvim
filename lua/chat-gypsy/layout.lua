@@ -150,9 +150,12 @@ function Layout:configure()
 				self.set_cursor(self._.chat_winid, { line_n, 0 })
 			end
 		end
-		--  TODO: 2023-09-17 - When appending text if the current line is longer
-		--  than the window width, insert new line
 		local function append(chunk)
+			local space = vim.api.nvim_win_get_width(self._.chat_winid) - #line
+			if space < #chunk then
+				newln()
+				--  TODO: 2023-09-18 - join lines
+			end
 			line = line .. chunk
 			chat_lines = chat_lines .. chunk
 			self.set_lines(self._.chat_bufnr, line_n, -1, { line })
