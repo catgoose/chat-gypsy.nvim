@@ -72,7 +72,6 @@ function Request.new()
 			on_chunk(path)
 			Events:pub("hook:request:chunk", path)
 			table.insert(self.chunks, path)
-			vim.print(#self.chunks)
 		end
 	end
 
