@@ -47,11 +47,9 @@ function Request.new()
 		for line in chunk:gmatch("[^\n]+") do
 			local data = string.gsub(line, "%s*data:%s*", "")
 			local ok, json = pcall(vim.json.decode, data)
-
 			if not ok then
 				return
 			end
-
 			local path = json.choices
 			if not path then
 				return
@@ -71,7 +69,6 @@ function Request.new()
 			if #self.chunks == 0 and path == "" then
 				return
 			end
-
 			on_chunk(path)
 			Events:pub("hook:request:chunk", path)
 			table.insert(self.chunks, path)
