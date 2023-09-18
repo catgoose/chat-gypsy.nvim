@@ -43,13 +43,16 @@ function Request.new(events)
 		self.chunks = {}
 		self.content = ""
 		if self.handler ~= nil then
-			Log.debug("shutting down plenary.curl handler")
+			Log.trace("shutting down plenary.curl handler")
 			self.handler:shutdown()
 			self.handler = nil
 		end
 	end
 
 	self.extract_data = function(chunk, on_chunk)
+		if not chunk then
+			return
+		end
 		for line in chunk:gmatch("[^\n]+") do
 			local data = string.gsub(line, "%s*data:%s*", "")
 			local ok, json = pcall(vim.json.decode, data)
@@ -93,19 +96,18 @@ function Request.new(events)
 			body = vim.json.encode(self.openai_params),
 			stream = function(_, chunk)
 				if chunk ~= "" then
-					if chunk:match("^data: %[DONE%]") then
-						vim.schedule(function()
-							on_complete()
-						end)
-					else
-						vim.schedule(function()
-							on_chunk(chunk)
-						end)
-					end
+					vim.schedule(function()
+						on_chunk(chunk)
+					end)
 				end
 			end,
 			on_error = on_error,
 		})
+		self.handler:after_success(function()
+			vim.schedule(function()
+				on_complete()
+			end)
+		end)
 	end
 
 	self.events:sub("layout:unmount", function()
