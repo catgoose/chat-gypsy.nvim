@@ -205,7 +205,7 @@ function Layout:configure()
 		if self._.layout == "float" then
 			local n_lines = vim.api.nvim_buf_line_count(e.buf)
 			local float = opts.ui.layout.float
-			n_lines = n_lines < float.max_lines and n_lines or float.max_lines
+			n_lines = n_lines < float.prompt_max_lines and n_lines or float.prompt_max_lines
 			self.layout:update(nui_lo.Box({
 				nui_lo.Box(self.boxes.chat, {
 					size = "100%",
