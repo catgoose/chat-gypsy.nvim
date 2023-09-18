@@ -44,40 +44,39 @@ function Request.new()
 		self.content = ""
 	end
 
-	self.extract_chunk = function(chunk, on_chunk)
+	self.extract_data = function(chunk, on_chunk)
 		for line in chunk:gmatch("[^\n]+") do
-			local raw_json = string.gsub(line, "^data: ", "")
+			local data = string.gsub(line, "%s*data:%s*", "")
+			local ok, json = pcall(vim.json.decode, data)
 
-			table.insert(self.raw_chunks, raw_json)
-			local ok, path = pcall(vim.json.decode, raw_json)
 			if not ok then
-				goto continue
+				return
 			end
 
-			path = path.choices
-			if path == nil then
-				goto continue
+			local path = json.choices
+			if not path then
+				return
 			end
 			path = path[1]
-			if path == nil then
-				goto continue
+			if not path then
+				return
 			end
 			path = path.delta
-			if path == nil then
-				goto continue
+			if not path then
+				return
 			end
 			path = path.content
-			if path == nil then
-				goto continue
+			if not path then
+				return
 			end
 			if #self.chunks == 0 and path == "" then
-				goto continue
+				return
 			end
 
 			on_chunk(path)
 			Events:pub("hook:request:chunk", path)
 			table.insert(self.chunks, path)
-			::continue::
+			vim.print(#self.chunks)
 		end
 	end
 
@@ -104,8 +103,6 @@ function Request.new()
 							on_chunk(chunk)
 						end)
 					end
-				else
-					on_error("chunk is empty")
 				end
 			end,
 			on_error = on_error,
@@ -125,7 +122,7 @@ function Request:query(content, on_response_start, on_response_chunk, on_respons
 	end
 
 	local on_chunk = function(chunk)
-		self.extract_chunk(chunk, on_response_chunk)
+		self.extract_data(chunk, on_response_chunk)
 	end
 
 	local on_complete = function()
