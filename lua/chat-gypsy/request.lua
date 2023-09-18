@@ -39,7 +39,6 @@ function Request.new()
 	end
 	self.on_new_request = function()
 		self.chunks = {}
-		self.raw_chunks = {}
 		self.handler = nil
 		self.content = ""
 	end
