@@ -150,6 +150,8 @@ function Layout:configure()
 				self.set_cursor(self._.chat_winid, { line_n, 0 })
 			end
 		end
+		--  TODO: 2023-09-17 - When appending text if the current line is longer
+		--  than the window width, insert new line
 		local function append(chunk)
 			line = line .. chunk
 			chat_lines = chat_lines .. chunk
