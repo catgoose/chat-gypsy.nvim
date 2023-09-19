@@ -150,7 +150,8 @@ function Layout:configure()
 		if prompt_lines[1] == "" and #prompt_lines == 1 then
 			return
 		end
-		local line_n = 0
+		local line_n = self.chat_last_line()
+		line_n = line_n == 1 and 0 or line_n
 		local line = ""
 		local chat_lines = ""
 		local function newln(n)
@@ -183,7 +184,7 @@ function Layout:configure()
 			end
 		end
 		local on_start = function()
-			self.set_cursor_chat({ line_n > 0 and line_n or 1, 0 })
+			self.set_cursor_chat({ self.chat_last_line(), 0 })
 		end
 		local on_complete = function(chunks)
 			Log.trace(string.format("on_complete: chunks: %s", vim.inspect(chunks)))
@@ -191,8 +192,6 @@ function Layout:configure()
 			Events:pub("hook:request:complete", chat_lines)
 			local ok, tokens = utils.calculate_tokens(chat_lines)
 			if ok then
-				local last_line_number = vim.api.nvim_buf_line_count(self._.chat_bufnr)
-				self.set_lines_chat(last_line_number - 1, last_line_number, { "Tokens: " .. tokens })
 			end
 			vim.cmd("silent! undojoin")
 		end
