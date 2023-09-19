@@ -146,14 +146,15 @@ function Layout:configure()
 			for _ = 1, n do
 				line_n = line_n + 1
 				line = ""
-				self.set_lines(self._.chat_bufnr, line_n, line_n, { line })
+				self.set_lines(self._.chat_bufnr, line_n, line_n + 1, { line, line })
 				self.set_cursor(self._.chat_winid, { line_n + 1, 0 })
 			end
 		end
 		local function append(chunk)
 			line = line .. chunk
 			chat_lines = chat_lines .. line
-			self.set_lines(self._.chat_bufnr, line_n, -1, { line })
+			self.set_lines(self._.chat_bufnr, line_n, line_n + 1, { line })
+			self.set_cursor(self._.chat_winid, { line_n + 1, 0 })
 		end
 		local on_chunk = function(chunk)
 			if string.match(chunk, "\n") then
@@ -174,7 +175,7 @@ function Layout:configure()
 		end
 		local on_complete = function(chunks)
 			Log.trace(string.format("on_complete: chunks: %s", vim.inspect(chunks)))
-			newln(2)
+			newln()
 			Events:pub("hook:request:complete", chat_lines)
 			vim.cmd("silent! undojoin")
 		end
