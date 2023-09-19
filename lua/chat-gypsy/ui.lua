@@ -26,6 +26,8 @@ local function build_ui(layout_config)
 		border = {
 			text = {
 				top = "Prompt",
+				bottom = "Tokens 0",
+				bottom_align = "right",
 			},
 		},
 		enter = true,
@@ -36,7 +38,8 @@ local function build_ui(layout_config)
 		},
 		border = {
 			text = {
-				top = "Chat",
+				top = opts.openai_params.model,
+				top_align = "left",
 				bottom = "Tokens 0",
 				bottom_align = "right",
 			},
