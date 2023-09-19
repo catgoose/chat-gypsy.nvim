@@ -192,6 +192,10 @@ function Layout:configure()
 			Events:pub("hook:request:complete", chat_lines)
 			local ok, tokens = utils.calculate_tokens(chat_lines)
 			if ok then
+				newln()
+				self.set_lines_chat(line_n, -1, { "Tokens: " .. tokens })
+				newln(2)
+				self.set_lines_chat(line_n, -1, { "=================", "" })
 			end
 			vim.cmd("silent! undojoin")
 		end
