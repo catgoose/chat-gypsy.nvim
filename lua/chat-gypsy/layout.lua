@@ -71,10 +71,19 @@ function Layout.new(ui)
 			vim.api.nvim_buf_set_lines(bufnr, line_start, line_end, false, lines)
 		end
 	end
+	self.set_lines_chat = function(line_start, line_end, lines)
+		self.set_lines(self._.chat_bufnr, line_start, line_end, lines)
+	end
+	self.set_lines_prompt = function(line_start, line_end, lines)
+		self.set_lines(self._.prompt_bufnr, line_start, line_end, lines)
+	end
 	self.set_cursor = function(winid, pos)
 		if winid and vim.api.nvim_win_is_valid(winid) then
 			vim.api.nvim_win_set_cursor(winid, pos)
 		end
+	end
+	self.set_cursor_chat = function(pos)
+		self.set_cursor(self._.chat_winid, pos)
 	end
 
 	self.mount = function()
@@ -146,15 +155,15 @@ function Layout:configure()
 			for _ = 1, n do
 				line_n = line_n + 1
 				line = ""
-				self.set_lines(self._.chat_bufnr, line_n, line_n + 1, { line, line })
-				self.set_cursor(self._.chat_winid, { line_n + 1, 0 })
+				self.set_lines_chat(line_n, line_n + 1, { line, line })
+				self.set_cursor_chat({ line_n + 1, 0 })
 			end
 		end
 		local function append(chunk)
 			line = line .. chunk
 			chat_lines = chat_lines .. line
-			self.set_lines(self._.chat_bufnr, line_n, line_n + 1, { line })
-			self.set_cursor(self._.chat_winid, { line_n + 1, 0 })
+			self.set_lines_chat(line_n, line_n + 1, { line })
+			self.set_cursor_chat({ line_n + 1, 0 })
 		end
 		local on_chunk = function(chunk)
 			if string.match(chunk, "\n") then
@@ -171,7 +180,7 @@ function Layout:configure()
 			end
 		end
 		local on_start = function()
-			self.set_cursor(self._.chat_winid, { line_n > 0 and line_n or 1, 0 })
+			self.set_cursor_chat({ line_n > 0 and line_n or 1, 0 })
 		end
 		local on_complete = function(chunks)
 			Log.trace(string.format("on_complete: chunks: %s", vim.inspect(chunks)))
@@ -180,7 +189,7 @@ function Layout:configure()
 			local ok, tokens = utils.calculate_tokens(chat_lines)
 			if ok then
 				local last_line_number = vim.api.nvim_buf_line_count(self._.chat_bufnr)
-				self.set_lines(self._.chat_bufnr, last_line_number - 1, last_line_number, { "Tokens: " .. tokens })
+				self.set_lines_chat(last_line_number - 1, last_line_number, { "Tokens: " .. tokens })
 			end
 			vim.cmd("silent! undojoin")
 		end
@@ -194,7 +203,7 @@ function Layout:configure()
 
 	self.boxes.prompt:map("n", "<Enter>", function()
 		local prompt_lines = vim.api.nvim_buf_get_lines(self._.prompt_bufnr, 0, -1, false)
-		self.set_lines(self._.prompt_bufnr, 0, -1, {})
+		self.set_lines_prompt(0, -1, {})
 		prompt_send(prompt_lines)
 	end, {})
 	self.boxes.prompt:on(ev.InsertEnter, function()
