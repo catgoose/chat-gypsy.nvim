@@ -66,15 +66,27 @@ function Layout.new(ui)
 		Log.trace(string.format("prompt_bufnr: %s", self._.prompt_bufnr))
 	end
 
-	self.set_lines = function(bufnr, line_start, line_end, lines)
+	local set_lines = function(bufnr, line_start, line_end, lines)
 		if bufnr and vim.api.nvim_buf_is_valid(bufnr) then
 			vim.api.nvim_buf_set_lines(bufnr, line_start, line_end, false, lines)
 		end
 	end
-	self.set_cursor = function(winid, pos)
+	self.set_lines_chat = function(line_start, line_end, lines)
+		set_lines(self._.chat_bufnr, line_start, line_end, lines)
+	end
+	self.set_lines_prompt = function(line_start, line_end, lines)
+		set_lines(self._.prompt_bufnr, line_start, line_end, lines)
+	end
+	local set_cursor = function(winid, pos)
 		if winid and vim.api.nvim_win_is_valid(winid) then
 			vim.api.nvim_win_set_cursor(winid, pos)
 		end
+	end
+	self.set_cursor_chat = function(pos)
+		set_cursor(self._.chat_winid, pos)
+	end
+	self.chat_last_line = function()
+		return vim.api.nvim_buf_line_count(self._.chat_bufnr)
 	end
 
 	self.mount = function()
@@ -138,7 +150,8 @@ function Layout:configure()
 		if prompt_lines[1] == "" and #prompt_lines == 1 then
 			return
 		end
-		local line_n = 0
+		local line_n = self.chat_last_line()
+		line_n = line_n == 1 and 0 or line_n
 		local line = ""
 		local chat_lines = ""
 		local function newln(n)
@@ -146,14 +159,15 @@ function Layout:configure()
 			for _ = 1, n do
 				line_n = line_n + 1
 				line = ""
-				self.set_lines(self._.chat_bufnr, line_n, line_n, { line })
-				self.set_cursor(self._.chat_winid, { line_n + 1, 0 })
+				self.set_lines_chat(line_n, line_n + 1, { line, line })
+				self.set_cursor_chat({ line_n + 1, 0 })
 			end
 		end
 		local function append(chunk)
 			line = line .. chunk
 			chat_lines = chat_lines .. line
-			self.set_lines(self._.chat_bufnr, line_n, -1, { line })
+			self.set_lines_chat(line_n, line_n + 1, { line })
+			self.set_cursor_chat({ line_n + 1, 0 })
 		end
 		local on_chunk = function(chunk)
 			if string.match(chunk, "\n") then
@@ -170,12 +184,19 @@ function Layout:configure()
 			end
 		end
 		local on_start = function()
-			self.set_cursor(self._.chat_winid, { line_n > 0 and line_n or 1, 0 })
+			self.set_cursor_chat({ self.chat_last_line(), 0 })
 		end
 		local on_complete = function(chunks)
 			Log.trace(string.format("on_complete: chunks: %s", vim.inspect(chunks)))
-			newln(2)
+			newln()
 			Events:pub("hook:request:complete", chat_lines)
+			local ok, tokens = utils.calculate_tokens(chat_lines)
+			if ok then
+				newln()
+				self.set_lines_chat(line_n, -1, { "Tokens: " .. tokens })
+				newln(2)
+				self.set_lines_chat(line_n, -1, { "=================", "" })
+			end
 			vim.cmd("silent! undojoin")
 		end
 
@@ -188,7 +209,7 @@ function Layout:configure()
 
 	self.boxes.prompt:map("n", "<Enter>", function()
 		local prompt_lines = vim.api.nvim_buf_get_lines(self._.prompt_bufnr, 0, -1, false)
-		self.set_lines(self._.prompt_bufnr, 0, -1, {})
+		self.set_lines_prompt(0, -1, {})
 		prompt_send(prompt_lines)
 	end, {})
 	self.boxes.prompt:on(ev.InsertEnter, function()

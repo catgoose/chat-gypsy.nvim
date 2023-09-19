@@ -36,9 +36,8 @@ local function build_ui(layout_config)
 		},
 		border = {
 			text = {
-				top = "Chat",
-				bottom = "Tokens 0",
-				bottom_align = "right",
+				top = opts.openai_params.model,
+				top_align = "left",
 			},
 		},
 	})
