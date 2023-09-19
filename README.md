@@ -73,7 +73,7 @@ local opts = {
       },
       win_options = {
         cursorline = false,
-        winblend = 5,
+        winblend = 0,
         winhighlight = "Normal:Normal,FloatBorder:FloatBorder",
         wrap = true,
       },
