@@ -24,7 +24,8 @@ function Layout.new(ui)
 	local self = setmetatable({}, Layout)
 	self.layout = ui.layout
 	self.boxes = ui.boxes
-	self.openai = require("chat-gypsy.openai").new()
+	self.events = require("chat-gypsy.events").new()
+	self.openai = require("chat-gypsy.openai").new(self.events)
 	self._ = {}
 
 	self.focus_chat = function()
@@ -59,10 +60,10 @@ function Layout.new(ui)
 		set_winids()
 		set_bufnrs()
 		Log.trace("Setting winids and bufnrs for mounted layout")
-		Log.debug(string.format("chat_winid: %s", self._.chat_winid))
-		Log.debug(string.format("prompt_winid: %s", self._.prompt_winid))
-		Log.debug(string.format("chat_bufnr: %s", self._.chat_bufnr))
-		Log.debug(string.format("prompt_bufnr: %s", self._.prompt_bufnr))
+		Log.trace(string.format("chat_winid: %s", self._.chat_winid))
+		Log.trace(string.format("prompt_winid: %s", self._.prompt_winid))
+		Log.trace(string.format("chat_bufnr: %s", self._.chat_bufnr))
+		Log.trace(string.format("prompt_bufnr: %s", self._.prompt_bufnr))
 	end
 
 	self.set_lines = function(bufnr, line_start, line_end, lines)
@@ -92,6 +93,7 @@ function Layout.new(ui)
 		self.layout:unmount()
 		self.reset_layout()
 		Events:pub("layout:unmount")
+		self.events:pub("layout:unmount")
 	end
 	self.hide = function()
 		self.layout:hide()
@@ -132,32 +134,32 @@ function Layout:configure()
 		end)
 	end
 
-	local line_n = 0
-	local line = ""
 	local prompt_send = function(prompt_lines)
 		if prompt_lines[1] == "" and #prompt_lines == 1 then
 			return
 		end
+		local line_n = 0
+		local line = ""
 		local chat_lines = ""
 		local function newln(n)
 			n = n or 1
 			for _ = 1, n do
 				line_n = line_n + 1
 				line = ""
-				self.set_lines(self._.chat_bufnr, line_n, -1, { line })
-				self.set_cursor(self._.chat_winid, { line_n, 0 })
+				self.set_lines(self._.chat_bufnr, line_n, line_n, { line })
+				self.set_cursor(self._.chat_winid, { line_n + 1, 0 })
 			end
 		end
 		local function append(chunk)
 			line = line .. chunk
-			chat_lines = chat_lines .. chunk
+			chat_lines = chat_lines .. line
 			self.set_lines(self._.chat_bufnr, line_n, -1, { line })
 		end
 		local on_chunk = function(chunk)
 			if string.match(chunk, "\n") then
 				for _chunk in chunk:gmatch(".") do
 					if string.match(_chunk, "\n") then
-						chat_lines = chat_lines .. "\n"
+						chat_lines = chat_lines .. _chunk
 						newln()
 					else
 						append(_chunk)
@@ -201,7 +203,7 @@ function Layout:configure()
 		if self._.layout == "float" then
 			local n_lines = vim.api.nvim_buf_line_count(e.buf)
 			local float = opts.ui.layout.float
-			n_lines = n_lines < float.max_lines and n_lines or float.max_lines
+			n_lines = n_lines < float.prompt_max_lines and n_lines or float.prompt_max_lines
 			self.layout:update(nui_lo.Box({
 				nui_lo.Box(self.boxes.chat, {
 					size = "100%",

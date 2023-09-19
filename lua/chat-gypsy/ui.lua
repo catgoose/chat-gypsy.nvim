@@ -49,14 +49,8 @@ local function build_ui(layout_config)
 	local layout_strategy = function(_layout_config)
 		local float = nui_lo(
 			{
-				position = {
-					row = "20%",
-					col = "50%",
-				},
-				size = {
-					width = "70%",
-					height = "70%",
-				},
+				position = opts.ui.layout.float.position,
+				size = opts.ui.layout.float.size,
 				relative = "editor",
 			},
 			nui_lo.Box({

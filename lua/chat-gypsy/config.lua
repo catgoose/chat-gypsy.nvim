@@ -42,7 +42,7 @@ Config.opts = {
 			},
 			win_options = {
 				cursorline = false,
-				winblend = 5,
+				winblend = 0,
 				winhighlight = "Normal:Normal,FloatBorder:FloatBorder",
 				wrap = true,
 			},
@@ -72,7 +72,15 @@ Config.opts = {
 			},
 			float = {
 				prompt_height = 5,
-				max_lines = 6,
+				prompt_max_lines = 6,
+				position = {
+					row = "20%",
+					col = "50%",
+				},
+				size = {
+					width = "70%",
+					height = "70%",
+				},
 			},
 		},
 	},

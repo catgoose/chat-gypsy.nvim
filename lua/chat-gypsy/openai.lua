@@ -3,10 +3,10 @@ local Log = require("chat-gypsy").Log
 local OpenAI = {}
 OpenAI.__index = OpenAI
 
-function OpenAI.new()
+function OpenAI.new(events)
 	local self = setmetatable({}, OpenAI)
 	self.queue = require("chat-gypsy.queue").new()
-	self.request = require("chat-gypsy.request").new()
+	self.request = require("chat-gypsy.request").new(events)
 	return self
 end
 
