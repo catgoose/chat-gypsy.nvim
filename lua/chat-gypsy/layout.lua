@@ -66,24 +66,27 @@ function Layout.new(ui)
 		Log.trace(string.format("prompt_bufnr: %s", self._.prompt_bufnr))
 	end
 
-	self.set_lines = function(bufnr, line_start, line_end, lines)
+	local set_lines = function(bufnr, line_start, line_end, lines)
 		if bufnr and vim.api.nvim_buf_is_valid(bufnr) then
 			vim.api.nvim_buf_set_lines(bufnr, line_start, line_end, false, lines)
 		end
 	end
 	self.set_lines_chat = function(line_start, line_end, lines)
-		self.set_lines(self._.chat_bufnr, line_start, line_end, lines)
+		set_lines(self._.chat_bufnr, line_start, line_end, lines)
 	end
 	self.set_lines_prompt = function(line_start, line_end, lines)
-		self.set_lines(self._.prompt_bufnr, line_start, line_end, lines)
+		set_lines(self._.prompt_bufnr, line_start, line_end, lines)
 	end
-	self.set_cursor = function(winid, pos)
+	local set_cursor = function(winid, pos)
 		if winid and vim.api.nvim_win_is_valid(winid) then
 			vim.api.nvim_win_set_cursor(winid, pos)
 		end
 	end
 	self.set_cursor_chat = function(pos)
-		self.set_cursor(self._.chat_winid, pos)
+		set_cursor(self._.chat_winid, pos)
+	end
+	self.chat_last_line = function()
+		return vim.api.nvim_buf_line_count(self._.chat_bufnr)
 	end
 
 	self.mount = function()
