@@ -177,6 +177,11 @@ function Layout:configure()
 			Log.trace(string.format("on_complete: chunks: %s", vim.inspect(chunks)))
 			newln()
 			Events:pub("hook:request:complete", chat_lines)
+			local ok, tokens = utils.calculate_tokens(chat_lines)
+			if ok then
+				local last_line_number = vim.api.nvim_buf_line_count(self._.chat_bufnr)
+				self.set_lines(self._.chat_bufnr, last_line_number - 1, last_line_number, { "Tokens: " .. tokens })
+			end
 			vim.cmd("silent! undojoin")
 		end
 
