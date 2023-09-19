@@ -134,37 +134,32 @@ function Layout:configure()
 		end)
 	end
 
-	local line_n = 0
-	local line = ""
 	local prompt_send = function(prompt_lines)
 		if prompt_lines[1] == "" and #prompt_lines == 1 then
 			return
 		end
+		local line_n = 0
+		local line = ""
 		local chat_lines = ""
 		local function newln(n)
 			n = n or 1
 			for _ = 1, n do
 				line_n = line_n + 1
 				line = ""
-				self.set_lines(self._.chat_bufnr, line_n, -1, { line })
-				self.set_cursor(self._.chat_winid, { line_n, 0 })
+				self.set_lines(self._.chat_bufnr, line_n, line_n, { line })
+				self.set_cursor(self._.chat_winid, { line_n + 1, 0 })
 			end
 		end
 		local function append(chunk)
-			local space = vim.api.nvim_win_get_width(self._.chat_winid) - #line
-			if space < #chunk then
-				newln()
-				--  TODO: 2023-09-18 - join lines
-			end
 			line = line .. chunk
-			chat_lines = chat_lines .. chunk
+			chat_lines = chat_lines .. line
 			self.set_lines(self._.chat_bufnr, line_n, -1, { line })
 		end
 		local on_chunk = function(chunk)
 			if string.match(chunk, "\n") then
 				for _chunk in chunk:gmatch(".") do
 					if string.match(_chunk, "\n") then
-						chat_lines = chat_lines .. "\n"
+						chat_lines = chat_lines .. _chunk
 						newln()
 					else
 						append(_chunk)
