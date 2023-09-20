@@ -28,12 +28,8 @@ function OpenAI:sendPrompt(lines, on_start, on_chunk, on_chunks_complete)
 		end
 
 		self.request:query(msg, on_start, on_chunk, on_complete)
-		local models = self.request:getModels()
-		vim.print(models)
+		self.requery:getModels()
 	end)
 end
 
--- function OpenAI:getModels()
--- 	return self.request:getModels()
--- end
 return OpenAI
