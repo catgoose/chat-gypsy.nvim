@@ -18,6 +18,7 @@ local default_state = {
 	chat_bufnr = 0,
 	mounted = false,
 	layout = "float",
+	current_line = 0,
 }
 
 function Layout.new(ui)
@@ -27,7 +28,6 @@ function Layout.new(ui)
 	self.events = require("chat-gypsy.events").new()
 	self.openai = require("chat-gypsy.openai").new(self.events)
 	self._ = {}
-	self.current_line = 0
 
 	self.focus_chat = function()
 		vim.api.nvim_set_current_win(self._.chat_winid)
@@ -151,23 +151,23 @@ function Layout:configure()
 		if prompt_lines[1] == "" and #prompt_lines == 1 then
 			return
 		end
-		self.current_line = self.current_line == 1 and 0 or self.current_line
+		self._.current_line = self._.current_line == 1 and 0 or self._.current_line
 		local line = ""
 		local chat_lines = ""
 		local function newln(n)
 			n = n or 1
 			for _ = 1, n do
-				self.current_line = self.current_line + 1
+				self._.current_line = self._.current_line + 1
 				line = ""
-				self.set_lines_chat(self.current_line, self.current_line + 1, { line, line })
-				self.set_cursor_chat({ self.current_line + 1, 0 })
+				self.set_lines_chat(self._.current_line, self._.current_line + 1, { line, line })
+				self.set_cursor_chat({ self._.current_line + 1, 0 })
 			end
 		end
 		local function append(chunk)
 			line = line .. chunk
 			chat_lines = chat_lines .. line
-			self.set_lines_chat(self.current_line, self.current_line + 1, { line })
-			self.set_cursor_chat({ self.current_line + 1, 0 })
+			self.set_lines_chat(self._.current_line, self._.current_line + 1, { line })
+			self.set_cursor_chat({ self._.current_line + 1, 0 })
 		end
 		local on_chunk = function(chunk)
 			if string.match(chunk, "\n") then
@@ -184,7 +184,7 @@ function Layout:configure()
 			end
 		end
 		local on_start = function()
-			self.set_cursor_chat({ self.current_line + 1, 0 })
+			self.set_cursor_chat({ self._.current_line + 1, 0 })
 		end
 		local on_complete = function(chunks)
 			Log.trace(string.format("on_complete: chunks: %s", vim.inspect(chunks)))
@@ -196,7 +196,7 @@ function Layout:configure()
 				self.set_lines_chat(line_n, -1, { "================= " .. tokens, "" })
 			end
 			vim.cmd("silent! undojoin")
-			self.set_lines_chat(self.current_line, -1, { hr })
+			self.set_lines_chat(self._.current_line, -1, { hr })
 		end
 
 		self.openai:sendPrompt(prompt_lines, on_start, on_chunk, on_complete)
