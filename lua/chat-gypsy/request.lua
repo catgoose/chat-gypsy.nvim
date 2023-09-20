@@ -13,6 +13,7 @@ function Request.new(events)
 	local self = setmetatable({}, Request)
 	self.events = events
 	self.chunks = {}
+	self.error_chunks = {}
 	self.content = ""
 	self.handler = nil
 	self.openai_params = utils.deepcopy(opts.openai_params)
@@ -41,6 +42,7 @@ function Request.new(events)
 	end
 	self.query_reset = function()
 		self.chunks = {}
+		self.error_chunks = {}
 		self.content = ""
 		if self.handler ~= nil then
 			Log.debug("shutting down plenary.curl handler")
@@ -84,7 +86,16 @@ function Request.new(events)
 		end
 	end
 
-	self.completions = function(on_start, on_chunk, on_complete, on_error)
+	self.extract_error = function(chunk, on_error)
+		table.insert(self.error_chunks, chunk .. "\n")
+		local error = table.concat(self.error_chunks, "")
+		local ok, json = pcall(vim.json.decode, error)
+		if ok then
+			on_error(json)
+		end
+	end
+
+	self.completions = function(on_start, on_chunk, on_chunk_error, on_complete, on_error)
 		on_start()
 		--  TODO: 2023-09-19 - handle errors from openai
 		self.handler = curl.post({
@@ -98,7 +109,12 @@ function Request.new(events)
 			stream = function(_, chunk)
 				if chunk ~= "" then
 					vim.schedule(function()
-						on_chunk(chunk)
+						local has_data = string.match(chunk, "data:")
+						if has_data then
+							on_chunk(chunk)
+						else
+							on_chunk_error(chunk)
+						end
 					end)
 				end
 			end,
@@ -139,11 +155,18 @@ function Request:query(content, on_response_start, on_response_chunk, on_respons
 	end
 
 	local on_error = function(err)
+		if type(err) == "table" then
+			err = vim.inspect(err)
+		end
 		Log.error(string.format("query: on_error: %s", err))
 	end
 
+	local on_chunk_error = function(chunk)
+		self.extract_error(chunk, on_error)
+	end
+
 	self.query_reset()
-	self.completions(on_start, on_chunk, on_complete, on_error)
+	self.completions(on_start, on_chunk, on_chunk_error, on_complete, on_error)
 end
 
 return Request
