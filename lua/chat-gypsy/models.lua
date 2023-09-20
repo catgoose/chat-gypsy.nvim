@@ -15,9 +15,16 @@ local getModels = function()
 			Authorization = "Bearer " .. opts.openai_key,
 		},
 		callback = function(response)
-			local data = vim.json.decode(response.body)
-			for _, model in ipairs(data.data) do
-				table.insert(models, model.id)
+			local body = vim.json.decode(response.body)
+
+			if response.status ~= 200 then
+				error(vim.inspect(body))
+			else
+				if body.data then
+					for _, model in ipairs(body.data) do
+						table.insert(models, model.id)
+					end
+				end
 			end
 		end,
 	})
