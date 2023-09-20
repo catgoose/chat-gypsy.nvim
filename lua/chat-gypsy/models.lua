@@ -16,9 +16,8 @@ local getModels = function()
 		},
 		callback = function(response)
 			local body = vim.json.decode(response.body)
-
 			if response.status ~= 200 then
-				error(vim.inspect(body))
+				Log.error(string.format("getModels: error: %s", vim.inspect(body)))
 			else
 				if body.data then
 					for _, model in ipairs(body.data) do
