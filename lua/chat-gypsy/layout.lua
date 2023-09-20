@@ -1,6 +1,7 @@
 local nui_lo = require("nui.layout")
 local ev = require("nui.utils.autocmd").event
 local config = require("chat-gypsy.config")
+local symbols = config.symbols
 local plugin_cfg, dev, opts = config.plugin_cfg, config.dev, config.opts
 local Log = require("chat-gypsy").Log
 local Events = require("chat-gypsy").Events
@@ -19,6 +20,10 @@ local default_state = {
 	mounted = false,
 	layout = "float",
 	current_line = 0,
+	tokens = {
+		current = 0,
+		total = 0,
+	},
 }
 
 function Layout.new(ui)
@@ -151,9 +156,10 @@ function Layout:configure()
 		if prompt_lines[1] == "" and #prompt_lines == 1 then
 			return
 		end
+		local prompt_message = table.concat(prompt_lines, "\n")
 		self._.current_line = self._.current_line == 1 and 0 or self._.current_line
 		local line = ""
-		local chat_lines = ""
+		local response_lines = ""
 		local function newln(n)
 			n = n or 1
 			for _ = 1, n do
@@ -165,7 +171,7 @@ function Layout:configure()
 		end
 		local function append(chunk)
 			line = line .. chunk
-			chat_lines = chat_lines .. line
+			response_lines = response_lines .. line
 			self.set_lines_chat(self._.current_line, self._.current_line + 1, { line })
 			self.set_cursor_chat({ self._.current_line + 1, 0 })
 		end
@@ -173,7 +179,7 @@ function Layout:configure()
 			if string.match(chunk, "\n") then
 				for _chunk in chunk:gmatch(".") do
 					if string.match(_chunk, "\n") then
-						chat_lines = chat_lines .. _chunk
+						response_lines = response_lines .. _chunk
 						newln()
 					else
 						append(_chunk)
@@ -187,19 +193,25 @@ function Layout:configure()
 			self.set_cursor_chat({ self._.current_line + 1, 0 })
 		end
 		local on_complete = function(chunks)
+			Events:pub("hook:request:complete", response_lines)
 			Log.trace(string.format("on_complete: chunks: %s", vim.inspect(chunks)))
-			newln()
-			Events:pub("hook:request:complete", chat_lines)
-			local ok, tokens = utils.calculate_tokens(chat_lines)
-			if ok then
-				newln(2)
-				self.set_lines_chat(line_n, -1, { "================= " .. tokens, "" })
-			end
 			vim.cmd("silent! undojoin")
-			self.set_lines_chat(self._.current_line, -1, { hr })
+			local on_tokens = function(tokens)
+				self._.tokens.current = tokens
+				self._.tokens.total = self._.tokens.total + self._.tokens.current
+				local tokens_display =
+					string.format(" " .. "Tokens: " .. "%s/%s", self._.tokens.current, self._.tokens.total)
+				local line_break_msg = symbols.horiz:rep(
+					vim.api.nvim_win_get_width(self._.chat_winid) - #tokens_display
+				) .. tokens_display
+				newln(2)
+				self.set_lines_chat(self._.current_line, -1, { line_break_msg })
+				newln(2)
+			end
+			utils.calculate_tokens(prompt_message, on_tokens)
 		end
 
-		self.openai:sendPrompt(prompt_lines, on_start, on_chunk, on_complete)
+		self.openai:send_prompt(prompt_message, on_start, on_chunk, on_complete)
 	end
 
 	if plugin_cfg.dev and dev.prompt.enabled then

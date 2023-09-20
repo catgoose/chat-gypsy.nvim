@@ -27,6 +27,10 @@ Config.openai_models = {
 	},
 }
 
+Config.symbols = {
+	horiz = "━",
+}
+
 Config.plugin_cfg = {
 	name = "gypsy",
 	log_level = default_log_level,
