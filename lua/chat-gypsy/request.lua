@@ -39,7 +39,7 @@ function Request.new(events)
 			content = self.content,
 		})
 	end
-	self.reset = function()
+	self.query_reset = function()
 		self.chunks = {}
 		self.content = ""
 		if self.handler ~= nil then
@@ -84,8 +84,9 @@ function Request.new(events)
 		end
 	end
 
-	self.post = function(on_start, on_chunk, on_complete, on_error)
+	self.completions = function(on_start, on_chunk, on_complete, on_error)
 		on_start()
+		--  TODO: 2023-09-19 - handle errors from openai
 		self.handler = curl.post({
 			url = "https://api.openai.com/v1/chat/completions",
 			raw = { "--no-buffer" },
@@ -111,7 +112,7 @@ function Request.new(events)
 	end
 
 	self.events:sub("layout:unmount", function()
-		self:reset()
+		self:query_reset()
 	end)
 
 	return self
@@ -141,8 +142,8 @@ function Request:query(content, on_response_start, on_response_chunk, on_respons
 		Log.error(string.format("query: on_error: %s", err))
 	end
 
-	self.reset()
-	self.post(on_start, on_chunk, on_complete, on_error)
+	self.query_reset()
+	self.completions(on_start, on_chunk, on_complete, on_error)
 end
 
 return Request

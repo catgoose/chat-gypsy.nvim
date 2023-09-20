@@ -4,6 +4,29 @@ local Events = require("chat-gypsy").Events
 
 local Config = {}
 
+Config.openai_models = {
+	{
+		model = "gpt-3.5-turbo",
+		max_tokens = 4097,
+		priority = 1,
+	},
+	{
+		model = "gpt-3.5-turbo-16k",
+		max_tokens = 16385,
+		priority = 2,
+	},
+	{
+		model = "gpt-4",
+		max_tokens = 8192,
+		priority = 3,
+	},
+	{
+		model = "gpt-4-32k",
+		max_tokens = 32768,
+		priority = 4,
+	},
+}
+
 Config.plugin_cfg = {
 	name = "gypsy",
 	log_level = default_log_level,

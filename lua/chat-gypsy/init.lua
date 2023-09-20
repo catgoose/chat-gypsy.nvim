@@ -9,6 +9,7 @@ Gypsy.setup = function(opts)
 
 	Gypsy.Log = require("chat-gypsy.logger").init()
 	require("chat-gypsy.usercmd").init()
+	require("chat-gypsy.models").init()
 
 	if config.plugin_cfg.dev then
 		Gypsy.Log.info("Gypsy:setup: dev mode enabled")
