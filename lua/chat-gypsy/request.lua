@@ -1,6 +1,7 @@
 ---@diagnostic disable: undefined-field
 local config = require("chat-gypsy.config")
 local opts = config.opts
+local openai_models = config.openai_models
 local Log = require("chat-gypsy").Log
 local utils = require("chat-gypsy.utils")
 local Events = require("chat-gypsy").Events
@@ -161,8 +162,15 @@ function Request:getModels()
 		end,
 	})
 	handler:after_success(function()
+		local model_priority = {}
+		for _, m in ipairs(openai_models) do
+			model_priority[m.model] = m.priority
+		end
+		models = vim.tbl_filter(function(model)
+			return model_priority[model] ~= nil
+		end, models)
 		table.sort(models, function(a, b)
-			return a < b
+			return model_priority[a] < model_priority[b]
 		end)
 		Log.debug("getModels: success: " .. vim.inspect(models))
 	end)
