@@ -247,7 +247,6 @@ function Layout:configure()
 		end
 	end)
 
-	-- Move between popups
 	local modes = { "n", "i" }
 	for _, mode in ipairs(modes) do
 		self.boxes.prompt:map(mode, "<C-k>", function()
