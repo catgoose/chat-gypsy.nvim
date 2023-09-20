@@ -87,6 +87,7 @@ function Request.new(events)
 
 	self.completions = function(on_start, on_chunk, on_complete, on_error)
 		on_start()
+		--  TODO: 2023-09-19 - handle errors from openai
 		self.handler = curl.post({
 			url = "https://api.openai.com/v1/chat/completions",
 			raw = { "--no-buffer" },
