@@ -28,7 +28,6 @@ function OpenAI:sendPrompt(lines, on_start, on_chunk, on_chunks_complete)
 		end
 
 		self.request:query(msg, on_start, on_chunk, on_complete)
-		self.requery:getModels()
 	end)
 end
 

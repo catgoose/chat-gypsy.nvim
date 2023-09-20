@@ -1,7 +1,6 @@
 ---@diagnostic disable: undefined-field
 local config = require("chat-gypsy.config")
 local opts = config.opts
-local openai_models = config.openai_models
 local Log = require("chat-gypsy").Log
 local utils = require("chat-gypsy.utils")
 local Events = require("chat-gypsy").Events
@@ -145,36 +144,6 @@ function Request:query(content, on_response_start, on_response_chunk, on_respons
 
 	self.query_reset()
 	self.completions(on_start, on_chunk, on_complete, on_error)
-end
-
-function Request:getModels()
-	local models = {}
-	local handler = curl.get({
-		url = "https://api.openai.com/v1/models",
-		headers = {
-			content_type = "application/json",
-			Authorization = "Bearer " .. opts.openai_key,
-		},
-		callback = function(response)
-			local data = vim.json.decode(response.body)
-			for _, model in ipairs(data.data) do
-				table.insert(models, model.id)
-			end
-		end,
-	})
-	handler:after_success(function()
-		local model_priority = {}
-		for _, m in ipairs(openai_models) do
-			model_priority[m.model] = m.priority
-		end
-		models = vim.tbl_filter(function(model)
-			return model_priority[model] ~= nil
-		end, models)
-		table.sort(models, function(a, b)
-			return model_priority[a] < model_priority[b]
-		end)
-		Log.debug("getModels: success: " .. vim.inspect(models))
-	end)
 end
 
 return Request
