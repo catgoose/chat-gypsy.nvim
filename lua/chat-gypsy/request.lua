@@ -39,7 +39,7 @@ function Request.new(events)
 			content = self.content,
 		})
 	end
-	self.reset = function()
+	self.query_reset = function()
 		self.chunks = {}
 		self.content = ""
 		if self.handler ~= nil then
@@ -84,7 +84,7 @@ function Request.new(events)
 		end
 	end
 
-	self.post = function(on_start, on_chunk, on_complete, on_error)
+	self.completions = function(on_start, on_chunk, on_complete, on_error)
 		on_start()
 		self.handler = curl.post({
 			url = "https://api.openai.com/v1/chat/completions",
@@ -111,7 +111,7 @@ function Request.new(events)
 	end
 
 	self.events:sub("layout:unmount", function()
-		self:reset()
+		self:query_reset()
 	end)
 
 	return self
@@ -141,8 +141,31 @@ function Request:query(content, on_response_start, on_response_chunk, on_respons
 		Log.error(string.format("query: on_error: %s", err))
 	end
 
-	self.reset()
-	self.post(on_start, on_chunk, on_complete, on_error)
+	self.query_reset()
+	self.completions(on_start, on_chunk, on_complete, on_error)
+end
+
+function Request:getModels()
+	local models = {}
+	local handler = curl.get({
+		url = "https://api.openai.com/v1/models",
+		headers = {
+			content_type = "application/json",
+			Authorization = "Bearer " .. opts.openai_key,
+		},
+		callback = function(response)
+			local data = vim.json.decode(response.body)
+			for _, model in ipairs(data.data) do
+				table.insert(models, model.id)
+			end
+		end,
+	})
+	handler:after_success(function()
+		table.sort(models, function(a, b)
+			return a < b
+		end)
+		Log.debug("getModels: success: " .. vim.inspect(models))
+	end)
 end
 
 return Request
