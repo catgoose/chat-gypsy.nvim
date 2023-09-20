@@ -40,7 +40,7 @@ local getModels = function()
 			return model_priority[a] < model_priority[b]
 		end)
 		Log.debug("getModels: success: " .. vim.inspect(models))
-		M.models = models
+		M.names = models
 	end)
 end
 
@@ -48,6 +48,6 @@ M.init = function()
 	getModels()
 end
 
-M.models = {}
+M.names = {}
 
 return M

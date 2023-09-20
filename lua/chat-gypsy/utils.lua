@@ -14,7 +14,8 @@ Utils.deepcopy = function(orig)
 	return copy
 end
 
-Utils.calculate_tokens = function(text)
+Utils.calculate_tokens = function(text, on_tokens)
+	on_tokens = on_tokens or function(_) end
 	local ok, result = pcall(
 		vim.api.nvim_exec2,
 		string.format(
@@ -30,10 +31,11 @@ EOF
 		),
 		{ output = true }
 	)
+	local output = 0
 	if ok then
-		return ok, result.output
+		output = result.output
 	end
-	return ok, 0
+	on_tokens(output)
 end
 
 return Utils
