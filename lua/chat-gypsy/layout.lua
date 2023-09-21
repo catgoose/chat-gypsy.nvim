@@ -34,8 +34,21 @@ function Layout.new(ui)
 	self.openai = require("chat-gypsy.openai").new(self.events)
 	self._ = {}
 
-	Events:sub("request:error", function()
-		--  TODO: 2023-09-21 - display errors in a popup
+	Events:sub("request:error", function(err)
+		vim.schedule(function()
+			self.set_lines_chat(self._.current_line, self._.current_line + 1, { "ERROR:", "" })
+			self._.current_line = self._.current_line + 1
+			self._.current_line = self._.current_line + 1
+			local error = utils.tbl_to_json_string(err)
+			self.set_lines_chat(self._.current_line, self._.current_line + 1, { "```json" })
+			self._.current_line = self._.current_line + 1
+			for line in error:gmatch("[^\n]+") do
+				self._.current_line = self._.current_line + 1
+				self.set_lines_chat(self._.current_line, self._.current_line + 1, { line })
+			end
+			self.set_lines_chat(self._.current_line, self._.current_line + 1, { "```" })
+			self._.current_line = self._.current_line + 1
+		end)
 	end)
 
 	self.focus_chat = function()
