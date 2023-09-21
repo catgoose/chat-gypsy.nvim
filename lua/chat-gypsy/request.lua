@@ -154,6 +154,7 @@ function Request:query(content, on_response_start, on_response_chunk, on_respons
 
 	local on_error = function(err)
 		Events:pub("hook:request:error", "completions", err)
+		Events:pub("request:error")
 		if type(err) == "table" then
 			err = vim.inspect(err)
 		end

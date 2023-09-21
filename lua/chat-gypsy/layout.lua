@@ -34,6 +34,10 @@ function Layout.new(ui)
 	self.openai = require("chat-gypsy.openai").new(self.events)
 	self._ = {}
 
+	Events:sub("request:error", function()
+		self.unmount()
+	end)
+
 	self.focus_chat = function()
 		vim.api.nvim_set_current_win(self._.chat_winid)
 		self._.focused_win = "chat"
