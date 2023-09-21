@@ -88,13 +88,8 @@ function Request.new(events)
 		end
 	end
 
-	self.extract_error = function(chunk, on_error)
+	self.extract_error = function(chunk)
 		table.insert(self.error_chunks, chunk .. "\n")
-		local error = table.concat(self.error_chunks, "")
-		local ok, json = pcall(vim.json.decode, error)
-		if ok then
-			on_error(json)
-		end
 	end
 
 	self.completions = function(on_start, on_chunk, on_complete, on_error)
@@ -125,9 +120,19 @@ function Request.new(events)
 			on_error = on_error,
 		})
 		self.handler:after_success(function()
-			vim.schedule(function()
-				on_complete()
-			end)
+			if #self.error_chunks > 0 then
+				local error = table.concat(self.error_chunks, "")
+				local ok, json = pcall(vim.json.decode, error)
+				if ok then
+					on_error(json)
+				else
+					on_error(self.error_chunks)
+				end
+			else
+				vim.schedule(function()
+					on_complete()
+				end)
+			end
 		end)
 	end
 
