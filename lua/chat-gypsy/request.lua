@@ -106,6 +106,7 @@ function Request.new(events)
 				Authorization = "Bearer " .. opts.openai_key,
 			},
 			body = vim.json.encode(self.openai_params),
+			--  TODO: 2023-09-20 - add success/fail strategy
 			stream = function(_, chunk)
 				if chunk ~= "" then
 					vim.schedule(function()
