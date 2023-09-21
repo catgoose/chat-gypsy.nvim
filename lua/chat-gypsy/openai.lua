@@ -17,8 +17,6 @@ function OpenAI:send_prompt(message, on_start, on_chunk, on_chunks_complete)
 		Log.warn("send_prompt: no message provided")
 		return
 	end
-	on_chunks_complete = on_chunks_complete or function() end
-	on_start = on_start or function() end
 
 	Log.debug(string.format("adding request to queue: \nmessage: %s", message))
 	self.queue:add(function(on_request_complete)
