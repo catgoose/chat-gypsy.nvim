@@ -25,69 +25,83 @@ Gypsy.Events:sub("layout:unmount", function()
 	chats = {}
 end)
 
+local healthy = function()
+	return require("chat-gypsy.models").success
+end
+
 Gypsy.toggle = function()
-	if #chats == 0 then
-		Gypsy.open()
-		return
-	end
-	if #chats == 1 then
-		chat = chats[1]
-		local layout = chat.layout
-		if layout._.mounted then
-			if not layout._.hidden and not layout.is_focused() then
-				layout.focus_last_win()
-				return
-			end
-			if layout._.hidden and not layout.is_focused() then
-				layout.show()
-				return
-			end
-			if not layout._.hidden and layout.is_focused() then
-				layout.hide()
-				return
-			end
-		else
-			layout.mount()
+	if healthy() then
+		if #chats == 0 then
+			Gypsy.open()
 			return
+		end
+		if #chats == 1 then
+			chat = chats[1]
+			local layout = chat.layout
+			if layout._.mounted then
+				if not layout._.hidden and not layout.is_focused() then
+					layout.focus_last_win()
+					return
+				end
+				if layout._.hidden and not layout.is_focused() then
+					layout.show()
+					return
+				end
+				if not layout._.hidden and layout.is_focused() then
+					layout.hide()
+					return
+				end
+			else
+				layout.mount()
+				return
+			end
 		end
 	end
 end
 
 Gypsy.open = function()
-	if #chats == 0 then
-		chat = require("chat-gypsy.ui").new()
-		if not chat.layout._.mounted then
-			table.insert(chats, chat)
-			chat.layout.mount()
+	if healthy() then
+		if #chats == 0 then
+			chat = require("chat-gypsy.ui").new()
+			if not chat.layout._.mounted then
+				table.insert(chats, chat)
+				chat.layout.mount()
+			end
 		end
 	end
 end
 
 Gypsy.hide = function()
-	if #chats == 1 then
-		chat = chats[1]
-		local layout = chat.layout
-		if layout._.mounted and not layout._.hidden then
-			layout.hide()
+	if healthy() then
+		if #chats == 1 then
+			chat = chats[1]
+			local layout = chat.layout
+			if layout._.mounted and not layout._.hidden then
+				layout.hide()
+			end
 		end
 	end
 end
 
 Gypsy.show = function()
-	if #chats == 1 then
-		chat = chats[1]
-		chat = table.remove(chats, 1)
-		local layout = chat.layout
-		if layout._.mounted and layout._.hidden then
-			layout.show()
+	if healthy() then
+		if #chats == 1 then
+			chat = chats[1]
+			chat = table.remove(chats, 1)
+			local layout = chat.layout
+			if layout._.mounted and layout._.hidden then
+				layout.show()
+			end
 		end
 	end
 end
 
 Gypsy.close = function()
-	chat = table.remove(chats, 1)
-	if chat.layout._.mounted then
-		chat.layout.unmount()
+	if healthy() then
+		chat = table.remove(chats, 1)
+		if chat.layout._.mounted then
+			chat.layout.unmount()
+		end
 	end
 end
 
