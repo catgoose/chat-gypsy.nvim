@@ -120,6 +120,7 @@ local opts = {
       start = function(--[[content]]) end,
       chunk = function(--[[chunk]]) end,
       complete = function(--[[response]]) end,
+      error = function(--[[chunk]]) end,
     },
   },
 }

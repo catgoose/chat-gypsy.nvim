@@ -3,6 +3,7 @@ local openai_models = config.openai_models
 local opts = config.opts
 local Log = require("chat-gypsy").Log
 local curl = require("plenary.curl")
+local Events = require("chat-gypsy").Events
 
 Models = {}
 
@@ -17,7 +18,11 @@ local getModels = function()
 		callback = function(response)
 			local body = vim.json.decode(response.body)
 			if response.status ~= 200 then
-				Log.error(string.format("getModels: error: %s", vim.inspect(body)))
+				local ok, json = pcall(vim.json.decode, body)
+				if ok then
+					Events:pub("hook:request:error", json)
+				end
+				Log.error(string.format("getModels: error: %s", vim.inspect(json)))
 			else
 				if body.data then
 					for _, model in ipairs(body.data) do

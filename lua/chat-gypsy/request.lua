@@ -90,6 +90,7 @@ function Request.new(events)
 		table.insert(self.error_chunks, chunk .. "\n")
 		local error = table.concat(self.error_chunks, "")
 		local ok, json = pcall(vim.json.decode, error)
+		Events:pub("hook:request:error", json)
 		if ok then
 			on_error(json)
 		end
@@ -97,7 +98,6 @@ function Request.new(events)
 
 	self.completions = function(on_start, on_chunk, on_chunk_error, on_complete, on_error)
 		on_start()
-		--  TODO: 2023-09-19 - handle errors from openai
 		self.handler = curl.post({
 			url = "https://api.openai.com/v1/chat/completions",
 			raw = { "--no-buffer" },
