@@ -29,6 +29,7 @@ Config.openai_models = {
 
 Config.symbols = {
 	horiz = "━",
+	token = "",
 }
 
 Config.plugin_cfg = {

@@ -216,7 +216,8 @@ function Layout:configure()
 				self._.tokens.current = tokens
 				self._.tokens.total = self._.tokens.total + self._.tokens.current
 				local tokens_display =
-					string.format(" " .. "Tokens: " .. "%s/%s", self._.tokens.current, self._.tokens.total)
+					string.format(" %s  Tokens: %s/%s", symbols.token, self._.tokens.current, self._.tokens.total)
+
 				local line_break_msg = symbols.horiz:rep(
 					vim.api.nvim_win_get_width(self._.chat_winid) - #tokens_display
 				) .. tokens_display
