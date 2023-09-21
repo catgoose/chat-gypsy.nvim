@@ -35,7 +35,7 @@ function Layout.new(ui)
 	self._ = {}
 
 	Events:sub("request:error", function()
-		self.unmount()
+		--  TODO: 2023-09-21 - display errors in a popup
 	end)
 
 	self.focus_chat = function()
