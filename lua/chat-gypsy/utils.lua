@@ -57,9 +57,12 @@ Utils.tbl_to_json_string = function(table, indent_level)
 		end
 
 		json_str = json_str .. "\n" .. string.rep("  ", indent_level - 1) .. "}"
+		json_str = string.gsub(json_str, "\\", "")
 		return json_str
 	else
-		return vim.json.encode(table)
+		local encoded_str = vim.json.encode(table)
+		encoded_str = string.gsub(encoded_str, "\\", "")
+		return encoded_str
 	end
 end
 
