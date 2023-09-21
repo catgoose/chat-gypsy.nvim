@@ -16,8 +16,6 @@ function Request.new(events)
 	self.error_chunks = {}
 	self.content = ""
 	self.handler = nil
-	--  TODO: 2023-09-20 - get model from model module, request should not occur
-	--  if no model is available
 	self.openai_params = utils.deepcopy(opts.openai_params)
 	self.join_content = function()
 		self.content = table.concat(self.chunks, "")
