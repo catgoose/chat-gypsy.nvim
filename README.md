@@ -167,13 +167,17 @@ Several event hooks are provided for customization:
             complete = function(response)
               vim.print(response)
             end,
+            error = function(source, error_tbl)
+              vim.print(string.format("error %s: %s", source, vim.inspect(error_tbl)))
+            end,
         },
     },
 --- ... rest of lazy config
 ```
 
-| Hook             | Argument(s) | Description                           |
-| ---------------- | ----------- | ------------------------------------- |
-| request.start    | content     | Content is sent from user prompt      |
-| request.chunk    | chunk       | Chunk is received from request stream |
-| request.complete | response    | Response is received from openai      |
+| Hook             | Argument(s)       | Description                           |
+| ---------------- | ----------------- | ------------------------------------- |
+| request.start    | content           | Content is sent from user prompt      |
+| request.chunk    | chunk             | Chunk is received from request stream |
+| request.complete | response          | Response is received from openai      |
+| request.error    | source, error_tbl | An error has occurred in a request    |
