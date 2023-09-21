@@ -38,4 +38,29 @@ EOF
 	on_tokens(output)
 end
 
+Utils.tbl_to_json_string = function(table, indent_level)
+	if type(table) == "table" then
+		indent_level = indent_level or 1
+		local indent = string.rep("  ", indent_level) -- 2 spaces per level
+
+		local json_str = "{\n"
+		local comma = ""
+
+		for k, v in pairs(table) do
+			json_str = json_str .. comma .. indent .. '"' .. tostring(k) .. '": '
+			if type(v) == "table" then
+				json_str = json_str .. Utils.tbl_to_json_string(v, indent_level + 1)
+			else
+				json_str = json_str .. vim.json.encode(v)
+			end
+			comma = ",\n"
+		end
+
+		json_str = json_str .. "\n" .. string.rep("  ", indent_level - 1) .. "}"
+		return json_str
+	else
+		return vim.json.encode(table)
+	end
+end
+
 return Utils
