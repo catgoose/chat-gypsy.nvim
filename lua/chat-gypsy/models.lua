@@ -7,7 +7,7 @@ local Events = require("chat-gypsy").Events
 
 Models = {}
 
-local getModels = function()
+local get_models = function()
 	local models = {}
 	local handler = curl.get({
 		url = "https://api.openai.com/v1/models",
@@ -20,9 +20,9 @@ local getModels = function()
 			if response.status ~= 200 then
 				local ok, json = pcall(vim.json.decode, body)
 				if ok then
-					Events:pub("hook:request:error", json)
+					Events:pub("hook:request:error", "get_models", json)
 				end
-				Log.error(string.format("getModels: error: %s", vim.inspect(json)))
+				Log.error(string.format("get_models: error: %s", vim.inspect(json)))
 			else
 				if body.data then
 					for _, model in ipairs(body.data) do
@@ -43,13 +43,13 @@ local getModels = function()
 		table.sort(models, function(a, b)
 			return model_priority[a] < model_priority[b]
 		end)
-		Log.debug("getModels: success: " .. vim.inspect(models))
+		Log.debug("get_models: success: " .. vim.inspect(models))
 		M.models = models
 	end)
 end
 
 M.init = function()
-	getModels()
+	get_models()
 end
 
 M.models = {}

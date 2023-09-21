@@ -90,7 +90,7 @@ function Request.new(events)
 		table.insert(self.error_chunks, chunk .. "\n")
 		local error = table.concat(self.error_chunks, "")
 		local ok, json = pcall(vim.json.decode, error)
-		Events:pub("hook:request:error", json)
+		Events:pub("hook:request:error", "completions", json)
 		if ok then
 			on_error(json)
 		end
