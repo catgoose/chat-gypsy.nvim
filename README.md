@@ -117,10 +117,10 @@ local opts = {
   },
   hooks = {
     request = {
-      start = function(--[[content]]) end,
-      chunk = function(--[[chunk]]) end,
-      complete = function(--[[response]]) end,
-      error = function(--[[source, error_tbl]]) end,
+      start = function(content) end,
+      chunk = function(chunk) end,
+      complete = function(response) end,
+      error = function(source, error_tbl) end,
     },
   },
 }
