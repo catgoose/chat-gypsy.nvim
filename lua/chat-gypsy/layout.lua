@@ -201,18 +201,16 @@ function Layout:configure()
 			Log.trace(string.format("on_complete: chunks: %s", vim.inspect(chunks)))
 			vim.cmd("silent! undojoin")
 			local on_tokens = function(tokens)
-				if self.mounted and vim.api.nvim_win_is_valid(self._.chat_winid) then
-					self._.tokens.current = tokens
-					self._.tokens.total = self._.tokens.total + self._.tokens.current
-					local tokens_display =
-						string.format(" " .. "Tokens: " .. "%s/%s", self._.tokens.current, self._.tokens.total)
-					local line_break_msg = symbols.horiz:rep(
-						vim.api.nvim_win_get_width(self._.chat_winid) - #tokens_display
-					) .. tokens_display
-					newln(2)
-					self.set_lines_chat(self._.current_line, -1, { line_break_msg })
-					newln(2)
-				end
+				self._.tokens.current = tokens
+				self._.tokens.total = self._.tokens.total + self._.tokens.current
+				local tokens_display =
+					string.format(" " .. "Tokens: " .. "%s/%s", self._.tokens.current, self._.tokens.total)
+				local line_break_msg = symbols.horiz:rep(
+					vim.api.nvim_win_get_width(self._.chat_winid) - #tokens_display
+				) .. tokens_display
+				newln(2)
+				self.set_lines_chat(self._.current_line, -1, { line_break_msg })
+				newln(2)
 			end
 			utils.calculate_tokens(prompt_message, on_tokens)
 		end
