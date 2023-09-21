@@ -90,7 +90,6 @@ function Request.new(events)
 		table.insert(self.error_chunks, chunk .. "\n")
 		local error = table.concat(self.error_chunks, "")
 		local ok, json = pcall(vim.json.decode, error)
-		Events:pub("hook:request:error", "completions", json)
 		if ok then
 			on_error(json)
 		end
@@ -99,14 +98,6 @@ function Request.new(events)
 	self.completions = function(on_start, on_chunk, on_complete, on_error)
 		on_start()
 		local strategy = nil
-		local get_strategy = function(chunk)
-			if string.match(chunk, "data:") then
-				strategy = "data"
-			else
-				strategy = "error"
-			end
-			return strategy
-		end
 		self.handler = curl.post({
 			url = "https://api.openai.com/v1/chat/completions",
 			raw = { "--no-buffer" },
@@ -119,7 +110,11 @@ function Request.new(events)
 				if chunk ~= "" then
 					vim.schedule(function()
 						if not strategy then
-							strategy = get_strategy(chunk)
+							if string.match(chunk, "data:") then
+								strategy = "data"
+							else
+								strategy = "error"
+							end
 						end
 						on_chunk(chunk, strategy)
 					end)
@@ -158,6 +153,7 @@ function Request:query(content, on_response_start, on_response_chunk, on_respons
 	end
 
 	local on_error = function(err)
+		Events:pub("hook:request:error", "completions", err)
 		if type(err) == "table" then
 			err = vim.inspect(err)
 		end
