@@ -96,8 +96,17 @@ function Request.new(events)
 		end
 	end
 
-	self.completions = function(on_start, on_chunk, on_chunk_error, on_complete, on_error)
+	self.completions = function(on_start, on_chunk, on_complete, on_error)
 		on_start()
+		local strategy = nil
+		local get_strategy = function(chunk)
+			if string.match(chunk, "data:") then
+				strategy = "data"
+			else
+				strategy = "error"
+			end
+			return strategy
+		end
 		self.handler = curl.post({
 			url = "https://api.openai.com/v1/chat/completions",
 			raw = { "--no-buffer" },
@@ -106,16 +115,13 @@ function Request.new(events)
 				Authorization = "Bearer " .. opts.openai_key,
 			},
 			body = vim.json.encode(self.openai_params),
-			--  TODO: 2023-09-20 - add success/fail strategy
 			stream = function(_, chunk)
 				if chunk ~= "" then
 					vim.schedule(function()
-						local has_data = string.match(chunk, "data:")
-						if has_data then
-							on_chunk(chunk)
-						else
-							on_chunk_error(chunk)
+						if not strategy then
+							strategy = get_strategy(chunk)
 						end
+						on_chunk(chunk, strategy)
 					end)
 				end
 			end,
@@ -144,10 +150,6 @@ function Request:query(content, on_response_start, on_response_chunk, on_respons
 		on_response_start()
 	end
 
-	local on_chunk = function(chunk)
-		self.extract_data(chunk, on_response_chunk)
-	end
-
 	local on_complete = function()
 		Log.trace("query: on_complete")
 		self.on_assistant_response()
@@ -162,12 +164,18 @@ function Request:query(content, on_response_start, on_response_chunk, on_respons
 		Log.error(string.format("query: on_error: %s", err))
 	end
 
-	local on_chunk_error = function(chunk)
-		self.extract_error(chunk, on_error)
+	local on_chunk = function(chunk, strategy)
+		if not strategy then
+			return
+		elseif strategy == "data" then
+			self.extract_data(chunk, on_response_chunk)
+		elseif strategy == "error" then
+			self.extract_error(chunk, on_error)
+		end
 	end
 
 	self.query_reset()
-	self.completions(on_start, on_chunk, on_chunk_error, on_complete, on_error)
+	self.completions(on_start, on_chunk, on_complete, on_error)
 end
 
 return Request
