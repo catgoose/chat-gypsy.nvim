@@ -43,8 +43,8 @@ local get_models = function()
 		table.sort(models, function(a, b)
 			return model_priority[a] < model_priority[b]
 		end)
-		Log.debug("get_models: success: " .. vim.inspect(models))
-		M.models = models
+		Log.debug("getModels: success: " .. vim.inspect(models))
+		M.names = models
 	end)
 end
 
@@ -52,6 +52,6 @@ M.init = function()
 	get_models()
 end
 
-M.models = {}
+M.names = {}
 
 return M
