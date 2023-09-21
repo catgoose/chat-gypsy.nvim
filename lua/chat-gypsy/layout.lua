@@ -36,13 +36,15 @@ function Layout.new(ui)
 
 	Events:sub("request:error", function(err)
 		vim.schedule(function()
+			--  TODO: 2023-09-21 - refactor this mess
 			self.set_lines_chat(self._.current_line, self._.current_line + 1, { "ERROR:", "" }, 2)
 			local error = utils.tbl_to_json_string(err)
 			self.set_lines_chat(self._.current_line, self._.current_line + 1, { "```json" }, 1)
 			for line in error:gmatch("[^\n]+") do
 				self.set_lines_chat(self._.current_line, self._.current_line + 1, { line }, 1)
 			end
-			self.set_lines_chat(self._.current_line, self._.current_line + 1, { "```" }, 1)
+			self.set_lines_chat(self._.current_line, self._.current_line + 1, { "```", "" }, 2)
+			self.set_cursor_chat({ self._.current_line, 0 })
 		end)
 	end)
 
