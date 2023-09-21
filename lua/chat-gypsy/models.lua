@@ -18,6 +18,9 @@ local get_models = function()
 			if response.status ~= 200 then
 				local ok, err = pcall(vim.json.decode, response.body)
 				if ok then
+					if err.error then
+						err.error.http_status = response.status
+					end
 					Events:pub("hook:request:error", "get_models", err)
 					if type(err) == "table" then
 						err = vim.inspect(err)
