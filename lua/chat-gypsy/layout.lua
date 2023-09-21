@@ -34,8 +34,16 @@ function Layout.new(ui)
 	self.openai = require("chat-gypsy.openai").new(self.events)
 	self._ = {}
 
-	Events:sub("request:error", function()
-		self.unmount()
+	Events:sub("request:error", function(err)
+		vim.schedule(function()
+			self.set_lines_chat(self._.current_line, self._.current_line + 1, { "ERROR:", "" }, 2)
+			local error = utils.tbl_to_json_string(err)
+			self.set_lines_chat(self._.current_line, self._.current_line + 1, { "```json" }, 1)
+			for line in error:gmatch("[^\n]+") do
+				self.set_lines_chat(self._.current_line, self._.current_line + 1, { line }, 1)
+			end
+			self.set_lines_chat(self._.current_line, self._.current_line + 1, { "```" }, 1)
+		end)
 	end)
 
 	self.focus_chat = function()
@@ -81,8 +89,12 @@ function Layout.new(ui)
 			vim.api.nvim_buf_set_lines(bufnr, line_start, line_end, false, lines)
 		end
 	end
-	self.set_lines_chat = function(line_start, line_end, lines)
+	self.set_lines_chat = function(line_start, line_end, lines, delta_current_lines)
+		delta_current_lines = delta_current_lines or 0
 		set_lines(self._.chat_bufnr, line_start, line_end, lines)
+		if delta_current_lines > 0 then
+			self._.current_line = self._.current_line + delta_current_lines
+		end
 	end
 	self.set_lines_prompt = function(line_start, line_end, lines)
 		set_lines(self._.prompt_bufnr, line_start, line_end, lines)
@@ -204,7 +216,8 @@ function Layout:configure()
 				self._.tokens.current = tokens
 				self._.tokens.total = self._.tokens.total + self._.tokens.current
 				local tokens_display =
-					string.format(" " .. "Tokens: " .. "%s/%s", self._.tokens.current, self._.tokens.total)
+					string.format(" %s  Tokens: %s/%s", symbols.token, self._.tokens.current, self._.tokens.total)
+
 				local line_break_msg = symbols.horiz:rep(
 					vim.api.nvim_win_get_width(self._.chat_winid) - #tokens_display
 				) .. tokens_display

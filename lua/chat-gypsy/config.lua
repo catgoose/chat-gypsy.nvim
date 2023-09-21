@@ -29,6 +29,7 @@ Config.openai_models = {
 
 Config.symbols = {
 	horiz = "━",
+	token = "",
 }
 
 Config.plugin_cfg = {
@@ -40,7 +41,6 @@ Config.plugin_cfg = {
 Config.opts = {
 	openai_key = os.getenv("OPENAI_API_KEY"),
 	openai_params = {
-		--  TODO: 2023-09-20 - check to make sure passed in model is in models.names
 		model = "gpt-3.5-turbo",
 		temperature = 0.7,
 		stream = true,

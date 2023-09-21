@@ -18,6 +18,9 @@ local get_models = function()
 			if response.status ~= 200 then
 				local ok, err = pcall(vim.json.decode, response.body)
 				if ok then
+					if err.error then
+						err.error.http_status = response.status
+					end
 					Events:pub("hook:request:error", "get_models", err)
 					if type(err) == "table" then
 						err = vim.inspect(err)
@@ -25,6 +28,7 @@ local get_models = function()
 					Log.error(string.format("get_models: error: %s", err))
 					error(err)
 				end
+				Models.success = false
 			else
 				local body = vim.json.decode(response.body)
 				if body.data then
@@ -43,7 +47,10 @@ local get_models = function()
 						return model_priority[a] < model_priority[b]
 					end)
 					Log.debug("getModels: success: " .. vim.inspect(models))
-					M.names = models
+					if #models > 0 then
+						M.names = models
+						M.success = true
+					end
 				end
 			end
 		end,
@@ -55,5 +62,6 @@ M.init = function()
 end
 
 M.names = {}
+M.success = false
 
 return M
