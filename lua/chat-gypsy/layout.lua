@@ -36,18 +36,13 @@ function Layout.new(ui)
 
 	Events:sub("request:error", function(err)
 		vim.schedule(function()
-			self.set_lines_chat(self._.current_line, self._.current_line + 1, { "ERROR:", "" })
-			self._.current_line = self._.current_line + 1
-			self._.current_line = self._.current_line + 1
+			self.set_lines_chat(self._.current_line, self._.current_line + 1, { "ERROR:", "" }, 2)
 			local error = utils.tbl_to_json_string(err)
-			self.set_lines_chat(self._.current_line, self._.current_line + 1, { "```json" })
-			self._.current_line = self._.current_line + 1
+			self.set_lines_chat(self._.current_line, self._.current_line + 1, { "```json" }, 1)
 			for line in error:gmatch("[^\n]+") do
-				self._.current_line = self._.current_line + 1
-				self.set_lines_chat(self._.current_line, self._.current_line + 1, { line })
+				self.set_lines_chat(self._.current_line, self._.current_line + 1, { line }, 1)
 			end
-			self.set_lines_chat(self._.current_line, self._.current_line + 1, { "```" })
-			self._.current_line = self._.current_line + 1
+			self.set_lines_chat(self._.current_line, self._.current_line + 1, { "```" }, 1)
 		end)
 	end)
 
@@ -94,8 +89,12 @@ function Layout.new(ui)
 			vim.api.nvim_buf_set_lines(bufnr, line_start, line_end, false, lines)
 		end
 	end
-	self.set_lines_chat = function(line_start, line_end, lines)
+	self.set_lines_chat = function(line_start, line_end, lines, delta_current_lines)
+		delta_current_lines = delta_current_lines or 0
 		set_lines(self._.chat_bufnr, line_start, line_end, lines)
+		if delta_current_lines > 0 then
+			self._.current_line = self._.current_line + delta_current_lines
+		end
 	end
 	self.set_lines_prompt = function(line_start, line_end, lines)
 		set_lines(self._.prompt_bufnr, line_start, line_end, lines)
