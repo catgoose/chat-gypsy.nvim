@@ -15,6 +15,7 @@ local state = {
 	focused_win = "prompt",
 	prompt_winid = 0,
 	chat_winid = 0,
+	chat_win_width = 0,
 	prompt_bufnr = 0,
 	chat_bufnr = 0,
 	mounted = false,
@@ -70,20 +71,14 @@ function Layout.new(ui)
 		return vim.tbl_contains({ self._.prompt_winid, self._.chat_winid }, vim.api.nvim_get_current_win())
 	end
 
-	self.chat_healthy = function()
-		return self._.chat_bufnr
-			and self._.chat_winid
-			and vim.api.nvim_buf_is_valid(self._.chat_bufnr)
-			and vim.api.nvim_win_is_valid(self._.chat_winid)
-	end
 	self.chat_set_cursor = function(line)
-		if self.chat_healthy() then
+		if self._.chat_winid and vim.api.nvim_win_is_valid(self._.chat_winid) then
 			vim.api.nvim_win_set_cursor(self._.chat_winid, { line, 0 })
 		end
 	end
 	self.chat_set_lines = function(lines, new_lines)
 		new_lines = new_lines or false
-		if self.chat_healthy() then
+		if self._.chat_bufnr and vim.api.nvim_buf_is_valid(self._.chat_bufnr) then
 			vim.api.nvim_buf_set_lines(self._.chat_bufnr, self._.current_line, self._.current_line + 1, false, lines)
 			if new_lines then
 				self._.current_line = self._.current_line + #lines
@@ -100,11 +95,11 @@ function Layout.new(ui)
 			self._.tokens.total,
 			symbols.right_arrow
 		)
-		local line_break_msg = symbols.horiz:rep(vim.api.nvim_win_get_width(self._.chat_winid) - #tokens_display + 4)
-			.. tokens_display
+		local line_break_msg = symbols.horiz:rep(self._.chat_win_width - #tokens_display + 4) .. tokens_display
 		local lines = { line_break_msg, "", "" }
 		self.chat_set_lines(lines)
 		self.chat_set_cursor(self._.current_line + #lines)
+		self._.current_line = self._.current_line + #lines
 	end
 
 	self.mount = function()
@@ -113,6 +108,7 @@ function Layout.new(ui)
 		self.init_state()
 		self._.mounted = true
 		self.set_ids()
+		self._.chat_win_width = vim.api.nvim_win_get_width(self._.chat_winid)
 		Log.trace("Configuring boxes")
 		self:configure()
 		if opts.ui.prompt.start_insert then
@@ -134,6 +130,8 @@ function Layout.new(ui)
 		self._.hidden = false
 		self.set_ids()
 		self.focus_last_win()
+		--  HACK: 2023-09-22 - make this more better
+		self.chat_set_cursor(self._.current_line)
 	end
 
 	Events:sub("request:error", function(err)
@@ -216,7 +214,6 @@ function Layout:configure()
 				self.chat_set_cursor(self._.current_line + 1)
 			end
 		end
-		--  BUG: 2023-09-22 - Chat is not being written to when layout is hidden
 		local function append(chunk)
 			line = line .. chunk
 			response_lines = response_lines .. line
