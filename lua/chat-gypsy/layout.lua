@@ -145,8 +145,18 @@ function Layout.new(ui)
 						-1
 					)
 				end
-				local line_symbol = symbols.horiz:rep(vim.api.nvim_win_get_width(self._.chat_winid))
-				local lines = { line_symbol, "", "" }
+				--  TODO: 2023-09-22 - Create method to display this line break message
+				local tokens_display = string.format(
+					" %s Tokens: %s/%s %s",
+					symbols.left_arrow,
+					self._.tokens.current,
+					self._.tokens.total,
+					symbols.right_arrow
+				)
+				local line_break_msg = symbols.horiz:rep(
+					vim.api.nvim_win_get_width(self._.chat_winid) - #tokens_display + 4
+				) .. tokens_display
+				local lines = { line_break_msg, "", "" }
 				self.chat_set_lines(lines)
 				self.chat_set_cursor(self._.current_line + #lines)
 			end
