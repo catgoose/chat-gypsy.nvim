@@ -94,7 +94,8 @@ function Request.new(events)
 		on_start()
 		local strategy = nil
 		if opts.dev_opts.request.throw_error then
-			on_error(opts.dev_opts.request.error, on_complete)
+			-- on_error(opts.dev_opts.request.error, on_complete)
+			on_error(opts.dev_opts.request.error)
 		else
 			self.handler = curl.post({
 				url = "https://api.openai.com/v1/chat/completions",
