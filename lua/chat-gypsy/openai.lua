@@ -18,10 +18,10 @@ function OpenAI:send_prompt(message, on_start, on_chunk, on_chunks_complete)
 		return
 	end
 
-	Log.debug(string.format("adding request to queue: \nmessage: %s", message))
+	Log.trace(string.format("adding request to queue: \nmessage: %s", message))
 	self.queue:add(function(on_request_complete)
 		local on_complete = function(complete_chunks)
-			Log.debug("request completed")
+			Log.trace("request completed")
 			on_chunks_complete(complete_chunks)
 			on_request_complete()
 		end

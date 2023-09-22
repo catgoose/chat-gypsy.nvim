@@ -153,7 +153,7 @@ function Request:query(content, on_response_start, on_response_chunk, on_respons
 	local on_complete = function()
 		Log.trace("query: on_complete")
 		self.on_assistant_response()
-		Log.debug("query: openai_params: " .. vim.inspect(self.openai_params))
+		Log.trace("query: openai_params: " .. vim.inspect(self.openai_params))
 		on_response_complete(self.chunks)
 	end
 
