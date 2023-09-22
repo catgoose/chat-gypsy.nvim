@@ -128,28 +128,29 @@ function Layout.new(ui)
 	end
 
 	Events:sub("request:error", function(err)
-		-- vim.schedule(function()
-		local message = err and err.error and err.error.message or type(err) == "string" and err or "Unknown error"
-		local preamble = { message, "" }
-		self.chat_set_lines(preamble, true)
-		for i = 0, #preamble do
+		vim.schedule(function()
 			if self.chat_healthy() then
-				vim.api.nvim_buf_add_highlight(
-					self._.chat_bufnr,
-					-1,
-					"ErrorMsg",
-					self._.current_line - #preamble + i,
-					0,
-					-1
-				)
+				local message = err and err.error and err.error.message
+					or type(err) == "string" and err
+					or "Unknown error"
+				local preamble = { message, "" }
+				self.chat_set_lines(preamble, true)
+				for i = 0, #preamble do
+					vim.api.nvim_buf_add_highlight(
+						self._.chat_bufnr,
+						-1,
+						"ErrorMsg",
+						self._.current_line - #preamble + i,
+						0,
+						-1
+					)
+				end
+				local line_symbol = symbols.horiz:rep(vim.api.nvim_win_get_width(self._.chat_winid))
+				local lines = { line_symbol, "", "" }
+				self.chat_set_lines(lines)
+				self.chat_set_cursor(self._.current_line + #lines)
 			end
-		end
-		if self.chat_healthy() then
-			local line_symbol = symbols.horiz:rep(vim.api.nvim_win_get_width(self._.chat_winid))
-			local lines = { line_symbol, "", "" }
-			self.chat_set_lines(lines)
-			self.chat_set_cursor(self._.current_line + #lines)
-		end
+		end)
 	end)
 	return self
 end
