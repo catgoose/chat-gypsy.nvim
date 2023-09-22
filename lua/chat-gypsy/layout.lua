@@ -137,26 +137,20 @@ function Layout.new(ui)
 	end
 
 	Events:sub("request:error", function(err)
-		vim.schedule(function()
-			if self.chat_healthy() then
-				local message = err and err.error and err.error.message
-					or type(err) == "string" and err
-					or "Unknown error"
-				local preamble = { message, "" }
-				self.chat_set_lines(preamble, true)
-				for i = 0, #preamble do
-					vim.api.nvim_buf_add_highlight(
-						self._.chat_bufnr,
-						-1,
-						"ErrorMsg",
-						self._.current_line - #preamble + i,
-						0,
-						-1
-					)
-				end
-				self.chat_line_break()
-			end
-		end)
+		local message = err and err.error and err.error.message or type(err) == "string" and err or "Unknown error"
+		local preamble = { message, "" }
+		self.chat_set_lines(preamble, true)
+		for i = 0, #preamble do
+			vim.api.nvim_buf_add_highlight(
+				self._.chat_bufnr,
+				-1,
+				"ErrorMsg",
+				self._.current_line - #preamble + i,
+				0,
+				-1
+			)
+		end
+		self.chat_line_break()
 	end)
 	return self
 end
@@ -222,6 +216,7 @@ function Layout:configure()
 				self.chat_set_cursor(self._.current_line + 1)
 			end
 		end
+		--  BUG: 2023-09-22 - Chat is not being written to when layout is hidden
 		local function append(chunk)
 			line = line .. chunk
 			response_lines = response_lines .. line
@@ -263,6 +258,8 @@ function Layout:configure()
 	if plugin_cfg.dev and dev.prompt.enabled then
 		prompt_send(dev.prompt.message)
 	end
+	--  BUG: 2023-09-22 - Prompt is not being cleared on enter when a message is
+	--  being written to chat buffer
 	self.boxes.prompt:map("n", "<Enter>", function()
 		local prompt_lines = vim.api.nvim_buf_get_lines(self._.prompt_bufnr, 0, -1, false)
 		prompt_send(prompt_lines)
