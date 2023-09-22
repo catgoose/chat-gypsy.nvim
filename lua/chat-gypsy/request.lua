@@ -93,45 +93,49 @@ function Request.new(events)
 	self.completions = function(on_start, on_chunk, on_complete, on_error)
 		on_start()
 		local strategy = nil
-		self.handler = curl.post({
-			url = "https://api.openai.com/v1/chat/completions",
-			raw = { "--no-buffer" },
-			headers = {
-				content_type = "application/json",
-				Authorization = "Bearer " .. opts.openai_key,
-			},
-			body = vim.json.encode(self.openai_params),
-			stream = function(_, chunk)
-				if chunk ~= "" then
-					vim.schedule(function()
-						if not strategy then
-							if string.match(chunk, "data:") then
-								strategy = "data"
-							else
-								strategy = "error"
+		if opts.dev_opts.request.throw_error then
+			on_error(opts.dev_opts.request.error)
+		else
+			self.handler = curl.post({
+				url = "https://api.openai.com/v1/chat/completions",
+				raw = { "--no-buffer" },
+				headers = {
+					content_type = "application/json",
+					Authorization = "Bearer " .. opts.openai_key,
+				},
+				body = vim.json.encode(self.openai_params),
+				stream = function(_, chunk)
+					if chunk ~= "" then
+						vim.schedule(function()
+							if not strategy then
+								if string.match(chunk, "data:") then
+									strategy = "data"
+								else
+									strategy = "error"
+								end
 							end
-						end
-						on_chunk(chunk, strategy)
+							on_chunk(chunk, strategy)
+						end)
+					end
+				end,
+				on_error = on_error,
+			})
+			self.handler:after_success(function()
+				if #self.error_chunks > 0 then
+					local error = table.concat(self.error_chunks, "")
+					local ok, json = pcall(vim.json.decode, error)
+					if ok then
+						on_error(json)
+					else
+						on_error(self.error_chunks)
+					end
+				else
+					vim.schedule(function()
+						on_complete()
 					end)
 				end
-			end,
-			on_error = on_error,
-		})
-		self.handler:after_success(function()
-			if #self.error_chunks > 0 then
-				local error = table.concat(self.error_chunks, "")
-				local ok, json = pcall(vim.json.decode, error)
-				if ok then
-					on_error(json)
-				else
-					on_error(self.error_chunks)
-				end
-			else
-				vim.schedule(function()
-					on_complete()
-				end)
-			end
-		end)
+			end)
+		end
 	end
 
 	self.events:sub("layout:unmount", function()

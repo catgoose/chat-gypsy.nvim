@@ -127,6 +127,10 @@ Config.opts = {
 			user_prompt = "",
 			enabled = false,
 		},
+		request = {
+			throw_error = true,
+			error = "You didn't provide an API key. You need to provide your API key in an Authorization header using Bearer auth (i.e. Authorization: Bearer YOUR_KEY), or as the password field (with blank username) if you're accessing the API from your browser and are prompted for a username and password. You can obtain an API key from https://platform.openai.com/account/api-keys.",
+		},
 	},
 }
 
