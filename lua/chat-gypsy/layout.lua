@@ -76,17 +76,20 @@ function Layout.new(ui)
 		return vim.tbl_contains({ self._.prompt_winid, self._.chat_winid }, vim.api.nvim_get_current_win())
 	end
 
-	self.chat_bufnr_valid = function()
-		return self._.chat_bufnr and vim.api.nvim_buf_is_valid(self._.chat_bufnr)
+	self.chat_healthy = function()
+		return self._.chat_bufnr
+			and self._.chat_winid
+			and vim.api.nvim_buf_is_valid(self._.chat_bufnr)
+			and vim.api.nvim_win_is_valid(self._.chat_winid)
 	end
 	self.chat_set_cursor = function(line)
-		if self._.chat_winid and vim.api.nvim_win_is_valid(self._.chat_winid) then
+		if self.chat_healthy() then
 			vim.api.nvim_win_set_cursor(self._.chat_winid, { line, 0 })
 		end
 	end
 	self.chat_set_lines = function(lines, new_lines)
 		new_lines = new_lines or false
-		if self.chat_bufnr_valid() then
+		if self.chat_healthy() then
 			vim.api.nvim_buf_set_lines(self._.chat_bufnr, self._.current_line, self._.current_line + 1, false, lines)
 			if new_lines then
 				self._.current_line = self._.current_line + #lines
@@ -125,23 +128,28 @@ function Layout.new(ui)
 	end
 
 	Events:sub("request:error", function(err)
-		vim.schedule(function()
-			local message = err and err.error and err.error.message or type(err) == "string" and err or "Unknown error"
-			local preamble = { message, "" }
-			self.chat_set_lines(preamble, true)
-			for i = 0, #preamble do
-				if self.chat_bufnr_valid() then
-					vim.api.nvim_buf_add_highlight(
-						self._.chat_bufnr,
-						-1,
-						"ErrorMsg",
-						self._.current_line - #preamble + i,
-						0,
-						-1
-					)
-				end
+		-- vim.schedule(function()
+		local message = err and err.error and err.error.message or type(err) == "string" and err or "Unknown error"
+		local preamble = { message, "" }
+		self.chat_set_lines(preamble, true)
+		for i = 0, #preamble do
+			if self.chat_healthy() then
+				vim.api.nvim_buf_add_highlight(
+					self._.chat_bufnr,
+					-1,
+					"ErrorMsg",
+					self._.current_line - #preamble + i,
+					0,
+					-1
+				)
 			end
-		end)
+		end
+		if self.chat_healthy() then
+			local line_symbol = symbols.horiz:rep(vim.api.nvim_win_get_width(self._.chat_winid))
+			local lines = { line_symbol, "", "" }
+			self.chat_set_lines(lines)
+			self.chat_set_cursor(self._.current_line + #lines)
+		end
 	end)
 	return self
 end
