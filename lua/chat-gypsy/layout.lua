@@ -189,7 +189,6 @@ function Layout:configure()
 			return
 		end
 		local prompt_message = table.concat(prompt_lines, "\n")
-		self._.current_line = self._.current_line == 1 and 0 or self._.current_line
 		local line = ""
 		local response_lines = ""
 		local function newln(n)
