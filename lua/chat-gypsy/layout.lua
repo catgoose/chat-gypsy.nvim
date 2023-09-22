@@ -34,20 +34,6 @@ function Layout.new(ui)
 	self.openai = require("chat-gypsy.openai").new(self.events)
 	self._ = {}
 
-	Events:sub("request:error", function(err)
-		vim.schedule(function()
-			--  TODO: 2023-09-21 - refactor this mess
-			self.set_lines_chat(self._.current_line, self._.current_line + 1, { "ERROR:", "" }, 2)
-			local error = utils.tbl_to_json_string(err)
-			self.set_lines_chat(self._.current_line, self._.current_line + 1, { "```json" }, 1)
-			for line in error:gmatch("[^\n]+") do
-				self.set_lines_chat(self._.current_line, self._.current_line + 1, { line }, 1)
-			end
-			self.set_lines_chat(self._.current_line, self._.current_line + 1, { "```", "" }, 2)
-			self.set_cursor_chat({ self._.current_line, 0 })
-		end)
-	end)
-
 	self.focus_chat = function()
 		vim.api.nvim_set_current_win(self._.chat_winid)
 		self._.focused_win = "chat"
@@ -91,11 +77,12 @@ function Layout.new(ui)
 			vim.api.nvim_buf_set_lines(bufnr, line_start, line_end, false, lines)
 		end
 	end
-	self.set_lines_chat = function(line_start, line_end, lines, delta_current_lines)
-		delta_current_lines = delta_current_lines or 0
+	self.set_lines_chat = function(line_start, line_end, lines, new_lines)
+		new_lines = new_lines or false
 		set_lines(self._.chat_bufnr, line_start, line_end, lines)
-		if delta_current_lines > 0 then
-			self._.current_line = self._.current_line + delta_current_lines
+		if new_lines then
+			self._.current_line = self._.current_line + #lines
+			self.set_cursor_chat({ self._.current_line, 0 })
 		end
 	end
 	self.set_lines_prompt = function(line_start, line_end, lines)
@@ -146,6 +133,19 @@ function Layout.new(ui)
 		self._ = utils.deepcopy(default_state)
 		self.set_ids()
 	end
+
+	Events:sub("request:error", function(err)
+		vim.schedule(function()
+			--  TODO: 2023-09-21 - add highlight for 'ERROR'
+			self.set_lines_chat(self._.current_line, self._.current_line + 1, { "ERROR", "" }, true)
+			local error = utils.tbl_to_json_string(err)
+			self.set_lines_chat(self._.current_line, self._.current_line + 1, { "```json" }, true)
+			for line in error:gmatch("[^\n]+") do
+				self.set_lines_chat(self._.current_line, self._.current_line + 1, { line }, true)
+			end
+			self.set_lines_chat(self._.current_line, self._.current_line + 1, { "```", "" }, true)
+		end)
+	end)
 	return self
 end
 
@@ -224,9 +224,6 @@ function Layout:configure()
 					self._.tokens.total,
 					symbols.right_arrow
 				)
-
-				vim.print(tokens_display)
-				vim.print(#tokens_display)
 
 				local line_break_msg = symbols.horiz:rep(
 					vim.api.nvim_win_get_width(self._.chat_winid) - #tokens_display + 4
