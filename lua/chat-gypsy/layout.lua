@@ -98,6 +98,21 @@ function Layout.new(ui)
 		end
 	end
 
+	self.chat_line_break = function()
+		local tokens_display = string.format(
+			" %s Tokens: %s/%s %s",
+			symbols.left_arrow,
+			self._.tokens.current,
+			self._.tokens.total,
+			symbols.right_arrow
+		)
+		local line_break_msg = symbols.horiz:rep(vim.api.nvim_win_get_width(self._.chat_winid) - #tokens_display + 4)
+			.. tokens_display
+		local lines = { line_break_msg, "", "" }
+		self.chat_set_lines(lines)
+		self.chat_set_cursor(self._.current_line + #lines)
+	end
+
 	self.mount = function()
 		Log.trace("Mounting UI")
 		self.layout:mount()
@@ -145,20 +160,7 @@ function Layout.new(ui)
 						-1
 					)
 				end
-				--  TODO: 2023-09-22 - Create method to display this line break message
-				local tokens_display = string.format(
-					" %s Tokens: %s/%s %s",
-					symbols.left_arrow,
-					self._.tokens.current,
-					self._.tokens.total,
-					symbols.right_arrow
-				)
-				local line_break_msg = symbols.horiz:rep(
-					vim.api.nvim_win_get_width(self._.chat_winid) - #tokens_display + 4
-				) .. tokens_display
-				local lines = { line_break_msg, "", "" }
-				self.chat_set_lines(lines)
-				self.chat_set_cursor(self._.current_line + #lines)
+				self.chat_line_break()
 			end
 		end)
 	end)
@@ -257,19 +259,8 @@ function Layout:configure()
 			local on_tokens = function(tokens)
 				self._.tokens.current = tokens
 				self._.tokens.total = self._.tokens.total + self._.tokens.current
-				local tokens_display = string.format(
-					" %s Tokens: %s/%s %s",
-					symbols.left_arrow,
-					self._.tokens.current,
-					self._.tokens.total,
-					symbols.right_arrow
-				)
-				local line_break_msg = symbols.horiz:rep(
-					vim.api.nvim_win_get_width(self._.chat_winid) - #tokens_display + 4
-				) .. tokens_display
 				newln(2)
-				self.chat_set_lines({ line_break_msg })
-				newln(2)
+				self.chat_line_break()
 			end
 			utils.calculate_tokens(prompt_message, on_tokens)
 		end
