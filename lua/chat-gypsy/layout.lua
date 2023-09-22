@@ -10,7 +10,7 @@ local utils = require("chat-gypsy.utils")
 local Layout = {}
 Layout.__index = Layout
 
-local default_state = {
+local state = {
 	hidden = false,
 	focused_win = "prompt",
 	prompt_winid = 0,
@@ -28,11 +28,33 @@ local default_state = {
 
 function Layout.new(ui)
 	local self = setmetatable({}, Layout)
+	self._ = {}
 	self.layout = ui.layout
 	self.boxes = ui.boxes
 	self.events = require("chat-gypsy.events").new()
 	self.openai = require("chat-gypsy.openai").new(self.events)
-	self._ = {}
+
+	self.init_state = function()
+		self._ = utils.deepcopy(state)
+		self.set_ids()
+	end
+	self.set_ids = function()
+		local set_winids = function()
+			self._.chat_winid = self.layout._.box.box[1].component.winid
+			self._.prompt_winid = self.layout._.box.box[2].component.winid
+		end
+		local set_bufnrs = function()
+			self._.chat_bufnr = self.layout._.box.box[1].component.bufnr
+			self._.prompt_bufnr = self.layout._.box.box[2].component.bufnr
+		end
+		set_winids()
+		set_bufnrs()
+		Log.trace("Setting winids and bufnrs for mounted layout")
+		Log.trace(string.format("chat_winid: %s", self._.chat_winid))
+		Log.trace(string.format("prompt_winid: %s", self._.prompt_winid))
+		Log.trace(string.format("chat_bufnr: %s", self._.chat_bufnr))
+		Log.trace(string.format("prompt_bufnr: %s", self._.prompt_bufnr))
+	end
 
 	self.focus_chat = function()
 		vim.api.nvim_set_current_win(self._.chat_winid)
@@ -54,56 +76,26 @@ function Layout.new(ui)
 		return vim.tbl_contains({ self._.prompt_winid, self._.chat_winid }, vim.api.nvim_get_current_win())
 	end
 
-	self.set_ids = function()
-		local set_winids = function()
-			self._.chat_winid = self.layout._.box.box[1].component.winid
-			self._.prompt_winid = self.layout._.box.box[2].component.winid
-		end
-		local set_bufnrs = function()
-			self._.chat_bufnr = self.layout._.box.box[1].component.bufnr
-			self._.prompt_bufnr = self.layout._.box.box[2].component.bufnr
-		end
-		set_winids()
-		set_bufnrs()
-		Log.trace("Setting winids and bufnrs for mounted layout")
-		Log.trace(string.format("chat_winid: %s", self._.chat_winid))
-		Log.trace(string.format("prompt_winid: %s", self._.prompt_winid))
-		Log.trace(string.format("chat_bufnr: %s", self._.chat_bufnr))
-		Log.trace(string.format("prompt_bufnr: %s", self._.prompt_bufnr))
-	end
-
-	local set_lines = function(bufnr, line_start, line_end, lines)
-		if bufnr and vim.api.nvim_buf_is_valid(bufnr) then
-			vim.api.nvim_buf_set_lines(bufnr, line_start, line_end, false, lines)
+	self.chat_set_cursor = function(line)
+		if self._.chat_winid and vim.api.nvim_win_is_valid(self._.chat_winid) then
+			vim.api.nvim_win_set_cursor(self._.chat_winid, { line, 0 })
 		end
 	end
-	self.set_lines_chat = function(line_start, line_end, lines, new_lines)
+	self.chat_set_lines = function(lines, new_lines)
 		new_lines = new_lines or false
-		set_lines(self._.chat_bufnr, line_start, line_end, lines)
-		if new_lines then
-			self._.current_line = self._.current_line + #lines
-			self.set_cursor_chat({ self._.current_line, 0 })
+		if self._.chat_bufnr and vim.api.nvim_buf_is_valid(self._.chat_bufnr) then
+			vim.api.nvim_buf_set_lines(self._.chat_bufnr, self._.current_line, self._.current_line + 1, false, lines)
+			if new_lines then
+				self._.current_line = self._.current_line + #lines
+				self.chat_set_cursor(self._.current_line)
+			end
 		end
-	end
-	self.set_lines_prompt = function(line_start, line_end, lines)
-		set_lines(self._.prompt_bufnr, line_start, line_end, lines)
-	end
-	local set_cursor = function(winid, pos)
-		if winid and vim.api.nvim_win_is_valid(winid) then
-			vim.api.nvim_win_set_cursor(winid, pos)
-		end
-	end
-	self.set_cursor_chat = function(pos)
-		set_cursor(self._.chat_winid, pos)
-	end
-	self.chat_last_line = function()
-		return vim.api.nvim_buf_line_count(self._.chat_bufnr)
 	end
 
 	self.mount = function()
 		Log.trace("Mounting UI")
 		self.layout:mount()
-		self.reset_layout()
+		self.init_state()
 		self._.mounted = true
 		self.set_ids()
 		Log.trace("Configuring boxes")
@@ -114,7 +106,7 @@ function Layout.new(ui)
 	end
 	self.unmount = function()
 		self.layout:unmount()
-		self.reset_layout()
+		self.init_state()
 		Events:pub("layout:unmount")
 		self.events:pub("layout:unmount")
 	end
@@ -129,21 +121,16 @@ function Layout.new(ui)
 		self.focus_last_win()
 	end
 
-	self.reset_layout = function()
-		self._ = utils.deepcopy(default_state)
-		self.set_ids()
-	end
-
 	Events:sub("request:error", function(err)
 		vim.schedule(function()
 			--  TODO: 2023-09-21 - add highlight for 'ERROR'
-			self.set_lines_chat(self._.current_line, self._.current_line + 1, { "ERROR", "" }, true)
+			self.chat_set_lines({ "ERROR", "" }, true)
 			local error = utils.tbl_to_json_string(err)
-			self.set_lines_chat(self._.current_line, self._.current_line + 1, { "```json" }, true)
+			self.chat_set_lines({ "```json" }, true)
 			for line in error:gmatch("[^\n]+") do
-				self.set_lines_chat(self._.current_line, self._.current_line + 1, { line }, true)
+				self.chat_set_lines({ line }, true)
 			end
-			self.set_lines_chat(self._.current_line, self._.current_line + 1, { "```", "" }, true)
+			self.chat_set_lines({ "```", "" }, true)
 		end)
 	end)
 	return self
@@ -154,7 +141,6 @@ function Layout:configure()
 		box:map("n", "q", function()
 			self.unmount()
 		end, { noremap = true })
-
 		box:on(ev.BufLeave, function(e)
 			vim.schedule(function()
 				if box.winid and vim.api.nvim_win_is_valid(box.winid) then
@@ -162,7 +148,6 @@ function Layout:configure()
 				end
 			end)
 		end)
-
 		box:on({
 			ev.BufDelete,
 		}, function()
@@ -170,83 +155,6 @@ function Layout:configure()
 		end)
 	end
 
-	local prompt_send = function(prompt_lines)
-		if prompt_lines[1] == "" and #prompt_lines == 1 then
-			return
-		end
-		local prompt_message = table.concat(prompt_lines, "\n")
-		self._.current_line = self._.current_line == 1 and 0 or self._.current_line
-		local line = ""
-		local response_lines = ""
-		local function newln(n)
-			n = n or 1
-			for _ = 1, n do
-				self._.current_line = self._.current_line + 1
-				line = ""
-				self.set_lines_chat(self._.current_line, self._.current_line + 1, { line, line })
-				self.set_cursor_chat({ self._.current_line + 1, 0 })
-			end
-		end
-		local function append(chunk)
-			line = line .. chunk
-			response_lines = response_lines .. line
-			self.set_lines_chat(self._.current_line, self._.current_line + 1, { line })
-			self.set_cursor_chat({ self._.current_line + 1, 0 })
-		end
-		local on_chunk = function(chunk)
-			if string.match(chunk, "\n") then
-				for _chunk in chunk:gmatch(".") do
-					if string.match(_chunk, "\n") then
-						response_lines = response_lines .. _chunk
-						newln()
-					else
-						append(_chunk)
-					end
-				end
-			else
-				append(chunk)
-			end
-		end
-		local on_start = function()
-			self.set_cursor_chat({ self._.current_line + 1, 0 })
-		end
-		local on_complete = function(chunks)
-			Events:pub("hook:request:complete", response_lines)
-			Log.trace(string.format("on_complete: chunks: %s", vim.inspect(chunks)))
-			vim.cmd("silent! undojoin")
-			local on_tokens = function(tokens)
-				self._.tokens.current = tokens
-				self._.tokens.total = self._.tokens.total + self._.tokens.current
-				local tokens_display = string.format(
-					" %s Tokens: %s/%s %s",
-					symbols.left_arrow,
-					self._.tokens.current,
-					self._.tokens.total,
-					symbols.right_arrow
-				)
-
-				local line_break_msg = symbols.horiz:rep(
-					vim.api.nvim_win_get_width(self._.chat_winid) - #tokens_display + 4
-				) .. tokens_display
-				newln(2)
-				self.set_lines_chat(self._.current_line, -1, { line_break_msg })
-				newln(2)
-			end
-			utils.calculate_tokens(prompt_message, on_tokens)
-		end
-
-		self.openai:send_prompt(prompt_message, on_start, on_chunk, on_complete)
-	end
-
-	if plugin_cfg.dev and dev.prompt.enabled then
-		prompt_send(dev.prompt.message)
-	end
-
-	self.boxes.prompt:map("n", "<Enter>", function()
-		local prompt_lines = vim.api.nvim_buf_get_lines(self._.prompt_bufnr, 0, -1, false)
-		self.set_lines_prompt(0, -1, {})
-		prompt_send(prompt_lines)
-	end, {})
 	self.boxes.prompt:on(ev.InsertEnter, function()
 		local esc = vim.api.nvim_replace_termcodes("<ESC>", true, false, true)
 		vim.api.nvim_feedkeys(esc, "n", true)
@@ -270,6 +178,80 @@ function Layout:configure()
 			}, { dir = "col" }))
 		end
 	end)
+
+	local prompt_send = function(prompt_lines)
+		if prompt_lines[1] == "" and #prompt_lines == 1 then
+			return
+		end
+		local prompt_message = table.concat(prompt_lines, "\n")
+		self._.current_line = self._.current_line == 1 and 0 or self._.current_line
+		local line = ""
+		local response_lines = ""
+		local function newln(n)
+			n = n or 1
+			for _ = 1, n do
+				self._.current_line = self._.current_line + 1
+				line = ""
+				self.chat_set_lines({ line, line })
+				self.chat_set_cursor(self._.current_line + 1)
+			end
+		end
+		local function append(chunk)
+			line = line .. chunk
+			response_lines = response_lines .. line
+			self.chat_set_lines({ line })
+			self.chat_set_cursor(self._.current_line + 1)
+		end
+		local on_chunk = function(chunk)
+			if string.match(chunk, "\n") then
+				for _chunk in chunk:gmatch(".") do
+					if string.match(_chunk, "\n") then
+						response_lines = response_lines .. _chunk
+						newln()
+					else
+						append(_chunk)
+					end
+				end
+			else
+				append(chunk)
+			end
+		end
+		local on_start = function()
+			self.chat_set_cursor(self._.current_line + 1)
+			vim.api.nvim_buf_set_lines(self._.prompt_bufnr, 0, -1, false, {})
+		end
+		local on_complete = function(chunks)
+			Events:pub("hook:request:complete", response_lines)
+			Log.trace(string.format("on_complete: chunks: %s", vim.inspect(chunks)))
+			vim.cmd("silent! undojoin")
+			local on_tokens = function(tokens)
+				self._.tokens.current = tokens
+				self._.tokens.total = self._.tokens.total + self._.tokens.current
+				local tokens_display = string.format(
+					" %s Tokens: %s/%s %s",
+					symbols.left_arrow,
+					self._.tokens.current,
+					self._.tokens.total,
+					symbols.right_arrow
+				)
+				local line_break_msg = symbols.horiz:rep(
+					vim.api.nvim_win_get_width(self._.chat_winid) - #tokens_display + 4
+				) .. tokens_display
+				newln(2)
+				self.chat_set_lines({ line_break_msg })
+				newln(2)
+			end
+			utils.calculate_tokens(prompt_message, on_tokens)
+		end
+		self.openai:send_prompt(prompt_message, on_start, on_chunk, on_complete)
+	end
+	if plugin_cfg.dev and dev.prompt.enabled then
+		prompt_send(dev.prompt.message)
+	end
+	self.boxes.prompt:map("n", "<Enter>", function()
+		local prompt_lines = vim.api.nvim_buf_get_lines(self._.prompt_bufnr, 0, -1, false)
+		prompt_send(prompt_lines)
+	end, {})
 
 	local modes = { "n", "i" }
 	for _, mode in ipairs(modes) do
