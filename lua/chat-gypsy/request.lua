@@ -45,7 +45,7 @@ function Request.new(events)
 		self.error_chunks = {}
 		self.content = ""
 		if self.handler ~= nil then
-			Log.debug("shutting down plenary.curl handler")
+			Log.trace("shutting down plenary.curl handler")
 			self.handler:shutdown()
 			self.handler = nil
 		end
@@ -153,7 +153,7 @@ function Request:query(content, on_response_start, on_response_chunk, on_respons
 	local on_complete = function()
 		Log.trace("query: on_complete")
 		self.on_assistant_response()
-		Log.debug("query: openai_params: " .. vim.inspect(self.openai_params))
+		Log.trace("query: openai_params: " .. vim.inspect(self.openai_params))
 		on_response_complete(self.chunks)
 	end
 
