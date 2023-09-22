@@ -76,6 +76,9 @@ function Layout.new(ui)
 		return vim.tbl_contains({ self._.prompt_winid, self._.chat_winid }, vim.api.nvim_get_current_win())
 	end
 
+	self.chat_bufnr_valid = function()
+		return self._.chat_bufnr and vim.api.nvim_buf_is_valid(self._.chat_bufnr)
+	end
 	self.chat_set_cursor = function(line)
 		if self._.chat_winid and vim.api.nvim_win_is_valid(self._.chat_winid) then
 			vim.api.nvim_win_set_cursor(self._.chat_winid, { line, 0 })
@@ -83,7 +86,7 @@ function Layout.new(ui)
 	end
 	self.chat_set_lines = function(lines, new_lines)
 		new_lines = new_lines or false
-		if self._.chat_bufnr and vim.api.nvim_buf_is_valid(self._.chat_bufnr) then
+		if self.chat_bufnr_valid() then
 			vim.api.nvim_buf_set_lines(self._.chat_bufnr, self._.current_line, self._.current_line + 1, false, lines)
 			if new_lines then
 				self._.current_line = self._.current_line + #lines
@@ -127,14 +130,16 @@ function Layout.new(ui)
 			local preamble = { message, "" }
 			self.chat_set_lines(preamble, true)
 			for i = 0, #preamble do
-				vim.api.nvim_buf_add_highlight(
-					self._.chat_bufnr,
-					-1,
-					"ErrorMsg",
-					self._.current_line - #preamble + i,
-					0,
-					-1
-				)
+				if self.chat_bufnr_valid() then
+					vim.api.nvim_buf_add_highlight(
+						self._.chat_bufnr,
+						-1,
+						"ErrorMsg",
+						self._.current_line - #preamble + i,
+						0,
+						-1
+					)
+				end
 			end
 		end)
 	end)
