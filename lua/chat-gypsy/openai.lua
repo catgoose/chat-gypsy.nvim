@@ -12,13 +12,14 @@ end
 
 --  TODO: 2023-09-20 - check if message is greater than max token count for
 --  model
-function OpenAI:send_prompt(message, on_start, on_chunk, on_chunks_complete)
+function OpenAI:send_prompt(message, before_start, on_start, on_chunk, on_chunks_complete)
 	if not message then
 		Log.warn("send_prompt: no message provided")
 		return
 	end
 
 	Log.trace(string.format("adding request to queue: \nmessage: %s", message))
+	before_start()
 	self.queue:add(function(on_request_complete)
 		local on_complete = function(complete_chunks)
 			Log.trace("request completed")

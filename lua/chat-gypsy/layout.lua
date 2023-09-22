@@ -236,6 +236,8 @@ function Layout:configure()
 		end
 		local on_start = function()
 			self.chat_set_cursor(self._.current_line + 1)
+		end
+		local before_start = function()
 			vim.api.nvim_buf_set_lines(self._.prompt_bufnr, 0, -1, false, {})
 		end
 		local on_complete = function(chunks)
@@ -250,13 +252,11 @@ function Layout:configure()
 			end
 			utils.calculate_tokens(prompt_message, on_tokens)
 		end
-		self.openai:send_prompt(prompt_message, on_start, on_chunk, on_complete)
+		self.openai:send_prompt(prompt_message, before_start, on_start, on_chunk, on_complete)
 	end
 	if plugin_cfg.dev and dev.prompt.enabled then
 		prompt_send(dev.prompt.message)
 	end
-	--  BUG: 2023-09-22 - Prompt is not being cleared on enter when a message is
-	--  being written to chat buffer
 	self.boxes.prompt:map("n", "<Enter>", function()
 		local prompt_lines = vim.api.nvim_buf_get_lines(self._.prompt_bufnr, 0, -1, false)
 		prompt_send(prompt_lines)
