@@ -39,16 +39,10 @@ function Layout.new(ui)
 		self.set_ids()
 	end
 	self.set_ids = function()
-		local set_winids = function()
-			self._.chat_winid = self.layout._.box.box[1].component.winid
-			self._.prompt_winid = self.layout._.box.box[2].component.winid
-		end
-		local set_bufnrs = function()
-			self._.chat_bufnr = self.layout._.box.box[1].component.bufnr
-			self._.prompt_bufnr = self.layout._.box.box[2].component.bufnr
-		end
-		set_winids()
-		set_bufnrs()
+		self._.chat_winid = self.layout._.box.box[1].component.winid
+		self._.prompt_winid = self.layout._.box.box[2].component.winid
+		self._.chat_bufnr = self.layout._.box.box[1].component.bufnr
+		self._.prompt_bufnr = self.layout._.box.box[2].component.bufnr
 		Log.trace("Setting winids and bufnrs for mounted layout")
 		Log.trace(string.format("chat_winid: %s", self._.chat_winid))
 		Log.trace(string.format("prompt_winid: %s", self._.prompt_winid))
