@@ -94,7 +94,7 @@ function Request.new(events)
 		on_start()
 		local strategy = nil
 		if opts.dev_opts.request.throw_error then
-			on_error(opts.dev_opts.request.error)
+			on_error(opts.dev_opts.request.error, on_complete)
 		else
 			self.handler = curl.post({
 				url = "https://api.openai.com/v1/chat/completions",
@@ -161,13 +161,18 @@ function Request:query(content, on_response_start, on_response_chunk, on_respons
 		on_response_complete(self.chunks)
 	end
 
-	local on_error = function(err)
+	local on_error = function(err, on_after_error)
 		Events:pub("hook:request:error", "completions", err)
 		Events:pub("request:error", err)
 		if type(err) == "table" then
 			err = vim.inspect(err)
 		end
 		Log.error(string.format("query: on_error: %s", err))
+		if on_after_error then
+			vim.schedule(function()
+				on_after_error()
+			end)
+		end
 	end
 
 	local on_chunk = function(chunk, strategy)
