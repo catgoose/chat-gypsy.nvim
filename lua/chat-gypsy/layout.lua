@@ -123,7 +123,8 @@ function Layout.new(ui)
 
 	Events:sub("request:error", function(err)
 		vim.schedule(function()
-			local preamble = { err.error.message, "" }
+			local message = err and err.error and err.error.message or type(err) == "string" and err or "Unknown error"
+			local preamble = { message, "" }
 			self.chat_set_lines(preamble, true)
 			for i = 0, #preamble do
 				vim.api.nvim_buf_add_highlight(
