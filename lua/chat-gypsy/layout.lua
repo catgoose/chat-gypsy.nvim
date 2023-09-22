@@ -123,14 +123,18 @@ function Layout.new(ui)
 
 	Events:sub("request:error", function(err)
 		vim.schedule(function()
-			--  TODO: 2023-09-21 - add highlight for 'ERROR'
-			self.chat_set_lines({ "ERROR", "" }, true)
-			local error = utils.tbl_to_json_string(err)
-			self.chat_set_lines({ "```json" }, true)
-			for line in error:gmatch("[^\n]+") do
-				self.chat_set_lines({ line }, true)
+			local preamble = { err.error.message, "" }
+			self.chat_set_lines(preamble, true)
+			for i = 0, #preamble do
+				vim.api.nvim_buf_add_highlight(
+					self._.chat_bufnr,
+					-1,
+					"ErrorMsg",
+					self._.current_line - #preamble + i,
+					0,
+					-1
+				)
 			end
-			self.chat_set_lines({ "```", "" }, true)
 		end)
 	end)
 	return self
