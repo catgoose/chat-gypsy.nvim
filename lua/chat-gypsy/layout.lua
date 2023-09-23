@@ -6,6 +6,7 @@ local plugin_cfg, dev, opts = config.plugin_cfg, config.dev, config.opts
 local Log = require("chat-gypsy").Log
 local Events = require("chat-gypsy").Events
 local utils = require("chat-gypsy.utils")
+local models = require("chat-gypsy.models")
 
 local Layout = {}
 Layout.__index = Layout
@@ -22,7 +23,8 @@ local state = {
 	layout = "float",
 	current_line = 0,
 	tokens = {
-		current = 0,
+		prompt = 0,
+		response = 0,
 		total = 0,
 	},
 }
@@ -89,11 +91,14 @@ function Layout.new(ui)
 	end
 
 	self.chat_line_break = function()
+		local model_config = models.get_config(opts.openai_params.model)
 		local tokens_display = string.format(
-			" %s Tokens: %s/%s %s",
+			" %s (%s/%s) (%s/%s) %s",
 			symbols.left_arrow,
-			self._.tokens.current,
+			self._.tokens.prompt,
+			self._.tokens.response,
 			self._.tokens.total,
+			model_config.max_tokens,
 			symbols.right_arrow
 		)
 		local line_break_msg = symbols.horiz:rep(self._.chat_win_width - #tokens_display + 4) .. tokens_display
@@ -221,12 +226,16 @@ function Layout:configure()
 			Log.trace(string.format("on_complete: chunks: %s", vim.inspect(chunks)))
 			vim.cmd("silent! undojoin")
 			local on_tokens = function(tokens)
-				self._.tokens.current = tokens
-				self._.tokens.total = self._.tokens.total + self._.tokens.current
+				tokens = tokens or {}
+				tokens.prompt = tokens.prompt or 0
+				tokens.response = tokens.response or 0
+				self._.tokens.prompt = tokens.prompt
+				self._.tokens.response = tokens.response
+				self._.tokens.total = self._.tokens.total + self._.tokens.prompt + self._.tokens.response
 				newln(2)
 				self.chat_line_break()
 			end
-			utils.calculate_tokens(prompt_message, on_tokens)
+			utils.get_tokens(prompt_message, chunks, on_tokens)
 		end
 		local on_error = function(err)
 			local message = err and err.error and err.error.message or type(err) == "string" and err or "Unknown error"
