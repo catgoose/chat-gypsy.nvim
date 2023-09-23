@@ -145,7 +145,7 @@ return {
     "GypsyOpen",
     "GypsyClose",
     "GypsyOpen",
-    "GypsyCLose"
+    "GypsyClose"
   }
 }
 ```
