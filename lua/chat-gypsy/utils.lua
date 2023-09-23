@@ -14,8 +14,7 @@ Utils.deepcopy = function(orig)
 	return copy
 end
 
-Utils.calculate_tokens = function(text, on_tokens)
-	on_tokens = on_tokens or function(_) end
+local calculate_tokens = function(text)
 	local ok, result = pcall(
 		vim.api.nvim_exec2,
 		string.format(
@@ -35,13 +34,29 @@ EOF
 	if ok then
 		output = result.output
 	end
-	on_tokens(output)
+	return output
+end
+
+Utils.get_tokens = function(prompt, response_chunks, on_tokens)
+	local response = ""
+	if type(response_chunks) == "table" then
+		response = table.concat(response_chunks, "")
+	else
+		response = response_chunks
+	end
+	local tokens = {
+		prompt = calculate_tokens(prompt),
+		response = calculate_tokens(response),
+	}
+	if on_tokens then
+		on_tokens(tokens)
+	end
 end
 
 Utils.tbl_to_json_string = function(table, indent_level)
 	if type(table) == "table" then
 		indent_level = indent_level or 1
-		local indent = string.rep("  ", indent_level) -- 2 spaces per level
+		local indent = string.rep("  ", indent_level)
 		local json_str = "{\n"
 		local comma = ""
 		for k, v in pairs(table) do
