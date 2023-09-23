@@ -119,7 +119,11 @@ Config.opts = {
 			start = function(--[[content]]) end,
 			chunk = function(--[[chunk]]) end,
 			complete = function(--[[response]]) end,
-			error = function(--[[chunk]]) end,
+			error = function(--[[source, error_tbl]]) end,
+		},
+		models = {
+			get = function(--[[models]]) end,
+			error = function(--[[source, error_tbl]]) end,
 		},
 	},
 	dev_opts = {
@@ -137,9 +141,11 @@ Config.opts = {
 Config.dev = Config.opts.dev_opts
 
 local init_event_hooks = function()
-	local request = Config.opts.hooks.request
-	for hook, _ in pairs(request) do
-		Events:sub("hook:request:" .. hook, request[hook])
+	local types = Config.opts.hooks
+	for type, _ in pairs(types) do
+		for hook, _ in pairs(types[type]) do
+			Events:sub("hook:" .. type .. ":" .. hook, types[type][hook])
+		end
 	end
 end
 

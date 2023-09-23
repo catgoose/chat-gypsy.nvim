@@ -131,6 +131,10 @@ local opts = {
       complete = function(response) end,
       error = function(source, error_tbl) end,
     },
+    models = {
+      get = function(models) end,
+      error = function(source, error_tbl) end
+    }
   },
 }
 
@@ -190,6 +194,8 @@ Several event hooks are provided for customization:
 | request.chunk    | chunk             | Chunk is received from request stream |
 | request.complete | response          | Response is received from openai      |
 | request.error    | source, error_tbl | An error has occurred in a request    |
+| models.get       | models            | Models retrieved from OpenAI          |
+| models.error     | source, error_tbl | Error occurred retrieving models      |
 
 ## TODO
 

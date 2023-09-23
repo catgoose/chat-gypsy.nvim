@@ -21,7 +21,7 @@ local get_models = function()
 					if err.error then
 						err.error.http_status = response.status
 					end
-					Events:pub("hook:request:error", "get_models", err)
+					Events:pub("hook:models:error", "get_models", err)
 					if type(err) == "table" then
 						err = vim.inspect(err)
 					end
@@ -47,6 +47,7 @@ local get_models = function()
 						return model_priority[a] < model_priority[b]
 					end)
 					Log.info("getModels: success: " .. vim.inspect(models))
+					Events:pub("hook:models:get", models)
 					if #models > 0 then
 						M.names = models
 						M.success = true
