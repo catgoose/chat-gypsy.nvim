@@ -46,7 +46,7 @@ local get_models = function()
 					table.sort(models, function(a, b)
 						return model_priority[a] < model_priority[b]
 					end)
-					Log.debug("getModels: success: " .. vim.inspect(models))
+					Log.info("getModels: success: " .. vim.inspect(models))
 					if #models > 0 then
 						M.names = models
 						M.success = true
