@@ -143,7 +143,7 @@ function Request.new(events)
 	return self
 end
 
-function Request:query(content, on_response_start, on_response_chunk, on_response_complete)
+function Request:query(content, on_response_start, on_response_chunk, on_response_complete, on_response_error)
 	self.on_user_prompt(content)
 
 	local on_start = function()
@@ -159,18 +159,18 @@ function Request:query(content, on_response_start, on_response_chunk, on_respons
 		on_response_complete(self.chunks)
 	end
 
-	local on_error = function(err, on_after_error)
+	local on_error = function(err, after_error)
 		Events:pub("hook:request:error", "completions", err)
-		Events:pub("request:error", err)
 		if type(err) == "table" then
 			err = vim.inspect(err)
 		end
 		Log.error(string.format("query: on_error: %s", err))
-		if on_after_error then
+		if after_error then
 			vim.schedule(function()
-				on_after_error()
+				after_error()
 			end)
 		end
+		on_response_error(err)
 	end
 
 	local on_chunk = function(chunk, strategy)

@@ -133,24 +133,35 @@ function Layout.new(ui)
 		self.chat_set_cursor(self._.current_line)
 	end
 
-	Events:sub("request:error", function(err)
-		vim.schedule(function()
-			local message = err and err.error and err.error.message or type(err) == "string" and err or "Unknown error"
-			local preamble = { message, "" }
-			self.chat_set_lines(preamble, true)
-			for i = 0, #preamble do
-				vim.api.nvim_buf_add_highlight(
-					self._.chat_bufnr,
-					-1,
-					"ErrorMsg",
-					self._.current_line - #preamble + i,
-					0,
-					-1
-				)
-			end
-			self.chat_line_break()
-		end)
-	end)
+	-- Events:sub("request:error", function(err)
+	-- local on_error = function(err)
+	-- 	local message = err and err.error and err.error.message or type(err) == "string" and err or "Unknown error"
+	-- 	local preamble = { message, "" }
+	-- 	self.chat_set_lines(preamble, true)
+	-- 	Log.debug(
+	-- 		string.format(
+	-- 			"adding error highlight to chat buffer: %s, current_line: %s",
+	-- 			self._.chat_bufnr,
+	-- 			self._.current_line
+	-- 		)
+	-- 	)
+	-- 	local add_highlights = function()
+	-- 		for i = 0, #preamble do
+	-- 			vim.api.nvim_buf_add_highlight(
+	-- 				self._.chat_bufnr,
+	-- 				-1,
+	-- 				"ErrorMsg",
+	-- 				self._.current_line - #preamble + i,
+	-- 				0,
+	-- 				-1
+	-- 			)
+	-- 		end
+	-- 	end
+	-- 	self.queue:add(add_highlights)
+	-- 	self.chat_line_break()
+	-- end
+	-- end)
+	-- end)
 	return self
 end
 
@@ -251,7 +262,30 @@ function Layout:configure()
 			end
 			utils.calculate_tokens(prompt_message, on_tokens)
 		end
-		self.openai:send_prompt(prompt_message, before_start, on_start, on_chunk, on_complete)
+		local on_error = function(err)
+			local message = err and err.error and err.error.message or type(err) == "string" and err or "Unknown error"
+			local preamble = { message, "" }
+			self.chat_set_lines(preamble, true)
+			Log.trace(
+				string.format(
+					"adding error highlight to chat buffer: %s, current_line: %s",
+					self._.chat_bufnr,
+					self._.current_line
+				)
+			)
+			for i = 0, #preamble do
+				vim.api.nvim_buf_add_highlight(
+					self._.chat_bufnr,
+					-1,
+					"ErrorMsg",
+					self._.current_line - #preamble + i,
+					0,
+					-1
+				)
+			end
+			self.chat_line_break()
+		end
+		self.openai:send_prompt(prompt_message, before_start, on_start, on_chunk, on_complete, on_error)
 	end
 	if plugin_cfg.dev and dev.prompt.enabled then
 		prompt_send(dev.prompt.message)

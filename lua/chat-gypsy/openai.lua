@@ -10,7 +10,7 @@ function OpenAI.new(events)
 	return self
 end
 
-function OpenAI:send_prompt(message, before_start, on_start, on_chunk, on_chunks_complete)
+function OpenAI:send_prompt(message, before_start, on_start, on_chunk, on_chunks_complete, on_error)
 	if not message then
 		Log.warn("send_prompt: no message provided")
 		return
@@ -25,7 +25,7 @@ function OpenAI:send_prompt(message, before_start, on_start, on_chunk, on_chunks
 			on_request_complete()
 		end
 
-		self.request:query(message, on_start, on_chunk, on_complete)
+		self.request:query(message, on_start, on_chunk, on_complete, on_error)
 	end)
 end
 
