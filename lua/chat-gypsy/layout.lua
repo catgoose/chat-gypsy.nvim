@@ -156,8 +156,6 @@ end
 
 function Layout:configure()
 	for _, box in pairs(self.boxes) do
-		--  TODO: 2023-09-22 - when destroying layout, last focused window should be
-		--  refocused instead of letting neovim decide
 		box:map("n", "q", function()
 			self.unmount()
 		end, { noremap = true })

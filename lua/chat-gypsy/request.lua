@@ -24,9 +24,6 @@ function Request.new(events)
 		self.content = table.concat(self.chunks, "")
 		self.join_content()
 		Log.trace("on_user_prompt: " .. self.content)
-		--  TODO: 2023-09-17 - create chat module to handle chat history,
-		--  saving chats to disk, and providing an interface for telescope
-		--  picker to choose from previous chats
 		table.insert(self.openai_params.messages, {
 			role = "assistant",
 			content = self.content,

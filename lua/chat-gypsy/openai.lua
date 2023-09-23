@@ -10,8 +10,6 @@ function OpenAI.new(events)
 	return self
 end
 
---  TODO: 2023-09-20 - check if message is greater than max token count for
---  model
 function OpenAI:send_prompt(message, before_start, on_start, on_chunk, on_chunks_complete)
 	if not message then
 		Log.warn("send_prompt: no message provided")
