@@ -42,10 +42,8 @@ Utils.tbl_to_json_string = function(table, indent_level)
 	if type(table) == "table" then
 		indent_level = indent_level or 1
 		local indent = string.rep("  ", indent_level) -- 2 spaces per level
-
 		local json_str = "{\n"
 		local comma = ""
-
 		for k, v in pairs(table) do
 			json_str = json_str .. comma .. indent .. '"' .. tostring(k) .. '": '
 			if type(v) == "table" then
@@ -55,7 +53,6 @@ Utils.tbl_to_json_string = function(table, indent_level)
 			end
 			comma = ",\n"
 		end
-
 		json_str = json_str .. "\n" .. string.rep("  ", indent_level - 1) .. "}"
 		json_str = string.gsub(json_str, "\\", "")
 		return json_str
