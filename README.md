@@ -1,5 +1,14 @@
 # Gypsy
 
+<!--toc:start-->
+
+- [Gypsy](#gypsy)
+  - [Usage](#usage)
+    - [Calling with `:lua require('chat-gypsy)...`](#calling-with-lua-requirechat-gypsy)
+    - [Calling with vim user commands](#calling-with-vim-user-commands)
+  - [Installation](#installation) - [Lazy.nvim](#lazynvim) - [Event hooks](#event-hooks)
+  <!--toc:end-->
+
 ## Usage
 
 ### Calling with `:lua require('chat-gypsy)...`
@@ -181,3 +190,7 @@ Several event hooks are provided for customization:
 | request.chunk    | chunk             | Chunk is received from request stream |
 | request.complete | response          | Response is received from openai      |
 | request.error    | source, error_tbl | An error has occurred in a request    |
+
+## TODO
+
+- [ ] Create chat history functionality
