@@ -65,4 +65,18 @@ end
 M.names = {}
 M.success = false
 
+M.get_config = function(model)
+	local found_model = vim.tbl_filter(function(m)
+		return m.model == model
+	end, openai_models)
+	if not vim.tbl_contains(M.names, model) or not model or not found_model then
+		return {
+			model = "no_model_found",
+			max_tokens = 0,
+			priority = 1,
+		}
+	end
+	return found_model[1]
+end
+
 return M
