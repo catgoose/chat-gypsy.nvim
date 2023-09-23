@@ -38,6 +38,7 @@ function Layout.new(ui)
 	self.init_state = function()
 		self._ = utils.deepcopy(state)
 		self.set_ids()
+		self._.chat_win_width = vim.api.nvim_win_get_width(self._.chat_winid)
 	end
 	self.set_ids = function()
 		self._.chat_winid = self.layout._.box.box[1].component.winid
@@ -107,8 +108,6 @@ function Layout.new(ui)
 		self.layout:mount()
 		self.init_state()
 		self._.mounted = true
-		self.set_ids()
-		self._.chat_win_width = vim.api.nvim_win_get_width(self._.chat_winid)
 		Log.trace("Configuring boxes")
 		self:configure()
 		if opts.ui.prompt.start_insert then
@@ -117,7 +116,6 @@ function Layout.new(ui)
 	end
 	self.unmount = function()
 		self.layout:unmount()
-		self.init_state()
 		Events:pub("layout:unmount")
 		self.events:pub("layout:unmount")
 	end
@@ -171,11 +169,9 @@ function Layout:configure()
 			self.unmount()
 		end, { noremap = true })
 		box:on(ev.BufLeave, function(e)
-			vim.schedule(function()
-				if box.winid and vim.api.nvim_win_is_valid(box.winid) then
-					vim.api.nvim_win_set_buf(box.winid, e.buf)
-				end
-			end)
+			if box.winid and vim.api.nvim_win_is_valid(box.winid) then
+				vim.api.nvim_win_set_buf(box.winid, e.buf)
+			end
 		end)
 		box:on({
 			ev.BufDelete,
@@ -208,7 +204,7 @@ function Layout:configure()
 		end
 	end)
 
-	local prompt_send = function(prompt_lines)
+	local send_prompt = function(prompt_lines)
 		if prompt_lines[1] == "" and #prompt_lines == 1 then
 			return
 		end
@@ -288,11 +284,11 @@ function Layout:configure()
 		self.openai:send_prompt(prompt_message, before_start, on_start, on_chunk, on_complete, on_error)
 	end
 	if plugin_cfg.dev and dev.prompt.enabled then
-		prompt_send(dev.prompt.message)
+		send_prompt(dev.prompt.message)
 	end
 	self.boxes.prompt:map("n", "<Enter>", function()
 		local prompt_lines = vim.api.nvim_buf_get_lines(self._.prompt_bufnr, 0, -1, false)
-		prompt_send(prompt_lines)
+		send_prompt(prompt_lines)
 	end, {})
 
 	local modes = { "n", "i" }
