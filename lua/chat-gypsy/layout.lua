@@ -130,36 +130,6 @@ function Layout.new(ui)
 		self.focus_last_win()
 		self.chat_set_cursor(self._.current_line)
 	end
-
-	-- Events:sub("request:error", function(err)
-	-- local on_error = function(err)
-	-- 	local message = err and err.error and err.error.message or type(err) == "string" and err or "Unknown error"
-	-- 	local preamble = { message, "" }
-	-- 	self.chat_set_lines(preamble, true)
-	-- 	Log.debug(
-	-- 		string.format(
-	-- 			"adding error highlight to chat buffer: %s, current_line: %s",
-	-- 			self._.chat_bufnr,
-	-- 			self._.current_line
-	-- 		)
-	-- 	)
-	-- 	local add_highlights = function()
-	-- 		for i = 0, #preamble do
-	-- 			vim.api.nvim_buf_add_highlight(
-	-- 				self._.chat_bufnr,
-	-- 				-1,
-	-- 				"ErrorMsg",
-	-- 				self._.current_line - #preamble + i,
-	-- 				0,
-	-- 				-1
-	-- 			)
-	-- 		end
-	-- 	end
-	-- 	self.queue:add(add_highlights)
-	-- 	self.chat_line_break()
-	-- end
-	-- end)
-	-- end)
 	return self
 end
 
