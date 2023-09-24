@@ -249,8 +249,6 @@ function Layout:configure()
 				self._.tokens.total = self._.tokens.total + self._.tokens.prompt + self._.tokens.response
 				newln(2)
 				self.chat.add(prompt_message, self._.response.lines, self._.tokens)
-				vim.print(self.chat.history)
-				vim.print(vim.json.encode(self.chat.history))
 				self.response_line_break()
 			end
 			utils.get_tokens(prompt_message, chunks, on_tokens)
