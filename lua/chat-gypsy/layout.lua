@@ -125,6 +125,11 @@ function Layout.new(ui)
 		table.insert(self._.response.lines, self._.response.line)
 	end
 
+	self.restore = function()
+		self.history:read()
+		local history = self.history:get()
+	end
+
 	self.mount = function()
 		Log.trace("Mounting UI")
 		self.layout:mount()
@@ -135,6 +140,7 @@ function Layout.new(ui)
 		if opts.ui.prompt.start_insert then
 			vim.cmd.startinsert()
 		end
+		-- self.restore()
 	end
 	self.unmount = function()
 		self.layout:unmount()
@@ -248,8 +254,15 @@ function Layout:configure()
 				self._.tokens.response = tokens.response
 				self._.tokens.total = self._.tokens.total + self._.tokens.prompt + self._.tokens.response
 				newln(2)
-				self.history:add(prompt_message, self._.response.lines, self._.tokens)
+				--  BUG: 2023-09-24 - passing self._.response.line into history:add
+				--  results in each history.messages with type of "response" to be the
+				--  same.  It must be passed by reference, which is causing the bug
+				-- self.history:add(prompt_message, self._.response.lines, self._.tokens)
+				self.history:add(prompt_message, table.concat(chunks, ""), self._.tokens)
+				self.history:save()
 				self.response_line_break()
+				-- local history = self.history:get()
+				-- vim.print(history)
 			end
 			utils.get_tokens(prompt_message, chunks, on_tokens)
 		end
