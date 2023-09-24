@@ -1,40 +1,48 @@
+local Log = require("chat-gypsy").Log
 Chat = {}
+Chat.__index = Chat
+
+function Chat.new()
+	local self = setmetatable({}, Chat)
+	self.history = {}
+	return self
+end
+
 local generate_random_id = function()
 	local charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 	local result = ""
-
 	for _ = 1, 8 do
 		local rand = math.random(#charset)
 		result = result .. string.sub(charset, rand, rand)
 	end
-
 	return result
 end
 
-Chat.history = {}
-
-Chat.add = function(prompt_message, response_message, tokens_tbl)
-	if not Chat.history.id then
-		Chat.history = {
+function Chat:add(prompt_message, response_message, tokens_tbl)
+	if not self.history.id then
+		self.history = {
 			id = generate_random_id(),
 			createdAt = os.time(),
 			updatedAt = os.time(),
 			messages = {},
 		}
+		Log.debug("Creating new chat: %s", vim.inspect(self.history))
 	end
-	table.insert(Chat.history.messages, {
+	table.insert(self.history.messages, {
 		type = "prompt",
 		message = prompt_message,
 		time = os.time(),
 		tokens = tonumber(tokens_tbl.prompt),
 	})
-	table.insert(Chat.history.messages, {
+	Log.debug("Inserting new prompt into history: %s", vim.inspect(self.history.messages[#self.history.messages]))
+	table.insert(self.history.messages, {
 		type = "response",
 		message = response_message,
 		time = os.time(),
 		tokens = tonumber(tokens_tbl.response),
 	})
-	Chat.history.updatedAt = os.time()
+	Log.debug("Inserting new response into history: %s", vim.inspect(self.history.messages[#self.history.messages]))
+	self.history.updatedAt = os.time()
 end
 
 return Chat

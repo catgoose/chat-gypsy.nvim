@@ -42,7 +42,7 @@ function Layout.new(ui)
 	self.boxes = ui.boxes
 	self.events = require("chat-gypsy.events").new()
 	self.openai = require("chat-gypsy.openai").new(self.events)
-	self.chat = require("chat-gypsy.chat")
+	self.chat = require("chat-gypsy.chat").new()
 
 	self.init_state = function()
 		self._ = utils.deepcopy(state)
@@ -248,7 +248,7 @@ function Layout:configure()
 				self._.tokens.response = tokens.response
 				self._.tokens.total = self._.tokens.total + self._.tokens.prompt + self._.tokens.response
 				newln(2)
-				self.chat.add(prompt_message, self._.response.lines, self._.tokens)
+				self.chat:add(prompt_message, self._.response.lines, self._.tokens)
 				self.response_line_break()
 			end
 			utils.get_tokens(prompt_message, chunks, on_tokens)
