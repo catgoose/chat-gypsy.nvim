@@ -26,9 +26,7 @@ function FuncQueue:executeNext()
 	else
 		if not self.isRunning and #self.queue > 0 then
 			self.isRunning = true
-
 			local func = table.remove(self.queue, 1)
-
 			func(function()
 				self.isRunning = false
 				self:executeNext()
