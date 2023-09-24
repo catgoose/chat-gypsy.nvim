@@ -203,7 +203,6 @@ function Layout:configure()
 		end
 		local function append(chunk)
 			line = line .. chunk
-			response_lines = response_lines .. line
 			self.response_set_lines({ line })
 			self.response_set_cursor(self._.current_line + 1)
 		end
@@ -211,7 +210,7 @@ function Layout:configure()
 			if string.match(chunk, "\n") then
 				for _chunk in chunk:gmatch(".") do
 					if string.match(_chunk, "\n") then
-						response_lines = response_lines .. _chunk
+						response_lines = response_lines .. line .. "\n"
 						newln()
 					else
 						append(_chunk)
@@ -228,6 +227,7 @@ function Layout:configure()
 			vim.api.nvim_buf_set_lines(self._.prompt_bufnr, 0, -1, false, {})
 		end
 		local on_complete = function(chunks)
+			response_lines = response_lines .. line
 			Events:pub("hook:request:complete", response_lines)
 			Log.trace(string.format("on_complete: chunks: %s", vim.inspect(chunks)))
 			vim.cmd("silent! undojoin")
