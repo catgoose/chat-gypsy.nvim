@@ -14,14 +14,21 @@ Layout.__index = Layout
 local state = {
 	hidden = false,
 	focused_win = "prompt",
-	prompt_winid = 0,
-	response_winid = 0,
-	response_win_width = 0,
-	prompt_bufnr = 0,
-	response_bufnr = 0,
 	mounted = false,
+	--  TODO: 2023-09-23 - change layout property name.  Results in layout.layout
 	layout = "float",
-	current_line = 0,
+	prompt = {
+		bufnr = 0,
+		winid = 0,
+	},
+	response = {
+		bufnr = 0,
+		winid = 0,
+		win_width = 0,
+		line = "",
+		lines = {},
+		line_nr = 0,
+	},
 	tokens = {
 		prompt = 0,
 		response = 0,
@@ -40,22 +47,22 @@ function Layout.new(ui)
 	self.init_state = function()
 		self._ = utils.deepcopy(state)
 		self.set_ids()
-		self._.response_win_width = vim.api.nvim_win_get_width(self._.response_winid)
+		self._.response.win_width = vim.api.nvim_win_get_width(self._.response.winid)
 	end
 	self.set_ids = function()
-		self._.response_winid = self.layout._.box.box[1].component.winid
+		self._.response.winid = self.layout._.box.box[1].component.winid
 		self._.prompt_winid = self.layout._.box.box[2].component.winid
-		self._.response_bufnr = self.layout._.box.box[1].component.bufnr
-		self._.prompt_bufnr = self.layout._.box.box[2].component.bufnr
+		self._.response.bufnr = self.layout._.box.box[1].component.bufnr
+		self._.prompt.bufnr = self.layout._.box.box[2].component.bufnr
 		Log.trace("Setting winids and bufnrs for mounted layout")
-		Log.trace(string.format("response_winid: %s", self._.response_winid))
+		Log.trace(string.format("response.winid: %s", self._.response.winid))
 		Log.trace(string.format("prompt_winid: %s", self._.prompt_winid))
-		Log.trace(string.format("response_bufnr: %s", self._.response_bufnr))
-		Log.trace(string.format("prompt_bufnr: %s", self._.prompt_bufnr))
+		Log.trace(string.format("response_bufnr: %s", self._.response.bufnr))
+		Log.trace(string.format("prompt_bufnr: %s", self._.prompt.bufnr))
 	end
 
 	self.focus_response = function()
-		vim.api.nvim_set_current_win(self._.response_winid)
+		vim.api.nvim_set_current_win(self._.response.winid)
 		self._.focused_win = "response"
 	end
 	self.focus_prompt = function()
@@ -64,34 +71,34 @@ function Layout.new(ui)
 	end
 	self.focus_last_win = function()
 		if self._.focused_win == "response" then
-			vim.api.nvim_set_current_win(self._.response_winid)
+			vim.api.nvim_set_current_win(self._.response.winid)
 		end
 		if self._.focused_win == "prompt" then
 			vim.api.nvim_set_current_win(self._.prompt_winid)
 		end
 	end
 	self.is_focused = function()
-		return vim.tbl_contains({ self._.prompt_winid, self._.response_winid }, vim.api.nvim_get_current_win())
+		return vim.tbl_contains({ self._.prompt_winid, self._.response.winid }, vim.api.nvim_get_current_win())
 	end
 
 	self.response_set_cursor = function(line)
-		if self._.response_winid and vim.api.nvim_win_is_valid(self._.response_winid) then
-			vim.api.nvim_win_set_cursor(self._.response_winid, { line, 0 })
+		if self._.response.winid and vim.api.nvim_win_is_valid(self._.response.winid) then
+			vim.api.nvim_win_set_cursor(self._.response.winid, { line, 0 })
 		end
 	end
 	self.response_set_lines = function(lines, new_lines)
 		new_lines = new_lines or false
-		if self._.response_bufnr and vim.api.nvim_buf_is_valid(self._.response_bufnr) then
+		if self._.response.bufnr and vim.api.nvim_buf_is_valid(self._.response.bufnr) then
 			vim.api.nvim_buf_set_lines(
-				self._.response_bufnr,
-				self._.current_line,
-				self._.current_line + 1,
+				self._.response.bufnr,
+				self._.response.line_nr,
+				self._.response.line_nr + 1,
 				false,
 				lines
 			)
 			if new_lines then
-				self._.current_line = self._.current_line + #lines
-				self.response_set_cursor(self._.current_line)
+				self._.response.line_nr = self._.current_line + #lines
+				self.response_set_cursor(self._.response.line_nr)
 			end
 		end
 	end
@@ -107,11 +114,15 @@ function Layout.new(ui)
 			model_config.max_tokens,
 			symbols.right_arrow
 		)
-		local line_break_msg = symbols.horiz:rep(self._.response_win_width - #tokens_display + 4) .. tokens_display
+		local line_break_msg = symbols.horiz:rep(self._.response.win_width - #tokens_display + 4) .. tokens_display
 		local lines = { line_break_msg, "", "" }
 		self.response_set_lines(lines)
-		self.response_set_cursor(self._.current_line + #lines)
-		self._.current_line = self._.current_line + #lines
+		self.response_set_cursor(self._.response.line_nr + #lines)
+		self._.response.line_nr = self._.response.line_nr + #lines
+	end
+
+	self.insert_response_line = function()
+		table.insert(self._.response.lines, self._.response.line)
 	end
 
 	self.mount = function()
@@ -139,7 +150,7 @@ function Layout.new(ui)
 		self._.hidden = false
 		self.set_ids()
 		self.focus_last_win()
-		self.response_set_cursor(self._.current_line)
+		self.response_set_cursor(self._.response.line_nr)
 	end
 	return self
 end
@@ -190,27 +201,25 @@ function Layout:configure()
 			return
 		end
 		local prompt_message = table.concat(prompt_lines, "\n")
-		local line = ""
-		local response_lines = ""
 		local function newln(n)
 			n = n or 1
 			for _ = 1, n do
-				self._.current_line = self._.current_line + 1
-				line = ""
-				self.response_set_lines({ line, line })
-				self.response_set_cursor(self._.current_line + 1)
+				self._.response.line_nr = self._.response.line_nr + 1
+				self._.response.line = ""
+				self.response_set_lines({ self._.response.line, self._.response.line })
+				self.response_set_cursor(self._.response.line_nr + 1)
 			end
 		end
 		local function append(chunk)
-			line = line .. chunk
-			self.response_set_lines({ line })
-			self.response_set_cursor(self._.current_line + 1)
+			self._.response.line = self._.response.line .. chunk
+			self.response_set_lines({ self._.response.line })
+			self.response_set_cursor(self._.response.line_nr + 1)
 		end
 		local on_chunk = function(chunk)
 			if string.match(chunk, "\n") then
 				for _chunk in chunk:gmatch(".") do
 					if string.match(_chunk, "\n") then
-						response_lines = response_lines .. line .. "\n"
+						self.insert_response_line()
 						newln()
 					else
 						append(_chunk)
@@ -221,14 +230,14 @@ function Layout:configure()
 			end
 		end
 		local on_start = function()
-			self.response_set_cursor(self._.current_line + 1)
+			self.response_set_cursor(self._.response.line_nr + 1)
 		end
 		local before_start = function()
-			vim.api.nvim_buf_set_lines(self._.prompt_bufnr, 0, -1, false, {})
+			vim.api.nvim_buf_set_lines(self._.prompt.bufnr, 0, -1, false, {})
 		end
 		local on_complete = function(chunks)
-			response_lines = response_lines .. line
-			Events:pub("hook:request:complete", response_lines)
+			self.insert_response_line()
+			Events:pub("hook:request:complete", self._.response.lines)
 			Log.trace(string.format("on_complete: chunks: %s", vim.inspect(chunks)))
 			vim.cmd("silent! undojoin")
 			local on_tokens = function(tokens)
@@ -241,6 +250,7 @@ function Layout:configure()
 				newln(2)
 				self.response_line_break()
 			end
+			self.chat.add(prompt_message, self._.response.lines, self._.tokens)
 			utils.get_tokens(prompt_message, chunks, on_tokens)
 		end
 		local on_error = function(err)
@@ -249,17 +259,17 @@ function Layout:configure()
 			self.response_set_lines(preamble, true)
 			Log.trace(
 				string.format(
-					"adding error highlight to response buffer: %s, current_line: %s",
-					self._.response_bufnr,
-					self._.current_line
+					"adding error highlight to response buffer: %s, current_response_line: %s",
+					self._.response.bufnr,
+					self._.response.line_nr
 				)
 			)
 			for i = 0, #preamble do
 				vim.api.nvim_buf_add_highlight(
-					self._.response_bufnr,
+					self._.response.bufnr,
 					-1,
 					"ErrorMsg",
-					self._.current_line - #preamble + i,
+					self._.response.line_nr - #preamble + i,
 					0,
 					-1
 				)
@@ -272,7 +282,7 @@ function Layout:configure()
 		send_prompt(dev.prompt.message)
 	end
 	self.boxes.prompt:map("n", "<Enter>", function()
-		local prompt_lines = vim.api.nvim_buf_get_lines(self._.prompt_bufnr, 0, -1, false)
+		local prompt_lines = vim.api.nvim_buf_get_lines(self._.prompt.bufnr, 0, -1, false)
 		send_prompt(prompt_lines)
 	end, {})
 
