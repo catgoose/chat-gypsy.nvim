@@ -15,8 +15,7 @@ local state = {
 	hidden = false,
 	focused_win = "prompt",
 	mounted = false,
-	--  TODO: 2023-09-23 - change layout property name.  Results in layout.layout
-	layout = "float",
+	type = "float",
 	prompt = {
 		bufnr = 0,
 		winid = 0,
@@ -181,7 +180,7 @@ function Layout:configure()
 		ev.TextChangedI,
 		ev.TextChanged,
 	}, function(e)
-		if self._.layout == "float" then
+		if self._.type == "float" then
 			local n_lines = vim.api.nvim_buf_line_count(e.buf)
 			local float = opts.ui.layout.float
 			n_lines = n_lines < float.prompt_max_lines and n_lines or float.prompt_max_lines

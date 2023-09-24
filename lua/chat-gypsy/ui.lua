@@ -10,10 +10,10 @@ local layout_configs = { "float", "left", "right" }
 
 local function build_ui(layout_config)
 	layout_config = layout_config or {
-		layout = "float",
+		type = "float",
 	}
-	if not vim.tbl_contains(layout_configs, layout_config.layout) then
-		layout_config.layout = "float"
+	if not vim.tbl_contains(layout_configs, layout_config.type) then
+		layout_config.type = "float"
 	end
 
 	local popup_base = vim.tbl_deep_extend("force", opts.ui.config, {
@@ -89,14 +89,14 @@ local function build_ui(layout_config)
 			return side_layout
 		end
 
-		if _layout_config.layout == "float" then
+		if _layout_config.type == "float" then
 			return float
 		end
-		if _layout_config.layout == "right" then
-			return create_side_layout(_layout_config.layout)
+		if _layout_config.type == "right" then
+			return create_side_layout(_layout_config.type)
 		end
-		if _layout_config.layout == "left" then
-			return create_side_layout(_layout_config.layout)
+		if _layout_config.type == "left" then
+			return create_side_layout(_layout_config.type)
 		end
 	end
 	local layout = layout_strategy(layout_config)
@@ -110,7 +110,7 @@ end
 function UI.new()
 	local self = setmetatable({}, UI)
 	local layout_config = {
-		layout = "float",
+		type = "float",
 	}
 	local ui = build_ui(layout_config)
 	Log.trace(string.format("Building new ui with layout config: \n%s", vim.inspect(layout_config)))
