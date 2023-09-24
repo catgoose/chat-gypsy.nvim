@@ -96,7 +96,7 @@ function Layout.new(ui)
 				lines
 			)
 			if new_lines then
-				self._.response.line_nr = self._.current_line + #lines
+				self._.response.line_nr = self._.response.line_nr + #lines
 				self.response_set_cursor(self._.response.line_nr)
 			end
 		end
