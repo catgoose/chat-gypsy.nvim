@@ -1,9 +1,9 @@
 local Log = require("chat-gypsy").Log
-Chat = {}
-Chat.__index = Chat
+History = {}
+History.__index = History
 
-function Chat.new()
-	local self = setmetatable({}, Chat)
+function History.new()
+	local self = setmetatable({}, History)
 	self.history = {}
 	return self
 end
@@ -18,7 +18,7 @@ local generate_random_id = function()
 	return result
 end
 
-function Chat:add(prompt_message, response_message, tokens_tbl)
+function History:add(prompt_message, response_message, tokens_tbl)
 	if not self.history.id then
 		self.history = {
 			id = generate_random_id(),
@@ -45,4 +45,4 @@ function Chat:add(prompt_message, response_message, tokens_tbl)
 	self.history.updatedAt = os.time()
 end
 
-return Chat
+return History
