@@ -1,38 +1,32 @@
 local Events = {}
-Events.__index = Events
+local listeners = {}
 
-function Events:new()
-	setmetatable(self, Events)
-	self.listeners = {}
-	return self
-end
-
-function Events:sub(event, callback)
-	if not self.listeners[event] then
-		self.listeners[event] = {}
+function Events.sub(event, callback)
+	if not listeners[event] then
+		listeners[event] = {}
 	end
-	table.insert(self.listeners[event], callback)
+	table.insert(listeners[event], callback)
 end
 
-function Events:unsub(event, callback)
-	if not self.listeners[event] then
+function Events.unsub(event, callback)
+	if not listeners[event] then
 		return
 	end
 
-	for i, cb in ipairs(self.listeners[event]) do
+	for i, cb in ipairs(listeners[event]) do
 		if cb == callback then
-			table.remove(self.listeners[event], i)
+			table.remove(listeners[event], i)
 			return
 		end
 	end
 end
 
-function Events:pub(event, ...)
-	if not self.listeners[event] then
+function Events.pub(event, ...)
+	if not listeners[event] then
 		return
 	end
 
-	for _, callback in ipairs(self.listeners[event]) do
+	for _, callback in ipairs(listeners[event]) do
 		callback(...)
 	end
 end

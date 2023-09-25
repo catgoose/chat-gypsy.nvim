@@ -78,7 +78,7 @@ function Request:new()
 				return
 			end
 			on_chunk(path)
-			Events:pub("hook:request:chunk", path)
+			Events.pub("hook:request:chunk", path)
 			table.insert(self.chunks, path)
 		end
 	end
@@ -137,7 +137,7 @@ function Request:new()
 		end
 	end
 
-	Events:sub("request:shutdown", function()
+	Events.sub("request:shutdown", function()
 		self.shutdown()
 	end)
 
@@ -149,7 +149,7 @@ function Request:query(message, on_response_start, on_response_chunk, on_respons
 
 	local on_start = function()
 		Log.trace("query: on_start")
-		Events:pub("hook:request:start", message)
+		Events.pub("hook:request:start", message)
 		self.reset()
 		on_response_start()
 	end
@@ -162,7 +162,7 @@ function Request:query(message, on_response_start, on_response_chunk, on_respons
 	end
 
 	local on_error = function(err, after_error)
-		Events:pub("hook:request:error", "completions", err)
+		Events.pub("hook:request:error", "completions", err)
 		if type(err) == "table" then
 			err = vim.inspect(err)
 		end

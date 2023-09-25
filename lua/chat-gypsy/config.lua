@@ -144,7 +144,7 @@ local init_event_hooks = function()
 	local types = Config.opts.hooks
 	for type, _ in pairs(types) do
 		for hook, _ in pairs(types[type]) do
-			Events:sub("hook:" .. type .. ":" .. hook, types[type][hook])
+			Events.sub("hook:" .. type .. ":" .. hook, types[type][hook])
 		end
 	end
 end

@@ -1,7 +1,7 @@
 local Gypsy = {}
 
 Gypsy.Log = {}
-Gypsy.Events = require("chat-gypsy.events"):new()
+Gypsy.Events = require("chat-gypsy.events")
 
 Gypsy.setup = function(opts)
 	local config = require("chat-gypsy.config")
@@ -19,8 +19,8 @@ end
 local chat = {}
 local chats = {}
 
-Gypsy.Events:sub("layout:unmount", function()
-	Gypsy.Log.trace("Events: layout:unmount")
+Gypsy.Events.sub("layout:unmount", function()
+	Gypsy.Log.trace("Events. layout:unmount")
 	chat = {}
 	chats = {}
 end)

@@ -168,8 +168,8 @@ function Layout:new(ui)
 	end
 	self.unmount = function()
 		self.layout:unmount()
-		Events:pub("layout:unmount")
-		Events:pub("request:shutdown")
+		Events.pub("layout:unmount")
+		Events.pub("request:shutdown")
 	end
 	self.hide = function()
 		self.layout:hide()
@@ -281,7 +281,7 @@ function Layout:configure()
 		end
 		local on_complete = function(chunks)
 			self.insert_response_line()
-			Events:pub("hook:request:complete", self._.response.lines)
+			Events.pub("hook:request:complete", self._.response.lines)
 			Log.trace(string.format("on_complete: chunks: %s", vim.inspect(chunks)))
 			local on_tokens = function(tokens)
 				tokens = tokens or 0
