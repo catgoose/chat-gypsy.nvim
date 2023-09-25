@@ -28,7 +28,6 @@ local get_models = function()
 					Log.error(string.format("get_models: error: %s", err))
 					error(err)
 				end
-				Models.success = false
 			else
 				local body = vim.json.decode(response.body)
 				if body.data then
@@ -50,7 +49,6 @@ local get_models = function()
 					Events.pub("hook:models:get", models)
 					if #models > 0 then
 						M.names = models
-						M.success = true
 					end
 				end
 			end
@@ -63,7 +61,6 @@ M.init = function()
 end
 
 M.names = {}
-M.success = false
 
 M.get_config = function(model)
 	local found_model = vim.tbl_filter(function(m)
