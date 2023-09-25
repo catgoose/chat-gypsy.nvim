@@ -117,18 +117,19 @@ function Layout.new(ui)
 		local lines = { string.format("%s:", source), "", "" }
 		self.response_set_lines(lines, true)
 	end
+
+	self.response_token_summary = function(tokens)
 		local model_config = models.get_config(opts.openai_params.model)
 		local tokens_display = string.format(
-			" %s (%s/%s) (%s/%s) %s",
+			" %s %s (%s/%s) %s",
 			symbols.left_arrow,
-			self._.tokens.prompt,
-			self._.tokens.response,
+			tokens,
 			self._.tokens.total,
 			model_config.max_tokens,
 			symbols.right_arrow
 		)
-		local line_break_msg = symbols.horiz:rep(self._.response.win_width - #tokens_display + 4) .. tokens_display
-		local lines = { line_break_msg, "", "" }
+		local summary = symbols.horiz:rep(self._.response.win_width - #tokens_display + 4) .. tokens_display
+		local lines = { summary, "", "" }
 		self.response_set_lines(lines)
 		self.response_set_cursor(self._.response.line_nr + #lines)
 		self._.response.line_nr = self._.response.line_nr + #lines
@@ -141,6 +142,16 @@ function Layout.new(ui)
 	self.restore = function()
 		self.history:read()
 		local history = self.history:get()
+		local response = vim.tbl_filter(function(message)
+			return message.type == "response"
+		end, history.messages)
+		for _, message in ipairs(response) do
+			local lines = vim.split(message.message, "\n")
+			for _, line in ipairs(lines) do
+				self.response_set_lines({ line }, true)
+			end
+			self.response_token_summary()
+		end
 	end
 
 	self.mount = function()
@@ -169,7 +180,6 @@ function Layout.new(ui)
 		self._.hidden = false
 		self.set_ids()
 		self.focus_last_win()
-		self._.response.line_nr = self._.response.line_nr == 0 and 1 or self._.response.line_nr
 		self.response_set_cursor(self._.response.line_nr)
 	end
 	return self
@@ -251,6 +261,20 @@ function Layout:configure()
 		end
 		local on_start = function()
 			self.response_set_cursor(self._.response.line_nr + 1)
+			self.message_source("prompt")
+			for _, line in ipairs(prompt_lines) do
+				self.response_set_lines({ line }, true)
+			end
+			local on_tokens = function(tokens)
+				tokens = tokens or 0
+				self._.tokens.prompt = tokens
+				self._.tokens.total = self._.tokens.total + self._.tokens.prompt
+				newln()
+				self.response_token_summary(self._.tokens.prompt)
+			end
+			utils.get_tokens(prompt_message, on_tokens)
+			vim.cmd("silent! undojoin")
+			self.message_source("response")
 		end
 		local before_start = function()
 			vim.api.nvim_buf_set_lines(self._.prompt.bufnr, 0, -1, false, {})
@@ -259,26 +283,18 @@ function Layout:configure()
 			self.insert_response_line()
 			Events:pub("hook:request:complete", self._.response.lines)
 			Log.trace(string.format("on_complete: chunks: %s", vim.inspect(chunks)))
-			vim.cmd("silent! undojoin")
 			local on_tokens = function(tokens)
-				tokens = tokens or {}
-				tokens.prompt = tokens.prompt or 0
-				tokens.response = tokens.response or 0
-				self._.tokens.prompt = tokens.prompt
-				self._.tokens.response = tokens.response
-				self._.tokens.total = self._.tokens.total + self._.tokens.prompt + self._.tokens.response
+				tokens = tokens or 0
+				self._.tokens.response = tokens
+				self._.tokens.total = self._.tokens.total + self._.tokens.response
 				newln(2)
-				--  BUG: 2023-09-24 - passing self._.response.line into history:add
-				--  results in each history.messages with type of "response" to be the
-				--  same.  It must be passed by reference, which is causing the bug
-				-- self.history:add(prompt_message, self._.response.lines, self._.tokens)
-				self.history:add(prompt_message, table.concat(chunks, ""), self._.tokens)
-				self.history:save()
-				self.response_line_break()
-				-- local history = self.history:get()
-				-- vim.print(history)
+				self.response_token_summary(self._.tokens.response)
+
+				-- self.history:add(prompt_message, table.concat(chunks, ""), self._.tokens)
+				-- self.history:save()
 			end
-			utils.get_tokens(prompt_message, chunks, on_tokens)
+			utils.get_tokens(chunks, on_tokens)
+			vim.cmd("silent! undojoin")
 		end
 		local on_error = function(err)
 			local message = err and err.error and err.error.message or type(err) == "string" and err or "Unknown error"
@@ -301,7 +317,7 @@ function Layout:configure()
 					-1
 				)
 			end
-			self.response_line_break()
+			self.response_token_summary()
 		end
 		self.openai:send_prompt(prompt_message, before_start, on_start, on_chunk, on_complete, on_error)
 	end
