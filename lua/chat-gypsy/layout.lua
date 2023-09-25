@@ -114,20 +114,21 @@ function Layout.new(ui)
 			return
 		end
 		local source = type == "prompt" and "You" or model_config.model
-		local lines = { string.format("%s:", source), "", "" }
+		local lines = { string.format("%s (%s):", source, os.date("%H:%M")), "", "" }
 		self.response_set_lines(lines, true)
 	end
 
 	self.response_token_summary = function(tokens)
 		local model_config = models.get_config(opts.openai_params.model)
 		local tokens_display = string.format(
-			" %s %s (%s/%s) %s",
+			" Tokens: %s %s (%s/%s) %s",
 			symbols.left_arrow,
 			tokens,
 			self._.tokens.total,
 			model_config.max_tokens,
 			symbols.right_arrow
 		)
+		--  TODO: 2023-09-24 - add highlighting
 		local summary = symbols.horiz:rep(self._.response.win_width - #tokens_display + 4) .. tokens_display
 		local lines = { summary, "", "" }
 		self.response_set_lines(lines)
