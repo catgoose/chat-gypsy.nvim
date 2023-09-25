@@ -1,8 +1,8 @@
 local Events = {}
 Events.__index = Events
 
-function Events.new()
-	local self = setmetatable({}, Events)
+function Events:new()
+	setmetatable(self, Events)
 	self.listeners = {}
 	return self
 end

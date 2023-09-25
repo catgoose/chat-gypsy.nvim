@@ -107,14 +107,14 @@ local function build_ui(layout_config)
 	}
 end
 
-function UI.new()
-	local self = setmetatable({}, UI)
+function UI:new()
+	setmetatable(self, UI)
 	local layout_config = {
 		type = "float",
 	}
 	local ui = build_ui(layout_config)
 	Log.trace(string.format("Building new ui with layout config: \n%s", vim.inspect(layout_config)))
-	self.layout = require("chat-gypsy.layout").new(ui)
+	self.layout = require("chat-gypsy.layout"):new(ui)
 	return self
 end
 

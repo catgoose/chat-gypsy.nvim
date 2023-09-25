@@ -35,14 +35,14 @@ local state = {
 	},
 }
 
-function Layout.new(ui)
-	local self = setmetatable({}, Layout)
+function Layout:new(ui)
+	setmetatable(self, Layout)
 	self._ = {}
 	self.layout = ui.layout
 	self.boxes = ui.boxes
-	self.events = require("chat-gypsy.events").new()
-	self.openai = require("chat-gypsy.openai").new(self.events)
-	self.history = require("chat-gypsy.history").new()
+	self.events = require("chat-gypsy.events"):new()
+	self.openai = require("chat-gypsy.openai"):new(self.events)
+	self.history = require("chat-gypsy.history"):new()
 
 	self.init_state = function()
 		self._ = utils.deepcopy(state)

@@ -1,7 +1,7 @@
 local Gypsy = {}
 
 Gypsy.Log = {}
-Gypsy.Events = require("chat-gypsy.events").new()
+Gypsy.Events = require("chat-gypsy.events"):new()
 
 Gypsy.setup = function(opts)
 	local config = require("chat-gypsy.config")
@@ -55,7 +55,7 @@ end
 
 Gypsy.open = function()
 	if #chats == 0 then
-		chat = require("chat-gypsy.ui").new()
+		chat = require("chat-gypsy.ui"):new()
 		if not chat.layout._.mounted then
 			table.insert(chats, chat)
 			chat.layout.mount()

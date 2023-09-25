@@ -4,8 +4,8 @@ local Path = require("plenary.path")
 History = {}
 History.__index = History
 
-function History.new()
-	local self = setmetatable({}, History)
+function History:new()
+	setmetatable(self, History)
 	self.current = {}
 	local gypsy_path = vim.fn.stdpath("data") .. "/chat-gypsy"
 	if not vim.loop.fs_stat(gypsy_path) then
