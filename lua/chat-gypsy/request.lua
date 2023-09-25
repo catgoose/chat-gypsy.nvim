@@ -9,12 +9,12 @@ local curl = require("plenary.curl")
 local Request = {}
 Request.__index = Request
 
-function Request.new()
-	local self = setmetatable({}, Request)
+function Request:new()
+	setmetatable(self, Request)
 	self.chunks = {}
 	self.error_chunks = {}
 	self.content = ""
-	self.handler = nil
+	self.handler = { is_shutdown = false }
 	self.openai_params = utils.deepcopy(opts.openai_params)
 	self.join_content = function()
 		self.content = table.concat(self.chunks, "")
@@ -22,7 +22,7 @@ function Request.new()
 	self.on_assistant_response = function()
 		self.content = table.concat(self.chunks, "")
 		self.join_content()
-		Log.trace("on_user_prompt: " .. self.content)
+		Log.trace("on_assistant_response: " .. self.content)
 		table.insert(self.openai_params.messages, {
 			role = "assistant",
 			content = self.content,
@@ -36,14 +36,15 @@ function Request.new()
 			content = self.content,
 		})
 	end
-	self.query_reset = function()
+	self.reset = function()
 		self.chunks = {}
 		self.error_chunks = {}
 		self.content = ""
-		if self.handler ~= nil then
-			Log.trace("shutting down plenary.curl handler")
+	end
+	self.shutdown = function()
+		if not self.handler.is_shutdown then
+			Log.debug("shutting down plenary.curl handler")
 			self.handler:shutdown()
-			self.handler = nil
 		end
 	end
 
@@ -82,8 +83,9 @@ function Request.new()
 		end
 	end
 
-	self.extract_error = function(chunk)
+	self.extract_error = function(chunk, on_error)
 		table.insert(self.error_chunks, chunk .. "\n")
+		on_error(self.error_chunks)
 	end
 
 	self.completions = function(on_start, on_chunk, on_complete, on_error)
@@ -135,19 +137,20 @@ function Request.new()
 		end
 	end
 
-	Events:sub("layout:unmount", function()
-		self:query_reset()
+	Events:sub("request:shutdown", function()
+		self.shutdown()
 	end)
 
 	return self
 end
 
-function Request:query(content, on_response_start, on_response_chunk, on_response_complete, on_response_error)
-	self.on_user_prompt(content)
+function Request:query(message, on_response_start, on_response_chunk, on_response_complete, on_response_error)
+	self.on_user_prompt(message)
 
 	local on_start = function()
 		Log.trace("query: on_start")
-		Events:pub("hook:request:start", content)
+		Events:pub("hook:request:start", message)
+		self.reset()
 		on_response_start()
 	end
 
@@ -182,7 +185,6 @@ function Request:query(content, on_response_start, on_response_chunk, on_respons
 		end
 	end
 
-	self.query_reset()
 	self.completions(on_start, on_chunk, on_complete, on_error)
 end
 
