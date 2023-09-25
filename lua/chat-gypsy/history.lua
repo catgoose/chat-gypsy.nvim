@@ -50,7 +50,6 @@ function History:add(prompt_message, response_message, tokens_tbl)
 	})
 	Log.debug("Inserting new response into history: %s", vim.inspect(self.current.messages[#self.current.messages]))
 	self.current.updatedAt = os.time()
-	vim.print(self.current)
 end
 
 function History:get()
