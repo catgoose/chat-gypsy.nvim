@@ -1,5 +1,6 @@
 local Log = require("chat-gypsy").Log
 local Path = require("plenary.path")
+local utils = require("chat-gypsy.utils")
 
 History = {}
 History.__index = History
@@ -15,20 +16,10 @@ function History:new()
 	return self
 end
 
-local generate_random_id = function()
-	local charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-	local result = ""
-	for _ = 1, 8 do
-		local rand = math.random(#charset)
-		result = result .. string.sub(charset, rand, rand)
-	end
-	return result
-end
-
 function History:add(prompt_message, response_message, tokens_tbl)
 	if not self.current.id then
 		self.current = {
-			id = generate_random_id(),
+			id = utils.generate_random_id(),
 			createdAt = os.time(),
 			updatedAt = os.time(),
 			messages = {},

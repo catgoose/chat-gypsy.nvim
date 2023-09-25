@@ -1,5 +1,15 @@
 Utils = {}
 
+Utils.generate_random_id = function()
+	local charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	local result = ""
+	for _ = 1, 8 do
+		local rand = math.random(#charset)
+		result = result .. string.sub(charset, rand, rand)
+	end
+	return result
+end
+
 Utils.deepcopy = function(orig)
 	local t = type(orig)
 	local copy
