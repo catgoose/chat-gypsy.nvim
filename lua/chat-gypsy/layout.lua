@@ -104,7 +104,19 @@ function Layout.new(ui)
 		end
 	end
 
-	self.response_line_break = function()
+	--  TODO: 2023-09-24 - highlight name
+	self.message_source = function(type)
+		local model_config = models.get_config(opts.openai_params.model)
+		if not type then
+			return
+		end
+		if not vim.tbl_contains({ "prompt", "response" }, type) then
+			return
+		end
+		local source = type == "prompt" and "You" or model_config.model
+		local lines = { string.format("%s:", source), "", "" }
+		self.response_set_lines(lines, true)
+	end
 		local model_config = models.get_config(opts.openai_params.model)
 		local tokens_display = string.format(
 			" %s (%s/%s) (%s/%s) %s",
