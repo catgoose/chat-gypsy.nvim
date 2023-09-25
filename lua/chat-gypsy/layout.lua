@@ -83,6 +83,7 @@ function Layout.new(ui)
 
 	self.response_set_cursor = function(line)
 		if self._.response.winid and vim.api.nvim_win_is_valid(self._.response.winid) then
+			line = line == 0 and 1 or line
 			vim.api.nvim_win_set_cursor(self._.response.winid, { line, 0 })
 		end
 	end
