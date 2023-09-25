@@ -41,7 +41,6 @@ function Layout:new(ui)
 	self.layout = ui.layout
 	self.boxes = ui.boxes
 	self.openai = require("chat-gypsy.openai"):new()
-	self.openai.parent = self
 	self.history = require("chat-gypsy.history"):new()
 
 	self.init_state = function()
@@ -170,6 +169,7 @@ function Layout:new(ui)
 	self.unmount = function()
 		self.layout:unmount()
 		Events:pub("layout:unmount")
+		Events:pub("request:shutdown")
 	end
 	self.hide = function()
 		self.layout:hide()
