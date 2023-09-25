@@ -156,6 +156,7 @@ function Layout.new(ui)
 		self._.hidden = false
 		self.set_ids()
 		self.focus_last_win()
+		self._.response.line_nr = self._.response.line_nr == 0 and 1 or self._.response.line_nr
 		self.response_set_cursor(self._.response.line_nr)
 	end
 	return self
