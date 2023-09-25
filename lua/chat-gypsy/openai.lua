@@ -4,25 +4,10 @@ local OpenAI = {}
 OpenAI.__index = OpenAI
 
 function OpenAI:new()
-	local events = require("chat-gypsy.events"):new()
 	setmetatable(self, OpenAI)
-	-- self.events = events
 	self.queue = require("chat-gypsy.queue").new()
-	self.request = require("chat-gypsy.request").new(events)
+	self.request = require("chat-gypsy.request"):new()
 	return self
-end
-
-function OpenAI:initializeEvents()
-	local ancestor = self.parent
-	while ancestor ~= nil do
-		if ancestor.events then
-			self.events = ancestor.events
-			break
-		end
-		ancestor = ancestor.parent
-	end
-
-	self.events = self.events or require("chat-gypsy.events"):new()
 end
 
 function OpenAI:send_prompt(message, before_start, on_start, on_chunk, on_chunks_complete, on_error)

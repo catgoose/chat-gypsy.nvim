@@ -1,17 +1,16 @@
 ---@diagnostic disable: undefined-field
+local Log = require("chat-gypsy").Log
+local Events = require("chat-gypsy").Events
 local config = require("chat-gypsy.config")
 local opts = config.opts
-local Log = require("chat-gypsy").Log
 local utils = require("chat-gypsy.utils")
-local Events = require("chat-gypsy").Events
 local curl = require("plenary.curl")
 
 local Request = {}
 Request.__index = Request
 
-function Request.new(events)
+function Request.new()
 	local self = setmetatable({}, Request)
-	self.events = events
 	self.chunks = {}
 	self.error_chunks = {}
 	self.content = ""
@@ -136,7 +135,7 @@ function Request.new(events)
 		end
 	end
 
-	self.events:sub("layout:unmount", function()
+	Events:sub("layout:unmount", function()
 		self:query_reset()
 	end)
 
