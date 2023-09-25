@@ -1,7 +1,6 @@
 local Gypsy = {}
 
 Gypsy.Log = {}
---  QUESTION: 2023-09-25 - Does Events need to be a class?
 Gypsy.Events = require("chat-gypsy.events"):new()
 
 Gypsy.setup = function(opts)
