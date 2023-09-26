@@ -1,10 +1,11 @@
+local Log = require("chat-gypsy").Log
+local Events = require("chat-gypsy").Events
+local History = require("chat-gypsy").History
 local nui_lo = require("nui.layout")
 local ev = require("nui.utils.autocmd").event
 local config = require("chat-gypsy.config")
 local symbols = config.symbols
 local plugin_cfg, dev, opts = config.plugin_cfg, config.dev, config.opts
-local Log = require("chat-gypsy").Log
-local Events = require("chat-gypsy").Events
 local utils = require("chat-gypsy.utils")
 local models = require("chat-gypsy.models")
 
@@ -41,7 +42,6 @@ function Layout:new(ui)
 	self.layout = ui.layout
 	self.boxes = ui.boxes
 	self.openai = require("chat-gypsy.openai"):new()
-	self.history = require("chat-gypsy.history"):new()
 
 	self.init_state = function()
 		self._ = utils.deepcopy(state)
@@ -139,20 +139,20 @@ function Layout:new(ui)
 		table.insert(self._.response.lines, self._.response.line)
 	end
 
-	self.restore = function()
-		self.history:read()
-		local history = self.history:get()
-		local response = vim.tbl_filter(function(message)
-			return message.type == "response"
-		end, history.messages)
-		for _, message in ipairs(response) do
-			local lines = vim.split(message.message, "\n")
-			for _, line in ipairs(lines) do
-				self.response_set_lines({ line }, true)
-			end
-			self.response_token_summary()
-		end
-	end
+	-- self.restore = function()
+	-- 	self.history:read()
+	-- 	local history = self.history:get()
+	-- 	local response = vim.tbl_filter(function(message)
+	-- 		return message.type == "response"
+	-- 	end, history.messages)
+	-- 	for _, message in ipairs(response) do
+	-- 		local lines = vim.split(message.message, "\n")
+	-- 		for _, line in ipairs(lines) do
+	-- 			self.response_set_lines({ line }, true)
+	-- 		end
+	-- 		self.response_token_summary()
+	-- 	end
+	-- end
 
 	self.mount = function()
 		Log.trace("Mounting UI")
@@ -290,7 +290,7 @@ function Layout:configure()
 				newln(2)
 				self.response_token_summary(self._.tokens.response)
 
-				self.history:add(prompt_message, table.concat(chunks, ""), self._.tokens)
+				History.add(prompt_message, table.concat(chunks, ""), self._.tokens)
 			end
 			utils.get_tokens(chunks, on_tokens)
 			vim.cmd("silent! undojoin")

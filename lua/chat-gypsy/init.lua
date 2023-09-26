@@ -1,6 +1,7 @@
 local Gypsy = {}
 
 Gypsy.Log = {}
+Gypsy.History = {}
 Gypsy.Events = require("chat-gypsy.events")
 
 Gypsy.setup = function(opts)
@@ -8,6 +9,8 @@ Gypsy.setup = function(opts)
 	config.init(opts)
 
 	Gypsy.Log = require("chat-gypsy.logger").init()
+	Gypsy.History = require("chat-gypsy.history").init()
+
 	require("chat-gypsy.usercmd").init()
 	require("chat-gypsy.models").init()
 
