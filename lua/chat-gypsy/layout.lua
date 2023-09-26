@@ -323,7 +323,7 @@ function Layout:configure()
 			self.response_token_summary()
 		end
 
-		self.openai:send_prompt(prompt_message, before_start, on_start, on_chunk, on_complete, on_error)
+		self.openai:send(prompt_message, before_start, on_start, on_chunk, on_complete, on_error)
 	end
 	if plugin_cfg.dev and dev.prompt.enabled then
 		send_prompt(dev.prompt.message)

@@ -9,7 +9,7 @@ function OpenAI:new()
 	return self
 end
 
-function OpenAI:send_prompt(message, before_start, on_start, on_chunk, on_chunks_complete, on_error)
+function OpenAI:send(message, before_start, on_start, on_chunk, on_chunks_complete, on_error)
 	if not message then
 		Log.warn("send_prompt: no message provided")
 		return
