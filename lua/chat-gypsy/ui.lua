@@ -6,7 +6,6 @@ local Log = require("chat-gypsy").Log
 local layout_configs = { "float", "left", "right" }
 
 local function build_ui(layout_config)
-	vim.print(layout_config)
 	layout_config = layout_config or {
 		type = "float",
 	}
@@ -55,7 +54,7 @@ local function build_ui(layout_config)
 			if side ~= "left" and side ~= "right" then
 				side = "left"
 			end
-			local side_config = opts.ui[side]
+			local side_config = opts.ui.layout[side]
 			local side_layout = nui_lo(
 				vim.tbl_deep_extend("force", {
 					relative = "editor",
