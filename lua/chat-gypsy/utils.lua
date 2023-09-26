@@ -1,9 +1,9 @@
 Utils = {}
 
-Utils.generate_random_id = function()
+Utils.generate_random_id = function(len)
 	local charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 	local result = ""
-	for _ = 1, 8 do
+	for _ = 1, len do
 		local rand = math.random(#charset)
 		result = result .. string.sub(charset, rand, rand)
 	end
