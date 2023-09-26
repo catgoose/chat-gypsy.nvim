@@ -6,6 +6,7 @@ local Log = require("chat-gypsy").Log
 local layout_configs = { "float", "left", "right" }
 
 local function build_ui(layout_config)
+	vim.print(layout_config)
 	layout_config = layout_config or {
 		type = "float",
 	}
@@ -96,17 +97,23 @@ end
 local UI = {}
 UI.__index = UI
 
-function UI:new()
+function UI:new(ui_config)
 	setmetatable(self, UI)
-	local layout_config = {
-		type = "float",
+	ui_config = ui_config or {
+		mount = false,
+		layout = {
+			type = "float",
+		},
 	}
-	local ui = build_ui(layout_config)
-	Log.trace(string.format("Building new ui with layout config: \n%s", vim.inspect(layout_config)))
+	--  BUG: 2023-09-26 - building ui with type = "left" | "right" fails
+	local ui = build_ui(ui_config.layout)
+	Log.trace(string.format("Building new ui with layout config: \n%s", vim.inspect(ui_config.layout)))
 	self.layout = ui.layout
 	self.boxes = ui.boxes
 	self:layout_init()
-	-- self:mount()
+	if ui_config.mount then
+		self:mount()
+	end
 	return self
 end
 
