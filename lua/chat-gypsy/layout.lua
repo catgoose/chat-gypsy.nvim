@@ -38,6 +38,10 @@ Layout = setmetatable({}, UI)
 Layout.__index = Layout
 setmetatable(Layout, {
 	__index = UI,
+	__call = function(cls, ...)
+		setmetatable({}, cls)
+		return cls:new(...)
+	end,
 })
 
 ---@diagnostic disable-next-line: duplicate-set-field

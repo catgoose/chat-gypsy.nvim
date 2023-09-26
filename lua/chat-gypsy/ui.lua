@@ -96,14 +96,6 @@ end
 local UI = {}
 UI.__index = UI
 
-setmetatable(UI, {
-	__call = function(cls, ...)
-		local self = setmetatable({}, cls)
-		self:_init(...)
-		return self
-	end,
-})
-
 function UI:new()
 	setmetatable(self, UI)
 	local layout_config = {
@@ -114,6 +106,7 @@ function UI:new()
 	self.layout = ui.layout
 	self.boxes = ui.boxes
 	self:layout_init()
+	-- self:mount()
 	return self
 end
 

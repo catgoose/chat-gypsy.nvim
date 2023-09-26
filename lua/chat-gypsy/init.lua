@@ -23,7 +23,7 @@ local chat
 
 Gypsy.Events.sub("layout:unmount", function()
 	Gypsy.Log.trace("Events. layout:unmount")
-	chat = nil
+	-- chat = nil
 end)
 
 Gypsy.toggle = function()
@@ -52,8 +52,7 @@ end
 
 Gypsy.open = function()
 	if not chat then
-		chat = require("chat-gypsy.layout"):new()
-		chat.mount()
+		chat = require("chat-gypsy.layout")()
 		return
 	else
 		Gypsy.hide()
