@@ -19,73 +19,56 @@ Gypsy.setup = function(opts)
 	end
 end
 
-local chat = {}
-local chats = {}
+local chat
 
 Gypsy.Events.sub("layout:unmount", function()
 	Gypsy.Log.trace("Events. layout:unmount")
-	chat = {}
-	chats = {}
+	chat = nil
 end)
 
 Gypsy.toggle = function()
-	if #chats == 0 then
+	if not chat then
 		Gypsy.open()
 		return
 	end
-	if #chats == 1 then
-		chat = chats[1]
-		if chat._.mounted then
-			if not chat._.hidden and not chat.is_focused() then
-				chat.focus_last_win()
-				return
-			end
-			if chat._.hidden and not chat.is_focused() then
-				chat.show()
-				return
-			end
-			if not chat._.hidden and chat.is_focused() then
-				chat.hide()
-				return
-			end
-		else
-			chat.mount()
+	if chat._.mounted then
+		if not chat._.hidden and not chat.is_focused() then
+			chat.focus_last_win()
 			return
 		end
+		if chat._.hidden and not chat.is_focused() then
+			chat.show()
+			return
+		end
+		if not chat._.hidden and chat.is_focused() then
+			chat.hide()
+			return
+		end
+	else
+		chat.mount()
+		return
 	end
 end
 
 Gypsy.open = function()
-	if #chats == 0 then
-		chat = require("chat-gypsy.layout"):new()
-		chat:init()
-		if not chat._.mounted then
-			table.insert(chats, chat)
-			chat:mount()
-		end
-	end
+	chat = require("chat-gypsy.layout"):new()
+	chat:init()
+	chat:mount()
 end
 
 Gypsy.hide = function()
-	if #chats == 1 then
-		chat = table.remove(chats, 1)
-		if chat._.mounted and not chat._.hidden then
-			chat.hide()
-		end
+	if chat._.mounted and not chat._.hidden then
+		chat.hide()
 	end
 end
 
 Gypsy.show = function()
-	if #chats == 1 then
-		chat = table.remove(chats, 1)
-		if chat._.mounted and chat._.hidden then
-			chat.show()
-		end
+	if chat._.mounted and chat._.hidden then
+		chat.show()
 	end
 end
 
 Gypsy.close = function()
-	chat = table.remove(chats, 1)
 	if chat._.mounted then
 		chat.unmount()
 	end
