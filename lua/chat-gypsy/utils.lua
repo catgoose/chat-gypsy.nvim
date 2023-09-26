@@ -47,11 +47,12 @@ EOF
 		),
 		{ output = true }
 	)
-	local tokens = 0
+	local output = 0
 	if ok then
-		tokens = result.output
+		output = result.output
 	end
 	if on_tokens then
+		local tokens = tonumber(output)
 		on_tokens(tokens)
 	end
 end
