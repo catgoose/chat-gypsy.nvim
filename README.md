@@ -64,6 +64,15 @@ local opts = {
   },
   log_level = "warn", -- trace, debug, info, warn, error, fatal
   ui = {
+    behavior = {
+      mount = true,
+      prompt = {
+        start_insert = true,
+      },
+      layout = {
+        type = "float",
+      },
+    },
     prompt = {
       start_insert = true,
     },
