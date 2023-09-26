@@ -51,9 +51,13 @@ Gypsy.toggle = function()
 end
 
 Gypsy.open = function()
-	chat = require("chat-gypsy.layout"):new()
-	chat:init()
-	chat:mount()
+	if not chat then
+		chat = require("chat-gypsy.layout"):new()
+		chat:init():mount()
+		return
+	else
+		Gypsy.hide()
+	end
 end
 
 Gypsy.hide = function()
