@@ -24,8 +24,8 @@ Events.sub("history:reset", function()
 end)
 
 History.init = function()
-	History.reset()
-	utils.mkdir(gypsy_path)
+	reset()
+	Path:new(gypsy_path):mkdir()
 	return History
 end
 
