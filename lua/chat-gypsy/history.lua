@@ -27,7 +27,13 @@ local save = function()
 	Path:new(path):write(vim.fn.json_encode(current), "w")
 end
 
-History.add = function(prompt_message, response_message, tokens_tbl)
+local add = function(message, type, tokens)
+	if not type then
+		return
+	end
+	if not vim.tbl_contains({ "prompt", "response" }, type) then
+		return
+	end
 	if not current.id then
 		current = {
 			id = history_id,
@@ -38,21 +44,24 @@ History.add = function(prompt_message, response_message, tokens_tbl)
 		Log.debug("Creating new chat: %s", vim.inspect(current))
 	end
 	table.insert(current.messages, {
-		type = "prompt",
-		message = prompt_message,
+		type = type,
+		message = message,
 		time = os.time(),
-		tokens = tonumber(tokens_tbl.prompt),
+		tokens = tokens,
 	})
 	Log.debug("Inserting new prompt into history: %s", vim.inspect(current.messages[#current.messages]))
-	table.insert(current.messages, {
-		type = "response",
-		message = response_message,
-		time = os.time(),
-		tokens = tonumber(tokens_tbl.response),
-	})
-	Log.debug("Inserting new response into history: %s", vim.inspect(current.messages[#current.messages]))
 	current.updatedAt = os.time()
 	save()
+end
+
+History.add_prompt = function(message, tokens)
+	local type = "prompt"
+	add(message, type, tokens)
+end
+
+History.add_response = function(message, tokens)
+	local type = "response"
+	add(message, type, tokens)
 end
 
 History.get = function()

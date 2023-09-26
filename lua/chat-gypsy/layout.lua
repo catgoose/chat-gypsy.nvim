@@ -259,6 +259,7 @@ function Layout:configure()
 				append(chunk)
 			end
 		end
+
 		local on_start = function()
 			self.response_set_cursor(self._.response.line_nr + 1)
 			self.message_source("prompt")
@@ -271,14 +272,17 @@ function Layout:configure()
 				self._.tokens.total = self._.tokens.total + self._.tokens.prompt
 				newln()
 				self.response_token_summary(self._.tokens.prompt)
+				History.add_prompt(prompt_message, self._.tokens)
 			end
 			utils.get_tokens(prompt_message, on_tokens)
 			vim.cmd("silent! undojoin")
 			self.message_source("response")
 		end
+
 		local before_start = function()
 			vim.api.nvim_buf_set_lines(self._.prompt.bufnr, 0, -1, false, {})
 		end
+
 		local on_complete = function(chunks)
 			self.insert_response_line()
 			Events.pub("hook:request:complete", self._.response.lines)
@@ -289,12 +293,12 @@ function Layout:configure()
 				self._.tokens.total = self._.tokens.total + self._.tokens.response
 				newln(2)
 				self.response_token_summary(self._.tokens.response)
-
-				History.add(prompt_message, table.concat(chunks, ""), self._.tokens)
+				History.add_response(table.concat(chunks, ""), self._.tokens)
 			end
 			utils.get_tokens(chunks, on_tokens)
 			vim.cmd("silent! undojoin")
 		end
+
 		local on_error = function(err)
 			local message = err and err.error and err.error.message or type(err) == "string" and err or "Unknown error"
 			local preamble = { message, "" }
@@ -318,6 +322,7 @@ function Layout:configure()
 			end
 			self.response_token_summary()
 		end
+
 		self.openai:send_prompt(prompt_message, before_start, on_start, on_chunk, on_complete, on_error)
 	end
 	if plugin_cfg.dev and dev.prompt.enabled then
