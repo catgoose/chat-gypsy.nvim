@@ -42,7 +42,7 @@ local add = function(message, type, tokens)
 			updatedAt = os.time(),
 			messages = {},
 		}
-		Log.debug(string.format("Creating new chat: %s", vim.inspect(current)))
+		Log.trace(string.format("Creating new chat: %s", vim.inspect(current)))
 	end
 	table.insert(current.messages, {
 		type = type,
@@ -50,7 +50,7 @@ local add = function(message, type, tokens)
 		time = os.time(),
 		tokens = tokens,
 	})
-	Log.debug(string.format("Inserting new prompt into history: %s", vim.inspect(current.messages[#current.messages])))
+	Log.trace(string.format("Inserting new prompt into history: %s", vim.inspect(current.messages[#current.messages])))
 	current.updatedAt = os.time()
 	save()
 end
