@@ -1,4 +1,5 @@
 local Log = require("chat-gypsy").Log
+local Events = require("chat-gypsy").Events
 local Path = require("plenary.path")
 local utils = require("chat-gypsy.utils")
 
@@ -10,12 +11,17 @@ local file = ""
 local path = ""
 local gypsy_path = vim.fn.stdpath("data") .. "/chat-gypsy"
 
-History.reset = function()
+local reset = function()
+	Log.debug("Resetting history")
 	current = {}
 	history_id = utils.generate_random_id()
 	file = string.format("%s.json", history_id)
 	path = string.format("%s/%s", gypsy_path, file)
 end
+
+Events.sub("history:reset", function()
+	reset()
+end)
 
 History.init = function()
 	History.reset()

@@ -170,6 +170,7 @@ function Layout:new(ui)
 		self.layout:unmount()
 		Events.pub("layout:unmount")
 		Events.pub("request:shutdown")
+		Events.pub("history:reset")
 	end
 	self.hide = function()
 		self.layout:hide()
