@@ -41,7 +41,6 @@ function Layout:new(ui)
 	self._ = {}
 	self.layout = ui.layout
 	self.boxes = ui.boxes
-	self.openai = require("chat-gypsy.openai"):new()
 
 	self.init_state = function()
 		self._ = utils.deepcopy(state)
@@ -324,7 +323,8 @@ function Layout:configure()
 			self.response_token_summary()
 		end
 
-		self.openai:send(prompt_message, before_start, on_start, on_chunk, on_complete, on_error)
+		local openai = require("chat-gypsy.openai"):new()
+		openai:send(prompt_message, before_start, on_start, on_chunk, on_complete, on_error)
 	end
 	if plugin_cfg.dev and dev.prompt.enabled then
 		send_prompt(dev.prompt.message)
