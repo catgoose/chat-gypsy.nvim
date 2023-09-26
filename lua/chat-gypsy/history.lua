@@ -28,6 +28,7 @@ local save = function()
 end
 
 local add = function(message, type, tokens)
+	tokens = utils.deepcopy(tokens)
 	if not type then
 		return
 	end
