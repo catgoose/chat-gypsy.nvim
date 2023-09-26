@@ -10,11 +10,6 @@ function OpenAI:new()
 end
 
 function OpenAI:send(message, before_start, on_start, on_chunk, on_chunks_complete, on_error)
-	if not message then
-		Log.warn("send_prompt: no message provided")
-		return
-	end
-
 	Log.trace(string.format("adding request to queue: \nmessage: %s", message))
 	before_start()
 	self.queue:add(function(on_request_complete)
