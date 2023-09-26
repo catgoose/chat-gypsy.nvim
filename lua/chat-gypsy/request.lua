@@ -1,8 +1,8 @@
 ---@diagnostic disable: undefined-field
 local Log = require("chat-gypsy").Log
 local Events = require("chat-gypsy").Events
-local config = require("chat-gypsy.config")
-local opts = config.opts
+local Config = require("chat-gypsy").Config
+local opts = Config.opts
 local utils = require("chat-gypsy.utils")
 local curl = require("plenary.curl")
 

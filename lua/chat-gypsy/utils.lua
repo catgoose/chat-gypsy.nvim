@@ -24,6 +24,15 @@ Utils.deepcopy = function(orig)
 	return copy
 end
 
+Utils.deep_copy_metatable_index = function(original)
+	local metatable = {
+		__index = function(_, k)
+			return Utils.deepcopy(original[k])
+		end,
+	}
+	return metatable
+end
+
 Utils.get_tokens = function(text, on_tokens)
 	local ok, result = pcall(
 		vim.api.nvim_exec2,

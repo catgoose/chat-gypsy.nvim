@@ -1,12 +1,12 @@
 local Log = require("chat-gypsy").Log
 local Events = require("chat-gypsy").Events
 local History = require("chat-gypsy").History
+local Config = require("chat-gypsy").Config
 local UI = require("chat-gypsy.ui")
 local nui_lo = require("nui.layout")
 local ev = require("nui.utils.autocmd").event
-local config = require("chat-gypsy.config")
-local symbols = config.symbols
-local plugin_cfg, dev, opts = config.plugin_cfg, config.dev, config.opts
+local symbols = Config.symbols
+local plugin_cfg, dev, opts = Config.plugin_cfg, Config.dev, Config.opts
 local utils = require("chat-gypsy.utils")
 local models = require("chat-gypsy.models")
 

@@ -52,6 +52,13 @@ Gypsy.toggle = function()
 end
 
 Gypsy.open = function()
+	local symbols = Gypsy.Config.symbols
+	local symbols2 = Gypsy.Config.symbols
+	vim.print(symbols.horiz == symbols2.horiz)
+	symbols.horiz = "asdf"
+	vim.print(symbols.horiz == symbols2.horiz)
+	symbols2.horiz = "1234"
+	vim.print(symbols.horiz == symbols2.horiz)
 	if not chat then
 		chat = require("chat-gypsy.layout"):new({
 			mount = Gypsy.Config.opts.ui.behavior.mount,

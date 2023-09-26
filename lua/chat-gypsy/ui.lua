@@ -1,6 +1,6 @@
 local nui_pu, nui_lo = require("nui.popup"), require("nui.layout")
-local config = require("chat-gypsy.config")
-local opts = config.opts
+local Config = require("chat-gypsy").Config
+local opts = Config.opts
 local Log = require("chat-gypsy").Log
 
 local layout_configs = { "float", "left", "right" }

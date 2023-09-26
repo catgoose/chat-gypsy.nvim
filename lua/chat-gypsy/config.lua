@@ -1,6 +1,7 @@
 local log_levels = { "trace", "debug", "info", "warn", "error", "fatal" }
 local default_log_level = "warn"
 local Events = require("chat-gypsy").Events
+local utils = require("chat-gypsy.utils")
 
 local Config = {}
 
@@ -59,7 +60,7 @@ Config.opts = {
 				start_insert = true,
 			},
 			layout = {
-				type = "left",
+				type = "float",
 			},
 		},
 		config = {
@@ -173,6 +174,25 @@ Config.init = function(opts)
 			table.insert(Config.dev.prompt.message, word)
 		end
 	end
+
+	local configs = {
+		Config.plugin_cfg,
+		Config.opts,
+		Config.dev,
+		Config.symbols,
+		Config.openai_models,
+	}
+	local metatable = {
+		__index = function(t, k)
+			return utils:deepCopy(Config.symbols[k])
+		end,
+	}
+
+	Config.symbols = setmetatable(Config.symbols, metatable)
+	-- for _, config in ipairs(configs) do
+	-- setmetatable(config, utils.deep_copy_metatable_index(config))
+	-- 	Config.config = utils.deep_copy_metatable_index(config)
+	-- end
 
 	init_event_hooks()
 end
