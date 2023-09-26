@@ -1,5 +1,12 @@
 Utils = {}
 
+Utils.mkdir = function(directory)
+	---@diagnostic disable-next-line: undefined-field
+	if not vim.loop.fs_stat(directory) then
+		vim.fn.mkdir(directory, "p")
+	end
+end
+
 Utils.generate_random_id = function()
 	local charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 	local result = ""
