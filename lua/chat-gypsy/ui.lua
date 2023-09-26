@@ -23,22 +23,11 @@ local function build_ui(layout_config)
 		buf_options = {
 			filetype = "prompt",
 		},
-		border = {
-			text = {
-				top = "Prompt",
-			},
-		},
 		enter = true,
 	})
 	local response_config = vim.tbl_deep_extend("force", popup_base, {
 		buf_options = {
 			filetype = "markdown",
-		},
-		border = {
-			text = {
-				top = opts.openai_params.model,
-				top_align = "left",
-			},
 		},
 	})
 

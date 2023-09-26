@@ -6,6 +6,7 @@ OpenAI.__index = OpenAI
 function OpenAI:new()
 	setmetatable(self, OpenAI)
 	self.queue = require("chat-gypsy.queue"):new()
+	self.request = require("chat-gypsy.request"):new()
 	return self
 end
 
@@ -19,8 +20,7 @@ function OpenAI:send(message, before_start, on_start, on_chunk, on_chunks_comple
 			on_request_complete()
 		end
 
-		local request = require("chat-gypsy.request"):new()
-		request:query(message, on_start, on_chunk, on_complete, on_error)
+		self.request:query(message, on_start, on_chunk, on_complete, on_error)
 	end)
 end
 
