@@ -1,6 +1,7 @@
 local Log = require("chat-gypsy").Log
 local Events = require("chat-gypsy").Events
 local History = require("chat-gypsy").History
+local UI = require("chat-gypsy.ui")
 local nui_lo = require("nui.layout")
 local ev = require("nui.utils.autocmd").event
 local config = require("chat-gypsy.config")
@@ -8,9 +9,6 @@ local symbols = config.symbols
 local plugin_cfg, dev, opts = config.plugin_cfg, config.dev, config.opts
 local utils = require("chat-gypsy.utils")
 local models = require("chat-gypsy.models")
-
-local Layout = {}
-Layout.__index = Layout
 
 local state = {
 	hidden = false,
@@ -36,11 +34,23 @@ local state = {
 	},
 }
 
-function Layout:new(ui)
-	setmetatable(self, Layout)
+Layout = setmetatable({}, UI)
+Layout.__index = Layout
+setmetatable(Layout, {
+	__index = UI,
+	__call = function(cls, ...)
+		local self = setmetatable({}, cls)
+		self:_init(...)
+		return self
+	end,
+})
+
+function Layout:_init()
+	UI.new(self)
+end
+
+function Layout:init()
 	self._ = {}
-	self.layout = ui.layout
-	self.boxes = ui.boxes
 	self.openai = require("chat-gypsy.openai"):new()
 
 	self.init_state = function()

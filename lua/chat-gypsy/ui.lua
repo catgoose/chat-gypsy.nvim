@@ -3,9 +3,6 @@ local config = require("chat-gypsy.config")
 local opts = config.opts
 local Log = require("chat-gypsy").Log
 
-local UI = {}
-UI.__index = UI
-
 local layout_configs = { "float", "left", "right" }
 
 local function build_ui(layout_config)
@@ -96,14 +93,18 @@ local function build_ui(layout_config)
 	}
 end
 
+local UI = {}
+UI.__index = UI
+
 function UI:new()
 	setmetatable(self, UI)
 	local layout_config = {
 		type = "float",
 	}
 	local ui = build_ui(layout_config)
+	self.layout = ui.layout
+	self.boxes = ui.boxes
 	Log.trace(string.format("Building new ui with layout config: \n%s", vim.inspect(layout_config)))
-	self.layout = require("chat-gypsy.layout"):new(ui)
 	return self
 end
 
