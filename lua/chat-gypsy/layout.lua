@@ -38,16 +38,7 @@ Layout = setmetatable({}, UI)
 Layout.__index = Layout
 setmetatable(Layout, {
 	__index = UI,
-	__call = function(cls, ...)
-		local self = setmetatable({}, cls)
-		self:_init(...)
-		return self
-	end,
 })
-
-function Layout:_init()
-	UI.new(self)
-end
 
 function Layout:init()
 	self._ = {}
