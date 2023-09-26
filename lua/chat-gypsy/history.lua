@@ -8,18 +8,22 @@ History.__index = History
 function History:new()
 	setmetatable(self, History)
 	self.current = {}
+	self.id = utils.generate_random_id()
+	self.file = string.format("%s.json", self.id)
+
 	local gypsy_path = vim.fn.stdpath("data") .. "/chat-gypsy"
+	self.path = string.format("%s/%s", gypsy_path, self.file)
 	if not vim.loop.fs_stat(gypsy_path) then
 		vim.fn.mkdir(vim.fn.stdpath("data") .. "/chat-gypsy", "p")
 	end
-	self.path = gypsy_path .. "/history.json"
+
 	return self
 end
 
 function History:add(prompt_message, response_message, tokens_tbl)
 	if not self.current.id then
 		self.current = {
-			id = utils.generate_random_id(),
+			id = self.id,
 			createdAt = os.time(),
 			updatedAt = os.time(),
 			messages = {},
@@ -41,6 +45,7 @@ function History:add(prompt_message, response_message, tokens_tbl)
 	})
 	Log.debug("Inserting new response into history: %s", vim.inspect(self.current.messages[#self.current.messages]))
 	self.current.updatedAt = os.time()
+	self:save()
 end
 
 function History:get()

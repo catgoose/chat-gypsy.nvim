@@ -290,8 +290,7 @@ function Layout:configure()
 				newln(2)
 				self.response_token_summary(self._.tokens.response)
 
-				-- self.history:add(prompt_message, table.concat(chunks, ""), self._.tokens)
-				-- self.history:save()
+				self.history:add(prompt_message, table.concat(chunks, ""), self._.tokens)
 			end
 			utils.get_tokens(chunks, on_tokens)
 			vim.cmd("silent! undojoin")
