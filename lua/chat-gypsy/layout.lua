@@ -40,7 +40,8 @@ setmetatable(Layout, {
 	__index = UI,
 })
 
-function Layout:init()
+---@diagnostic disable-next-line: duplicate-set-field
+function Layout:layout_init()
 	self._ = {}
 	self.openai = require("chat-gypsy.openai"):new()
 

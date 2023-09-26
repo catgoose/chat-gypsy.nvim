@@ -96,16 +96,29 @@ end
 local UI = {}
 UI.__index = UI
 
+setmetatable(UI, {
+	__call = function(cls, ...)
+		local self = setmetatable({}, cls)
+		self:_init(...)
+		return self
+	end,
+})
+
 function UI:new()
 	setmetatable(self, UI)
 	local layout_config = {
 		type = "float",
 	}
 	local ui = build_ui(layout_config)
+	Log.trace(string.format("Building new ui with layout config: \n%s", vim.inspect(layout_config)))
 	self.layout = ui.layout
 	self.boxes = ui.boxes
-	Log.trace(string.format("Building new ui with layout config: \n%s", vim.inspect(layout_config)))
+	self:layout_init()
 	return self
+end
+
+function UI:layout_init()
+	Log.warn("UI:layout_init: not implemented")
 end
 
 return UI

@@ -52,7 +52,7 @@ end
 
 Gypsy.open = function()
 	if not chat then
-		chat = require("chat-gypsy.layout"):new():init()
+		chat = require("chat-gypsy.layout"):new()
 		chat.mount()
 		return
 	else
