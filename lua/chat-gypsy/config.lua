@@ -53,8 +53,14 @@ Config.opts = {
 		},
 	},
 	ui = {
-		prompt = {
-			start_insert = true,
+		behavior = {
+			mount = true,
+			prompt = {
+				start_insert = true,
+			},
+			layout = {
+				type = "left",
+			},
 		},
 		config = {
 			zindex = 50,

@@ -3,10 +3,11 @@ local Gypsy = {}
 Gypsy.Log = {}
 Gypsy.History = {}
 Gypsy.Events = require("chat-gypsy.events")
+Gypsy.Config = {}
 
 Gypsy.setup = function(opts)
-	local config = require("chat-gypsy.config")
-	config.init(opts)
+	Gypsy.Config = require("chat-gypsy.config")
+	Gypsy.Config.init(opts)
 
 	Gypsy.Log = require("chat-gypsy.logger").init()
 	Gypsy.History = require("chat-gypsy.history").init()
@@ -14,7 +15,7 @@ Gypsy.setup = function(opts)
 	require("chat-gypsy.usercmd").init()
 	require("chat-gypsy.models").init()
 
-	if config.plugin_cfg.dev then
+	if Gypsy.Config.plugin_cfg.dev then
 		Gypsy.Log.info("Gypsy:setup: dev mode enabled")
 	end
 end
@@ -53,8 +54,8 @@ end
 Gypsy.open = function()
 	if not chat then
 		chat = require("chat-gypsy.layout"):new({
-			mount = true,
-			layout = { type = "float" },
+			mount = Gypsy.Config.opts.ui.behavior.mount,
+			layout = Gypsy.Config.opts.ui.behavior.layout,
 		})
 		return
 	else

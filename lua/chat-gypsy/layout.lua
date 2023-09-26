@@ -163,7 +163,7 @@ function Layout:layout_init()
 		self._.mounted = true
 		Log.trace("Configuring boxes")
 		self:configure()
-		if opts.ui.prompt.start_insert then
+		if opts.ui.behavior.prompt.start_insert then
 			vim.cmd.startinsert()
 		end
 		-- self.restore()
