@@ -76,12 +76,11 @@ History.get = function()
 	return current
 end
 
-local read = function()
+History.read = function()
 	local read_path = Path:new(path)
 	if not read_path:exists() then
 		return
 	end
-	--  TODO: 2023-09-25 - Path:read accepts a callback
 	local ok, history = pcall(vim.fn.json_decode, read_path:read())
 	if not ok then
 		return
