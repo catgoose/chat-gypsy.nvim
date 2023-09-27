@@ -48,6 +48,15 @@ local add = function(message, type, tokens)
 			createdAt = os.time(),
 			updatedAt = os.time(),
 			messages = {},
+			summary = "Chat summary and description",
+			keywords = {
+				"Chat",
+				"summary",
+				"description",
+				"keywords",
+				"other",
+				"end",
+			},
 		}
 		Log.trace(string.format("Creating new chat: %s", vim.inspect(current)))
 	end
