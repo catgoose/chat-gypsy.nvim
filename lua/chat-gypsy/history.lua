@@ -43,20 +43,15 @@ local add = function(message, type, tokens)
 		return
 	end
 	if not current.id then
+		--compose a json object for this chat with the schema: {name: string, description: string, keywords: string[]}.  The description should be limited to 80 characters.  Break compound words in keywords into multiple terms in lowercase.  Only return the object.
 		current = {
 			id = history_id,
 			createdAt = os.time(),
 			updatedAt = os.time(),
 			messages = {},
-			summary = "Chat summary and description",
-			keywords = {
-				"Chat",
-				"summary",
-				"description",
-				"keywords",
-				"other",
-				"end",
-			},
+			name = "Programming Concepts Chat",
+			description = "An explanation about closure and lexical scope in programming.",
+			keywords = { "programming", "concepts", "chat", "closure", "lexical", "scope" },
 		}
 		Log.trace(string.format("Creating new chat: %s", vim.inspect(current)))
 	end
@@ -85,7 +80,7 @@ History.get = function()
 	return current
 end
 
-History.get_files = function(on_read)
+History.chat_entries = function(on_read)
 	utils.find_files_in_directory(gypsy_data, on_read)
 end
 

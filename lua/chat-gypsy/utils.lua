@@ -1,5 +1,6 @@
 local Log = require("chat-gypsy").Log
 local Job = require("plenary.job")
+local Path = require("plenary.path")
 
 Utils = {}
 
@@ -100,11 +101,6 @@ Utils.get_find_cmd = function()
 				"1",
 				".",
 			},
-			exec = {
-				"---exec",
-				"basename",
-				"{}",
-			},
 		}
 	else
 		Log.warn("No find utility found.  Install fdfind")
@@ -115,16 +111,13 @@ Utils.find_files_in_directory = function(directory, on_found, on_error)
 	local find = Utils.get_find_cmd()
 	local args = find.args
 	args[#args + 1] = directory
-	for _, v in ipairs(find.exec) do
-		table.insert(args, v)
-	end
 
 	local job = Job:new({
 		command = find.command,
 		args = args,
 		on_exit = vim.schedule_wrap(function(response, exit_code)
 			if exit_code == 0 then
-				on_found(response)
+				on_found(response:result())
 			end
 		end),
 		on_error = vim.schedule_wrap(function(err, data)
@@ -135,6 +128,10 @@ Utils.find_files_in_directory = function(directory, on_found, on_error)
 		end),
 	})
 	job:start()
+end
+
+Utils.read_file = function(path)
+	return Path:new(path):read_file()
 end
 
 return Utils

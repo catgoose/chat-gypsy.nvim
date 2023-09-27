@@ -9,7 +9,7 @@ local previewers = require("telescope.previewers")
 local Telescope = {}
 
 local function history_picker(opts)
-	History.get_files(function(response)
+	History.chat_entries(function(response)
 		local files = response:result()
 		pickers
 			.new(opts, {
