@@ -30,28 +30,27 @@ Gypsy.Events.sub("layout:unmount", function()
 end)
 
 Gypsy.toggle = function()
-	Gypsy.history()
-	-- if not chat then
-	-- 	Gypsy.open()
-	-- 	return
-	-- end
-	-- if chat._.mounted then
-	-- 	if not chat._.hidden and not chat.is_focused() then
-	-- 		chat.focus_last_win()
-	-- 		return
-	-- 	end
-	-- 	if chat._.hidden and not chat.is_focused() then
-	-- 		chat.show()
-	-- 		return
-	-- 	end
-	-- 	if not chat._.hidden and chat.is_focused() then
-	-- 		chat.hide()
-	-- 		return
-	-- 	end
-	-- else
-	-- 	chat.mount()
-	-- 	return
-	-- end
+	if not chat then
+		Gypsy.open()
+		return
+	end
+	if chat._.mounted then
+		if not chat._.hidden and not chat.is_focused() then
+			chat.focus_last_win()
+			return
+		end
+		if chat._.hidden and not chat.is_focused() then
+			chat.show()
+			return
+		end
+		if not chat._.hidden and chat.is_focused() then
+			chat.hide()
+			return
+		end
+	else
+		chat.mount()
+		return
+	end
 end
 
 Gypsy.open = function()
@@ -86,7 +85,6 @@ end
 
 Gypsy.history = function()
 	require("chat-gypsy.telescope").history()
-	-- History.get_files(function() end)
 end
 
 return Gypsy
