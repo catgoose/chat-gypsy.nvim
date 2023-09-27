@@ -77,7 +77,7 @@ History.get = function()
 	return current
 end
 
-History.read = function()
+History.get_files = function(on_read)
 	local find = utils.get_find_cmd()
 	local args = find.args
 	args[#args + 1] = gypsy_data
@@ -89,11 +89,12 @@ History.read = function()
 		command = find.command,
 		args = args,
 		on_exit = vim.schedule_wrap(function(response, exit_code)
-			local result = response:result()
-			vim.print(result)
+			if exit_code == 0 then
+				on_read(response)
+			end
 		end),
 		on_error = vim.schedule_wrap(function(err, data)
-			vim.print(err, data)
+			Log.error("Error: %s.  Command: %s. Args: %s. Data: %s", err, gypsy_data, find.command, args, data)
 		end),
 	})
 	job:start()

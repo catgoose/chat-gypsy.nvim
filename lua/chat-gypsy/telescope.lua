@@ -8,29 +8,30 @@ local previewers = require("telescope.previewers")
 
 local Telescope = {}
 
-local get_history = function() end
+local history_files = {}
 
 local function history_picker(opts)
-	local history = History.read()
-	vim.print(history)
-	pickers
-		.new(opts, {
-			prompt_title = "History",
-			finder = finders.new_table({
-				results = history,
-			}),
-			sorter = conf.generic_sorter(),
-			attach_mappings = function(prompt_bufnr, _)
-				actions.select_default:replace(function()
-					actions.close(prompt_bufnr)
-					local selection = action_state.get_selected_entry()
-					-- tm.run_task(selection.value)
-					vim.print(selection.value)
-				end)
-				return true
-			end,
-		})
-		:find()
+	History.get_files(function(response)
+		history_files = response:result()
+		pickers
+			.new(opts, {
+				prompt_title = "History",
+				finder = finders.new_table({
+					results = history_files,
+				}),
+				sorter = conf.generic_sorter(),
+				attach_mappings = function(prompt_bufnr, _)
+					actions.select_default:replace(function()
+						actions.close(prompt_bufnr)
+						local selection = action_state.get_selected_entry()
+						-- tm.run_task(selection.value)
+						vim.print(selection.value)
+					end)
+					return true
+				end,
+			})
+			:find()
+	end)
 end
 
 function Telescope.history(opts)
