@@ -12,7 +12,7 @@ function Request:new()
 	self.chunks = {}
 	self.error_chunks = {}
 	self.content = ""
-	self.handler = {}
+	self.handler = nil
 	self.openai_params = opts.openai_params
 	self.join_content = function()
 		self.content = table.concat(self.chunks, "")
