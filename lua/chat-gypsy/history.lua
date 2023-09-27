@@ -13,7 +13,7 @@ local gypsy_path = vim.fn.stdpath("data") .. "/chat-gypsy"
 local id_len = 16
 
 local reset = function()
-	Log.debug("Resetting history")
+	Log.trace("Resetting history")
 	current = {}
 	history_id = utils.generate_random_id(id_len)
 	file = string.format("%s.json", history_id)
