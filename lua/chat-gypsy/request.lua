@@ -2,7 +2,6 @@
 local Log = require("chat-gypsy").Log
 local Events = require("chat-gypsy").Events
 local opts = require("chat-gypsy").Config.get("opts")
--- local utils = require("chat-gypsy.utils")
 local curl = require("plenary.curl")
 
 local Request = {}
@@ -13,8 +12,7 @@ function Request:new()
 	self.chunks = {}
 	self.error_chunks = {}
 	self.content = ""
-	self.handler = { is_shutdown = false }
-	-- self.openai_params = utils.deepcopy(opts.openai_params)
+	self.handler = {}
 	self.openai_params = opts.openai_params
 	self.join_content = function()
 		self.content = table.concat(self.chunks, "")
@@ -55,31 +53,17 @@ function Request:new()
 		for line in chunk:gmatch("[^\n]+") do
 			local data = string.gsub(line, "%s*data:%s*", "")
 			local ok, json = pcall(vim.json.decode, data)
-			if not ok then
-				return
+			if ok and json and json.choices and json.choices[1] then
+				if json.choices[1].finish_reason == "stop" then
+					return
+				end
+				if json.choices[1].delta and json.choices[1].delta.content then
+					local content = json.choices[1].delta.content
+					on_chunk(content)
+					Events.pub("hook:request:chunk", content)
+					table.insert(self.chunks, content)
+				end
 			end
-			local path = json.choices
-			if not path then
-				return
-			end
-			path = path[1]
-			if not path then
-				return
-			end
-			path = path.delta
-			if not path then
-				return
-			end
-			path = path.content
-			if not path then
-				return
-			end
-			if #self.chunks == 0 and path == "" then
-				return
-			end
-			on_chunk(path)
-			Events.pub("hook:request:chunk", path)
-			table.insert(self.chunks, path)
 		end
 	end
 
