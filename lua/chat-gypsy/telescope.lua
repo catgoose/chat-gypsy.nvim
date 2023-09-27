@@ -8,8 +8,11 @@ local previewers = require("telescope.previewers")
 
 local Telescope = {}
 
+local get_history = function() end
+
 local function history_picker(opts)
 	local history = History.read()
+	vim.print(history)
 	pickers
 		.new(opts, {
 			prompt_title = "History",

@@ -105,6 +105,7 @@ function Request:new()
 				body = vim.json.encode(self.openai_params),
 				stream = function(_, chunk)
 					if chunk ~= "" then
+						--  TODO: 2023-09-26 - Use vim.schedule_wrap?
 						vim.schedule(function()
 							if not strategy then
 								if string.match(chunk, "data:") then

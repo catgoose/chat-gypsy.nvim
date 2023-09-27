@@ -1,6 +1,7 @@
 local Log = require("chat-gypsy").Log
 local Events = require("chat-gypsy").Events
 local Path = require("plenary.path")
+local Job = require("plenary.job")
 local utils = require("chat-gypsy.utils")
 
 History = {}
@@ -8,8 +9,8 @@ History = {}
 local current = {}
 local history_id = ""
 local file = ""
-local path = ""
-local gypsy_path = vim.fn.stdpath("data") .. "/chat-gypsy"
+local json_path = ""
+local gypsy_data = vim.fn.stdpath("data") .. "/chat-gypsy"
 local id_len = 16
 
 local reset = function()
@@ -17,7 +18,7 @@ local reset = function()
 	current = {}
 	history_id = utils.generate_random_id(id_len)
 	file = string.format("%s.json", history_id)
-	path = string.format("%s/%s", gypsy_path, file)
+	json_path = string.format("%s/%s", gypsy_data, file)
 end
 
 Events.sub("history:reset", function()
@@ -26,12 +27,12 @@ end)
 
 History.init = function()
 	reset()
-	Path:new(gypsy_path):mkdir()
+	Path:new(gypsy_data):mkdir()
 	return History
 end
 
 local save = function()
-	Path:new(path):write(vim.fn.json_encode(current), "w")
+	Path:new(json_path):write(vim.fn.json_encode(current), "w")
 end
 
 local add = function(message, type, tokens)
@@ -77,15 +78,25 @@ History.get = function()
 end
 
 History.read = function()
-	local read_path = Path:new(path)
-	if not read_path:exists() then
-		return
+	local find = utils.get_find_cmd()
+	local args = find.args
+	args[#args + 1] = gypsy_data
+	for _, v in ipairs(find.exec) do
+		table.insert(args, v)
 	end
-	local ok, history = pcall(vim.fn.json_decode, read_path:read())
-	if not ok then
-		return
-	end
-	current = history
+
+	local job = Job:new({
+		command = find.command,
+		args = args,
+		on_exit = vim.schedule_wrap(function(response, exit_code)
+			local result = response:result()
+			vim.print(result)
+		end),
+		on_error = vim.schedule_wrap(function(err, data)
+			vim.print(err, data)
+		end),
+	})
+	job:start()
 end
 
 return History

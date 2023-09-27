@@ -81,4 +81,9 @@ Gypsy.close = function()
 	end
 end
 
+Gypsy.history = function()
+	-- require("chat-gypsy.telescope").history()
+	History.read()
+end
+
 return Gypsy

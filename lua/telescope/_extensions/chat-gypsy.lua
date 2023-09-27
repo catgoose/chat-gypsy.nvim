@@ -12,8 +12,5 @@ return telescope.register_extension({
 		history = function(opts)
 			pickers.history(opts)
 		end,
-		["chat-gypsy"] = function(opts)
-			pickers.history(opts)
-		end,
 	},
 })

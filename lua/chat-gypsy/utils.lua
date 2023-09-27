@@ -1,3 +1,5 @@
+local Log = require("chat-gypsy").Log
+
 Utils = {}
 
 Utils.generate_random_id = function(len)
@@ -81,6 +83,30 @@ Utils.tbl_to_json_string = function(table, indent_level)
 		local encoded_str = vim.json.encode(table)
 		encoded_str = string.gsub(encoded_str, "\\", "")
 		return encoded_str
+	end
+end
+
+Utils.get_find_cmd = function()
+	if vim.fn.executable("fdfind") == 1 then
+		return {
+			command = "fdfind",
+			args = {
+				"--type",
+				"f",
+				"--color",
+				"never",
+				"--exact-depth",
+				"1",
+				".",
+			},
+			exec = {
+				"---exec",
+				"basename",
+				"{}",
+			},
+		}
+	else
+		Log.warn("No find utility found.  Install fdfind")
 	end
 end
 
