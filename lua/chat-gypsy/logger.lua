@@ -1,4 +1,4 @@
-local plugin_cfg = require("chat-gypsy").Config.plugin_cfg
+local plugin_cfg = require("chat-gypsy").Config.get("plugin_cfg")
 
 local Logger = {}
 Logger.log = {}

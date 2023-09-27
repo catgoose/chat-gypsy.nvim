@@ -5,7 +5,7 @@ local utils = require("chat-gypsy.utils")
 
 local Config = {}
 
-Config.openai_models = {
+local openai_models = {
 	{
 		model = "gpt-3.5-turbo",
 		max_tokens = 4097,
@@ -28,19 +28,19 @@ Config.openai_models = {
 	},
 }
 
-Config.symbols = {
+local symbols = {
 	horiz = "━",
 	left_arrow = "◀",
 	right_arrow = "▶",
 }
 
-Config.plugin_cfg = {
+local plugin_cfg = {
 	name = "gypsy",
 	log_level = default_log_level,
 	dev = false,
 }
 
-Config.opts = {
+local opts = {
 	openai_key = os.getenv("OPENAI_API_KEY"),
 	openai_params = {
 		model = "gpt-3.5-turbo",
@@ -145,10 +145,24 @@ Config.opts = {
 	},
 }
 
-Config.dev = Config.opts.dev_opts
+local dev = opts.dev_opts
+
+Config.get = function(cfg)
+	if cfg == "openai_models" then
+		return utils.deepcopy(openai_models)
+	elseif cfg == "symbols" then
+		return utils.deepcopy(symbols)
+	elseif cfg == "plugin_cfg" then
+		return utils.deepcopy(plugin_cfg)
+	elseif cfg == "opts" then
+		return utils.deepcopy(opts)
+	elseif cfg == "dev" then
+		return utils.deepcopy(dev)
+	end
+end
 
 local init_event_hooks = function()
-	local types = Config.opts.hooks
+	local types = opts.hooks
 	for type, _ in pairs(types) do
 		for hook, _ in pairs(types[type]) do
 			Events.sub("hook:" .. type .. ":" .. hook, types[type][hook])
@@ -156,43 +170,24 @@ local init_event_hooks = function()
 	end
 end
 
-Config.init = function(opts)
-	opts = opts or {}
-	opts = vim.tbl_deep_extend("force", Config.opts, opts)
-	if not opts.openai_key then
+Config.init = function(_opts)
+	_opts = _opts or {}
+	_opts = vim.tbl_deep_extend("force", opts, _opts)
+	if not _opts.openai_key then
 		local err_msg = string.format("opts:new: invalid opts: missing openai_key\nopts: %s", vim.inspect(opts))
 		error(err_msg)
 	end
-	Config.plugin_cfg.log_level = vim.tbl_contains(log_levels, opts.log_level) and opts.log_level or default_log_level
-	Config.opts = opts
+	plugin_cfg.log_level = vim.tbl_contains(log_levels, _opts.log_level) and _opts.log_level or default_log_level
+	opts = _opts
 
-	Config.plugin_cfg.dev = Config.plugin_cfg.dev or Config.opts.dev
-	if Config.plugin_cfg.dev then
-		Config.dev = vim.tbl_deep_extend("force", Config.dev, Config.opts.dev_opts)
-		Config.dev.prompt.message = {}
-		for word in Config.dev.prompt.user_prompt:gmatch("[^\n]+") do
-			table.insert(Config.dev.prompt.message, word)
+	plugin_cfg.dev = plugin_cfg.dev or opts.dev
+	if plugin_cfg.dev then
+		dev = vim.tbl_deep_extend("force", dev, opts.dev_opts)
+		dev.prompt.message = {}
+		for word in dev.prompt.user_prompt:gmatch("[^\n]+") do
+			table.insert(dev.prompt.message, word)
 		end
 	end
-
-	local configs = {
-		Config.plugin_cfg,
-		Config.opts,
-		Config.dev,
-		Config.symbols,
-		Config.openai_models,
-	}
-	local metatable = {
-		__index = function(t, k)
-			return utils:deepCopy(Config.symbols[k])
-		end,
-	}
-
-	Config.symbols = setmetatable(Config.symbols, metatable)
-	-- for _, config in ipairs(configs) do
-	-- setmetatable(config, utils.deep_copy_metatable_index(config))
-	-- 	Config.config = utils.deep_copy_metatable_index(config)
-	-- end
 
 	init_event_hooks()
 end

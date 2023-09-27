@@ -1,9 +1,8 @@
 ---@diagnostic disable: undefined-field
 local Log = require("chat-gypsy").Log
 local Events = require("chat-gypsy").Events
-local Config = require("chat-gypsy").Config
-local opts = Config.opts
-local utils = require("chat-gypsy.utils")
+local opts = require("chat-gypsy").Config.get("opts")
+-- local utils = require("chat-gypsy.utils")
 local curl = require("plenary.curl")
 
 local Request = {}
@@ -15,7 +14,8 @@ function Request:new()
 	self.error_chunks = {}
 	self.content = ""
 	self.handler = { is_shutdown = false }
-	self.openai_params = utils.deepcopy(opts.openai_params)
+	-- self.openai_params = utils.deepcopy(opts.openai_params)
+	self.openai_params = opts.openai_params
 	self.join_content = function()
 		self.content = table.concat(self.chunks, "")
 	end

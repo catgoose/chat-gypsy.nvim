@@ -13,9 +13,9 @@ Gypsy.setup = function(opts)
 	Gypsy.History = require("chat-gypsy.history").init()
 
 	require("chat-gypsy.usercmd").init()
-	require("chat-gypsy.models").init()
+	-- require("chat-gypsy.models").init()
 
-	if Gypsy.Config.plugin_cfg.dev then
+	if Gypsy.Config.get("plugin_cfg").dev then
 		Gypsy.Log.info("Gypsy:setup: dev mode enabled")
 	end
 end
@@ -52,17 +52,10 @@ Gypsy.toggle = function()
 end
 
 Gypsy.open = function()
-	local symbols = Gypsy.Config.symbols
-	local symbols2 = Gypsy.Config.symbols
-	vim.print(symbols.horiz == symbols2.horiz)
-	symbols.horiz = "asdf"
-	vim.print(symbols.horiz == symbols2.horiz)
-	symbols2.horiz = "1234"
-	vim.print(symbols.horiz == symbols2.horiz)
 	if not chat then
 		chat = require("chat-gypsy.layout"):new({
-			mount = Gypsy.Config.opts.ui.behavior.mount,
-			layout = Gypsy.Config.opts.ui.behavior.layout,
+			mount = Gypsy.Config.get("opts").ui.behavior.mount,
+			layout = Gypsy.Config.get("opts").ui.behavior.layout,
 		})
 		return
 	else
