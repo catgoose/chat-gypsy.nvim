@@ -1,9 +1,9 @@
 local Config = require("chat-gypsy").Config
+local Events = require("chat-gypsy").Events
 local openai_models = Config.get("openai_models")
 local opts = Config.get("opts")
 local Log = require("chat-gypsy").Log
 local curl = require("plenary.curl")
-local Events = require("chat-gypsy").Events
 
 Models = {}
 
