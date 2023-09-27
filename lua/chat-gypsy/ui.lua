@@ -103,7 +103,6 @@ function UI:new(ui_config)
 			type = "float",
 		},
 	}
-	--  BUG: 2023-09-26 - building ui with type = "left" | "right" fails
 	local ui = build_ui(ui_config.layout)
 	Log.trace(string.format("Building new ui with layout config: \n%s", vim.inspect(ui_config.layout)))
 	self.layout = ui.layout
