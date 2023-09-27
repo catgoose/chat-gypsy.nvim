@@ -1,5 +1,3 @@
-local Path = require("plenary.path")
-
 local Gypsy = {}
 
 Gypsy.Log = {}
