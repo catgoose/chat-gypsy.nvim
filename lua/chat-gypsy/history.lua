@@ -80,8 +80,37 @@ History.get = function()
 	return current
 end
 
-History.chat_entries = function(on_read)
-	utils.find_files_in_directory(gypsy_data, on_read)
+local get_entries = function(path)
+	local history = utils.decode_json_from_path(path)
+	if history and history.name and history.description and history.keywords then
+		return {
+			name = history.name,
+			description = history.description,
+			keywords = history.keywords,
+		}
+	else
+		Log.error(string.format("History file %s is missing required fields", path))
+	end
+end
+
+local get_history_files = function(on_found)
+	utils.find_files_in_directory(gypsy_data, on_found)
+end
+
+History.get_entries = function(on_entries)
+	get_history_files(function(files)
+		local paths = {}
+		for _, path in ipairs(files) do
+			table.insert(paths, {
+				path = {
+					full = path,
+					base = vim.fn.fnamemodify(path, ":t"),
+				},
+				entries = get_entries(path),
+			})
+		end
+		on_entries(paths)
+	end)
 end
 
 return History

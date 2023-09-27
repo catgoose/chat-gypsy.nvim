@@ -85,39 +85,8 @@ Gypsy.close = function()
 end
 
 Gypsy.history = function()
-	-- require("chat-gypsy.telescope").history()
+	require("chat-gypsy.telescope").history()
 	-- History.get_files(function() end)
-	local get_contents = function(path)
-		local contents = Path:new(path):read()
-		local return_table = {}
-		for _, tbl in pairs(vim.json.decode(contents)) do
-			-- table.insert(return_table, {
-			-- 	name = tbl.name,
-			-- 	description = tbl.description,
-			-- 	keywords = tbl.keywords,
-			-- })
-			vim.print(tbl)
-		end
-		return return_table
-		-- return vim.tbl_map(function(t)
-		-- 	return {
-		-- 		name = t.name,
-		-- 		description = t.description,
-		-- 		keywords = t.keywords,
-		-- 	}
-		-- end, vim.json.decode(contents))
-	end
-	History.chat_entries(function(response)
-		local paths = {}
-		for _, path in ipairs(response) do
-			table.insert(paths, {
-				full = path,
-				base = vim.fn.fnamemodify(path, ":t"),
-				contents = get_contents(path),
-			})
-		end
-		vim.print(paths)
-	end)
 end
 
 return Gypsy

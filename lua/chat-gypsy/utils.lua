@@ -130,8 +130,18 @@ Utils.find_files_in_directory = function(directory, on_found, on_error)
 	job:start()
 end
 
-Utils.read_file = function(path)
-	return Path:new(path):read_file()
+local read_file = function(path)
+	return Path:new(path):read()
+end
+
+Utils.decode_json_from_path = function(path)
+	local file = read_file(path)
+	local ok, json = pcall(vim.json.decode, file)
+	if ok and json then
+		return json
+	else
+		Log.error(string.format("Error parsing json from path: %s", path))
+	end
 end
 
 return Utils

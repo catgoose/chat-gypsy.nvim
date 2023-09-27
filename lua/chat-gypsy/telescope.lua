@@ -5,12 +5,12 @@ local pickers = require("telescope.pickers")
 local actions = require("telescope.actions")
 local action_state = require("telescope.actions.state")
 local previewers = require("telescope.previewers")
+local utils = require("chat-gypsy.utils")
 
 local Telescope = {}
 
 local function history_picker(opts)
-	History.chat_entries(function(response)
-		local files = response:result()
+	History.get_entries(function(entries)
 		pickers
 			.new(opts, {
 				prompt_title = "History",
@@ -19,14 +19,13 @@ local function history_picker(opts)
 				-- 	height = 0.5,
 				-- },
 				finder = finders.new_table({
-					results = files,
-					-- :help telescope.make_entry
-					entry_maker = function(entry)
+					results = entries,
+					entry_maker = function(item)
 						return {
-							value = entry,
-							display = "file: " .. entry,
-							ordinal = entry,
-							filename = entry,
+							value = item.entries,
+							display = string.format("%s: %s", item.entries.name, item.entries.description),
+							ordinal = item.entries.name,
+							filename = item.path.full,
 						}
 					end,
 				}),
@@ -43,7 +42,14 @@ local function history_picker(opts)
 					title = "Chat history",
 					define_preview = function(self, entry, _)
 						vim.api.nvim_buf_set_option(self.state.bufnr, "filetype", "markdown")
-						vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, { entry.value })
+						local contents = utils.decode_json_from_path(entry.filename)
+						for _, message_tbls in pairs(contents.messages) do
+							vim.api.nvim_buf_set_lines(self.state.bufnr, -1, -1, false, { message_tbls.type, "" })
+							for line in message_tbls.message:gmatch("[^\n]+") do
+								vim.api.nvim_buf_set_lines(self.state.bufnr, -1, -1, false, { line })
+							end
+							vim.api.nvim_buf_set_lines(self.state.bufnr, -1, -1, false, { "" })
+						end
 					end,
 				}),
 			})
@@ -53,7 +59,6 @@ end
 
 function Telescope.history(opts)
 	opts = opts or {}
-	-- opts = require("telescope.themes").get_dropdown({})
 	history_picker(opts)
 end
 
