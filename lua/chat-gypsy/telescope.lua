@@ -10,7 +10,7 @@ local utils = require("chat-gypsy.utils")
 local Telescope = {}
 
 local function history_picker(opts)
-	History.get_entries(function(entries)
+	History.get_picker_entries(function(entries)
 		pickers
 			.new(opts, {
 				prompt_title = "History",

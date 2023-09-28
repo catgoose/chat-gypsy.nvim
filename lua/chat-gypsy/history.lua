@@ -80,37 +80,49 @@ History.get = function()
 	return current
 end
 
-local get_entries = function(path)
-	local history = utils.decode_json_from_path(path)
-	if history and history.name and history.description and history.keywords then
+local get_entries_from_file = function(file_path, on_error)
+	local history_json = utils.decode_json_from_path(file_path)
+	if history_json and history_json.name and history_json.description and history_json.keywords then
 		return {
-			name = history.name,
-			description = history.description,
-			keywords = history.keywords,
+			name = history_json.name,
+			description = history_json.description,
+			keywords = history_json.keywords,
 		}
 	else
-		Log.error(string.format("History file %s is missing required fields", path))
+		local error = string.format(
+			"history_json file %s is missing required fields. history_json: %s",
+			file_path,
+			vim.inspect(history_json)
+		)
+		on_error(error)
 	end
 end
 
-local get_history_files = function(on_found)
-	utils.find_files_in_directory(gypsy_data, on_found)
+local get_history_files = function(on_files_found, on_error)
+	utils.find_files_in_directory(gypsy_data, on_files_found, on_error)
 end
 
-History.get_entries = function(on_entries)
-	get_history_files(function(files)
-		local paths = {}
-		for _, path in ipairs(files) do
-			table.insert(paths, {
+History.get_picker_entries = function(picker_cb)
+	local on_error = function(err)
+		Log.error(err)
+		error(err)
+	end
+	local on_files_found = function(file_paths)
+		local picker_entries = {}
+		for _, file_path in ipairs(file_paths) do
+			local entries = get_entries_from_file(file_path, on_error)
+			table.insert(picker_entries, {
 				path = {
-					full = path,
-					base = vim.fn.fnamemodify(path, ":t"),
+					full = file_path,
+					base = vim.fn.fnamemodify(file_path, ":t"),
 				},
-				entries = get_entries(path),
+				entries = entries,
 			})
 		end
-		on_entries(paths)
-	end)
+		picker_cb(picker_entries)
+	end
+
+	get_history_files(on_files_found, on_error)
 end
 
 return History

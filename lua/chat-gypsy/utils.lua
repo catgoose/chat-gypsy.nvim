@@ -107,24 +107,23 @@ Utils.get_find_cmd = function()
 	end
 end
 
-Utils.find_files_in_directory = function(directory, on_found, on_error)
+Utils.find_files_in_directory = function(path, on_files_found, on_error)
 	local find = Utils.get_find_cmd()
 	local args = find.args
-	args[#args + 1] = directory
+	args[#args + 1] = path
 
 	local job = Job:new({
 		command = find.command,
 		args = args,
 		on_exit = vim.schedule_wrap(function(response, exit_code)
 			if exit_code == 0 then
-				on_found(response:result())
+				on_files_found(response:result())
+			else
+				on_error(string.format("Error: exit_code: %d", exit_code))
 			end
 		end),
 		on_error = vim.schedule_wrap(function(err, data)
-			Log.error("Error: %s.  Command: %s. Args: %s. Data: %s", err, directory, find.command, args, data)
-			if on_error then
-				on_error()
-			end
+			on_error(string.format("Error: %s.  Command: %s. Args: %s. Data: %s", err, path, find.command, args, data))
 		end),
 	})
 	job:start()
@@ -134,13 +133,13 @@ local read_file = function(path)
 	return Path:new(path):read()
 end
 
-Utils.decode_json_from_path = function(path)
-	local file = read_file(path)
+Utils.decode_json_from_path = function(file_path, on_error)
+	local file = read_file(file_path)
 	local ok, json = pcall(vim.json.decode, file)
 	if ok and json then
 		return json
 	else
-		Log.error(string.format("Error parsing json from path: %s", path))
+		on_error(string.format("Error parsing json from path: %s", file_path))
 	end
 end
 
