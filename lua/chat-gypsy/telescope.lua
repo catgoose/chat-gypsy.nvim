@@ -18,7 +18,7 @@ local entry_maker = function(item)
 	}
 end
 
-local attach_mappings = function(prompt_bufnr, _)
+local attach_mappings = function(prompt_bufnr)
 	actions.select_default:replace(function()
 		actions.close(prompt_bufnr)
 		local selection = action_state.get_selected_entry()
@@ -28,7 +28,7 @@ local attach_mappings = function(prompt_bufnr, _)
 end
 
 --  TODO: 2023-09-27 - use chat renderer here
-local define_preview = function(self, entry, _)
+local define_preview = function(self, entry)
 	vim.api.nvim_buf_set_option(self.state.bufnr, "filetype", "markdown")
 	local contents = utils.decode_json_from_path(entry.filename)
 	for _, message_tbls in pairs(contents.messages) do
