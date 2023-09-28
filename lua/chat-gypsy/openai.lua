@@ -19,7 +19,7 @@ function OpenAI:send(message, before_start, on_start, on_chunk, on_chunks_comple
 			on_chunks_complete(complete_chunks)
 			on_request_complete()
 		end
-
+		print(self.request)
 		self.request:query(message, on_start, on_chunk, on_complete, on_error)
 	end)
 end

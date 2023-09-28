@@ -26,6 +26,9 @@ end
 
 Events.sub("history:reset", function()
 	local request = require("chat-gypsy.request"):new()
+	local request2 = require("chat-gypsy.request"):new()
+	print(request)
+	print(request2)
 	local on_complete = function()
 		save()
 		reset()
@@ -55,6 +58,7 @@ local add_message = function(message, type, tokens)
 			createdAt = os.time(),
 			updatedAt = os.time(),
 			messages = {},
+			openai_params = {},
 			entries = {
 				name = nil,
 				description = nil,
