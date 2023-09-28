@@ -22,9 +22,10 @@ end
 
 local chat
 
-Gypsy.Events.sub("float:unmount", function()
+Gypsy.Events.sub("float:unmount", function(queue_complete)
 	Gypsy.Log.trace("Events. float:unmount")
 	chat = nil
+	queue_complete()
 end)
 
 Gypsy.toggle = function()

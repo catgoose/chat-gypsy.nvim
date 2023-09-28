@@ -8,12 +8,6 @@ local Request = {}
 Request.__index = Request
 
 function Request:new()
-	-- local instance = {}
-	-- setmetatable(self, Request)
-	-- setmetatable(instance, {
-	-- 	__index = self,
-	-- })
-
 	self.chunks = {}
 	self.error_chunks = {}
 	self.content = ""
@@ -44,11 +38,12 @@ function Request:new()
 		self.error_chunks = {}
 		self.content = ""
 	end
-	self.shutdown = function()
-		if not self.handler.is_shutdown then
+	self.shutdown = function(queue_complete)
+		if self.handler and not self.handler.is_shutdown then
 			Log.debug("shutting down plenary.curl handler")
 			self.handler:shutdown()
 		end
+		queue_complete()
 	end
 
 	self.extract_data = function(chunk, on_chunk)
@@ -154,8 +149,8 @@ function Request:new()
 		end
 	end
 
-	Events.sub("request:shutdown", function()
-		self.shutdown()
+	Events.sub("request:shutdown", function(queue_complete)
+		self.shutdown(queue_complete)
 	end)
 
 	return self

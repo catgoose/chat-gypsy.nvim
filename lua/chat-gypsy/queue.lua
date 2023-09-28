@@ -11,8 +11,11 @@ function FuncQueue:new(config)
 	return instance
 end
 
-function FuncQueue:add(func)
-	table.insert(self.queue, func)
+function FuncQueue:add(...)
+	local funcs = { ... }
+	for _, func in ipairs(funcs) do
+		table.insert(self.queue, func)
+	end
 	self:executeNext()
 end
 
