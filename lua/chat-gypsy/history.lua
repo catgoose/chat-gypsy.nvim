@@ -51,7 +51,7 @@ local add_message = function(message, type, tokens)
 		return
 	end
 	if not current.id then
-		-- Compose a json object for this chat with the schema: {name: string, description: string, keywords: string[]}.  The description should be limited to 80 characters.  Break compound words in keywords into multiple terms in lowercase.  Only return the object.
+		-- Only return the object.  Compose a json object for this chat with the schema: {name: string, description: string, keywords: string[]}.  The description should be limited to 80 characters.  Break compound words in keywords into multiple terms in lowercase.
 
 		current = {
 			id = history_id,
