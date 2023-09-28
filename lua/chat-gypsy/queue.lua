@@ -1,14 +1,14 @@
 FuncQueue = {}
-FuncQueue.__index = FuncQueue
 
-function FuncQueue.new(config)
+function FuncQueue:new(config)
+	local instance = {}
+	setmetatable(instance, { __index = self })
 	config = config or {}
 	config.sync = config.sync or false
-	local self = setmetatable({}, FuncQueue)
-	self.sync = config.sync or false
-	self.queue = {}
-	self.isRunning = false
-	return self
+	instance.sync = config.sync or false
+	instance.queue = {}
+	instance.isRunning = false
+	return instance
 end
 
 function FuncQueue:add(func)
