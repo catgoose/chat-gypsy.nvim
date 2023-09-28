@@ -5,53 +5,53 @@ local opts = require("chat-gypsy").Config.get("opts")
 local curl = require("plenary.curl")
 
 local Request = {}
--- Request.__index = Request
+Request.__index = Request
 
 function Request:new()
-	local instance = {}
+	-- local instance = {}
 	-- setmetatable(self, Request)
-	setmetatable(instance, {
-		__index = self,
-	})
+	-- setmetatable(instance, {
+	-- 	__index = self,
+	-- })
 
-	instance.chunks = {}
-	instance.error_chunks = {}
-	instance.content = ""
-	instance.handler = nil
-	instance.openai_params = opts.openai_params
-	instance.join_content = function()
-		instance.content = table.concat(instance.chunks, "")
+	self.chunks = {}
+	self.error_chunks = {}
+	self.content = ""
+	self.handler = nil
+	self.openai_params = opts.openai_params
+	self.join_content = function()
+		self.content = table.concat(self.chunks, "")
 	end
-	instance.on_assistant_response = function()
-		instance.content = table.concat(instance.chunks, "")
-		instance.join_content()
-		Log.trace("on_assistant_response: " .. instance.content)
-		table.insert(instance.openai_params.messages, {
+	self.on_assistant_response = function()
+		self.content = table.concat(self.chunks, "")
+		self.join_content()
+		Log.trace("on_assistant_response: " .. self.content)
+		table.insert(self.openai_params.messages, {
 			role = "assistant",
-			content = instance.content,
+			content = self.content,
 		})
 	end
-	instance.on_user_prompt = function(content)
-		instance.content = content
-		Log.trace("on_user_prompt: " .. instance.content)
-		table.insert(instance.openai_params.messages, {
+	self.on_user_prompt = function(content)
+		self.content = content
+		Log.trace("on_user_prompt: " .. self.content)
+		table.insert(self.openai_params.messages, {
 			role = "user",
-			content = instance.content,
+			content = self.content,
 		})
 	end
-	instance.reset = function()
-		instance.chunks = {}
-		instance.error_chunks = {}
-		instance.content = ""
+	self.reset = function()
+		self.chunks = {}
+		self.error_chunks = {}
+		self.content = ""
 	end
-	instance.shutdown = function()
-		if not instance.handler.is_shutdown then
+	self.shutdown = function()
+		if not self.handler.is_shutdown then
 			Log.debug("shutting down plenary.curl handler")
-			instance.handler:shutdown()
+			self.handler:shutdown()
 		end
 	end
 
-	instance.extract_data = function(chunk, on_chunk)
+	self.extract_data = function(chunk, on_chunk)
 		if not chunk then
 			return
 		end
@@ -66,27 +66,27 @@ function Request:new()
 					local content = json.choices[1].delta.content
 					on_chunk(content)
 					Events.pub("hook:request:chunk", content)
-					table.insert(instance.chunks, content)
+					table.insert(self.chunks, content)
 				end
 			end
 		end
 	end
 
-	instance.extract_error = function(chunk, on_error)
-		table.insert(instance.error_chunks, chunk .. "\n")
-		on_error(instance.error_chunks)
+	self.extract_error = function(chunk, on_error)
+		table.insert(self.error_chunks, chunk .. "\n")
+		on_error(self.error_chunks)
 	end
 
-	instance.compose_entries = function(current_history, on_complete)
+	self.compose_entries = function(current_history, on_complete)
 		current_history.entries = {
 			name = "name",
 			description = "description",
 			keywords = { "name", "description" },
 		}
-		vim.print(instance.openai_params)
+		vim.print(self.openai_params)
 		--  TODO: 2023-09-27 - store openai_params in openai class
 		--  TODO: 2023-09-28 - openai_params needs to be saved in history
-		-- vim.print(instance.openai_params)
+		-- vim.print(self.openai_params)
 		-- vim.print(current_history.messages)
 		local body = {}
 		-- curl.post({
@@ -105,21 +105,21 @@ function Request:new()
 		-- })
 	end
 
-	instance.completions = function(on_start, on_chunk, on_complete, on_error)
+	self.completions = function(on_start, on_chunk, on_complete, on_error)
 		on_start()
 		local strategy = nil
 		if opts.dev_opts.request.throw_error then
 			on_error(opts.dev_opts.request.error)
 		else
 			--  TODO: 2023-09-27 - abstract this so it can be used by compose_entries
-			instance.handler = curl.post({
+			self.handler = curl.post({
 				url = "https://api.openai.com/v1/chat/completions",
 				raw = { "--no-buffer" },
 				headers = {
 					content_type = "application/json",
 					Authorization = "Bearer " .. opts.openai_key,
 				},
-				body = vim.json.encode(instance.openai_params),
+				body = vim.json.encode(self.openai_params),
 				stream = function(_, chunk)
 					if chunk ~= "" then
 						vim.schedule(function()
@@ -136,14 +136,14 @@ function Request:new()
 				end,
 				on_error = on_error,
 			})
-			instance.handler:after_success(function()
-				if #instance.error_chunks > 0 then
-					local error = table.concat(instance.error_chunks, "")
+			self.handler:after_success(function()
+				if #self.error_chunks > 0 then
+					local error = table.concat(self.error_chunks, "")
 					local ok, json = pcall(vim.json.decode, error)
 					if ok then
 						on_error(json)
 					else
-						on_error(instance.error_chunks)
+						on_error(self.error_chunks)
 					end
 				else
 					vim.schedule(function()
@@ -155,10 +155,10 @@ function Request:new()
 	end
 
 	Events.sub("request:shutdown", function()
-		instance.shutdown()
+		self.shutdown()
 	end)
 
-	return instance
+	return self
 end
 
 function Request:query(message, on_response_start, on_response_chunk, on_response_complete, on_response_error)
