@@ -49,9 +49,9 @@ local add = function(message, type, tokens)
 			createdAt = os.time(),
 			updatedAt = os.time(),
 			messages = {},
-			name = "Programming Concepts Chat",
-			description = "An explanation about closure and lexical scope in programming.",
-			keywords = { "programming", "concepts", "chat", "closure", "lexical", "scope" },
+			name = nil,
+			description = nil,
+			keywords = {},
 		}
 		Log.trace(string.format("Creating new chat: %s", vim.inspect(current)))
 	end
@@ -81,7 +81,7 @@ History.get = function()
 end
 
 local get_entries_from_file = function(file_path, on_error)
-	local history_json = utils.decode_json_from_path(file_path)
+	local history_json = utils.decode_json_from_path(file_path, on_error)
 	if history_json and history_json.name and history_json.description and history_json.keywords then
 		return {
 			name = history_json.name,
@@ -89,12 +89,7 @@ local get_entries_from_file = function(file_path, on_error)
 			keywords = history_json.keywords,
 		}
 	else
-		local error = string.format(
-			"history_json file %s is missing required fields. history_json: %s",
-			file_path,
-			vim.inspect(history_json)
-		)
-		on_error(error)
+		return nil
 	end
 end
 
@@ -104,20 +99,24 @@ end
 
 History.get_picker_entries = function(picker_cb)
 	local on_error = function(err)
-		Log.error(err)
-		error(err)
+		if err then
+			Log.error(err)
+			error(err)
+		end
 	end
 	local on_files_found = function(file_paths)
 		local picker_entries = {}
 		for _, file_path in ipairs(file_paths) do
 			local entries = get_entries_from_file(file_path, on_error)
-			table.insert(picker_entries, {
-				path = {
-					full = file_path,
-					base = vim.fn.fnamemodify(file_path, ":t"),
-				},
-				entries = entries,
-			})
+			if entries then
+				table.insert(picker_entries, {
+					path = {
+						full = file_path,
+						base = vim.fn.fnamemodify(file_path, ":t"),
+					},
+					entries = entries,
+				})
+			end
 		end
 		picker_cb(picker_entries)
 	end
