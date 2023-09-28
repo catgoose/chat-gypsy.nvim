@@ -22,8 +22,8 @@ end
 
 local chat
 
-Gypsy.Events.sub("layout:unmount", function()
-	Gypsy.Log.trace("Events. layout:unmount")
+Gypsy.Events.sub("float:unmount", function()
+	Gypsy.Log.trace("Events. float:unmount")
 	chat = nil
 end)
 
@@ -53,7 +53,7 @@ end
 
 Gypsy.open = function()
 	if not chat then
-		chat = require("chat-gypsy.layout"):new({
+		chat = require("chat-gypsy.float"):new({
 			mount = Gypsy.Config.get("opts").ui.behavior.mount,
 			layout = Gypsy.Config.get("opts").ui.behavior.layout,
 		})

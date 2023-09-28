@@ -34,14 +34,14 @@ local state = {
 	},
 }
 
-Layout = setmetatable({}, UI)
-Layout.__index = Layout
-setmetatable(Layout, {
+Float = setmetatable({}, UI)
+Float.__index = Float
+setmetatable(Float, {
 	__index = UI,
 })
 
 ---@diagnostic disable-next-line: duplicate-set-field
-function Layout:layout_init()
+function Float:layout_init()
 	self._ = {}
 	self.openai = require("chat-gypsy.openai"):new()
 
@@ -154,7 +154,7 @@ function Layout:layout_init()
 	end
 	self.unmount = function()
 		self.layout:unmount()
-		Events.pub("layout:unmount")
+		Events.pub("float:unmount")
 		Events.pub("request:shutdown")
 		Events.pub("history:reset")
 	end
@@ -172,7 +172,7 @@ function Layout:layout_init()
 	return self
 end
 
-function Layout:configure()
+function Float:configure()
 	for _, box in pairs(self.boxes) do
 		box:map("n", "q", function()
 			self.unmount()
@@ -331,4 +331,4 @@ function Layout:configure()
 	end
 end
 
-return Layout
+return Float

@@ -2,14 +2,14 @@ local Log = require("chat-gypsy").Log
 local opts = require("chat-gypsy").Config.get("opts")
 local nui_pu, nui_lo = require("nui.popup"), require("nui.layout")
 
-local layout_configs = { "float", "left", "right" }
+local layout_configs = { "center", "left", "right" }
 
 local function build_ui(layout_config)
 	layout_config = layout_config or {
-		type = "float",
+		direction = "center",
 	}
-	if not vim.tbl_contains(layout_configs, layout_config.type) then
-		layout_config.type = "float"
+	if not vim.tbl_contains(layout_configs, layout_config.direction) then
+		layout_config.direction = "center"
 	end
 
 	local popup_base = vim.tbl_deep_extend("force", opts.ui.config, {
@@ -74,14 +74,14 @@ local function build_ui(layout_config)
 			return side_layout
 		end
 
-		if _layout_config.type == "float" then
+		if _layout_config.direction == "center" then
 			return float
 		end
-		if _layout_config.type == "right" then
-			return create_side_layout(_layout_config.type)
+		if _layout_config.direction == "right" then
+			return create_side_layout(_layout_config.direction)
 		end
-		if _layout_config.type == "left" then
-			return create_side_layout(_layout_config.type)
+		if _layout_config.direction == "left" then
+			return create_side_layout(_layout_config.direction)
 		end
 	end
 	local layout = layout_strategy(layout_config)
@@ -100,7 +100,7 @@ function UI:new(ui_config)
 	ui_config = ui_config or {
 		mount = false,
 		layout = {
-			type = "float",
+			direction = "center",
 		},
 	}
 	local ui = build_ui(ui_config.layout)

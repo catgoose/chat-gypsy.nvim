@@ -70,7 +70,7 @@ local opts = {
         start_insert = true,
       },
       layout = {
-        type = "float",
+        direction = "center", -- left, center, right
       },
     },
     prompt = {
