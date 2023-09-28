@@ -43,15 +43,18 @@ local add = function(message, type, tokens)
 		return
 	end
 	if not current.id then
-		--compose a json object for this chat with the schema: {name: string, description: string, keywords: string[]}.  The description should be limited to 80 characters.  Break compound words in keywords into multiple terms in lowercase.  Only return the object.
+		-- Compose a json object for this chat with the schema: {name: string, description: string, keywords: string[]}.  The description should be limited to 80 characters.  Break compound words in keywords into multiple terms in lowercase.  Only return the object.
+
 		current = {
 			id = history_id,
 			createdAt = os.time(),
 			updatedAt = os.time(),
 			messages = {},
-			name = nil,
-			description = nil,
-			keywords = {},
+			entries = {
+				name = nil,
+				description = nil,
+				keywords = {},
+			},
 		}
 		Log.trace(string.format("Creating new chat: %s", vim.inspect(current)))
 	end
@@ -82,12 +85,14 @@ end
 
 local get_entries_from_file = function(file_path, on_error)
 	local history_json = utils.decode_json_from_path(file_path, on_error)
-	if history_json and history_json.name and history_json.description and history_json.keywords then
-		return {
-			name = history_json.name,
-			description = history_json.description,
-			keywords = history_json.keywords,
-		}
+	if
+		history_json
+		and history_json.entries
+		and history_json.entries.name
+		and history_json.entries.description
+		and history_json.entries.keywords
+	then
+		return history_json.entries
 	else
 		return nil
 	end
