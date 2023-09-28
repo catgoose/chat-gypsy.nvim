@@ -76,7 +76,6 @@ function Request:new()
 		on_start()
 		local strategy = nil
 		if opts.dev_opts.request.throw_error then
-			-- on_error(opts.dev_opts.request.error, on_complete)
 			on_error(opts.dev_opts.request.error)
 		else
 			self.handler = curl.post({
@@ -159,6 +158,7 @@ function Request:query(message, on_response_start, on_response_chunk, on_respons
 		on_response_error(err)
 	end
 
+	--  TODO: 2023-09-27 - use chat renderer
 	local on_chunk = function(chunk, strategy)
 		if not strategy then
 			return

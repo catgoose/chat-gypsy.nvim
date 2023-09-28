@@ -141,21 +141,6 @@ function Layout:layout_init()
 		table.insert(self._.response.lines, self._.response.line)
 	end
 
-	-- self.restore = function()
-	-- 	self.history:read()
-	-- 	local history = self.history:get()
-	-- 	local response = vim.tbl_filter(function(message)
-	-- 		return message.type == "response"
-	-- 	end, history.messages)
-	-- 	for _, message in ipairs(response) do
-	-- 		local lines = vim.split(message.message, "\n")
-	-- 		for _, line in ipairs(lines) do
-	-- 			self.response_set_lines({ line }, true)
-	-- 		end
-	-- 		self.response_token_summary()
-	-- 	end
-	-- end
-
 	self.mount = function()
 		Log.trace("Mounting UI")
 		self.layout:mount()
@@ -166,7 +151,6 @@ function Layout:layout_init()
 		if opts.ui.behavior.prompt.start_insert then
 			vim.cmd.startinsert()
 		end
-		-- self.restore()
 	end
 	self.unmount = function()
 		self.layout:unmount()
