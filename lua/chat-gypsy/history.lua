@@ -20,8 +20,17 @@ local reset = function()
 	json_path = string.format("%s/%s", gypsy_data, file)
 end
 
+local save = function()
+	Path:new(json_path):write(vim.fn.json_encode(current), "w")
+end
+
 Events.sub("history:reset", function()
-	reset()
+	local request = require("chat-gypsy.request"):new()
+	local on_complete = function()
+		save()
+		reset()
+	end
+	request.compose_entries(current, on_complete)
 end)
 
 History.init = function()
@@ -30,11 +39,7 @@ History.init = function()
 	return History
 end
 
-local save = function()
-	Path:new(json_path):write(vim.fn.json_encode(current), "w")
-end
-
-local add = function(message, type, tokens)
+local add_message = function(message, type, tokens)
 	tokens = utils.deepcopy(tokens)
 	if not type then
 		return
@@ -71,12 +76,12 @@ end
 
 History.add_prompt = function(message, tokens)
 	local type = "prompt"
-	add(message, type, tokens)
+	add_message(message, type, tokens)
 end
 
 History.add_response = function(message, tokens)
 	local type = "response"
-	add(message, type, tokens)
+	add_message(message, type, tokens)
 end
 
 History.get = function()

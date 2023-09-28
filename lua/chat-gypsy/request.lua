@@ -72,12 +72,24 @@ function Request:new()
 		on_error(self.error_chunks)
 	end
 
+	self.compose_entries = function(current_history, on_complete)
+		current_history.entries = {
+			name = "name",
+			description = "description",
+			keywords = { "name", "description" },
+		}
+		--  TODO: 2023-09-27 - store openai_params in openai class
+		vim.print(self.openai_params)
+		on_complete()
+	end
+
 	self.completions = function(on_start, on_chunk, on_complete, on_error)
 		on_start()
 		local strategy = nil
 		if opts.dev_opts.request.throw_error then
 			on_error(opts.dev_opts.request.error)
 		else
+			--  TODO: 2023-09-27 - abstract this so it can be used by compose_entries
 			self.handler = curl.post({
 				url = "https://api.openai.com/v1/chat/completions",
 				raw = { "--no-buffer" },
