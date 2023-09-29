@@ -5,6 +5,8 @@ local OpenAI = require("chat-gypsy.openai")
 local opts = require("chat-gypsy").Config.get("opts")
 local curl = require("plenary.curl")
 
+-- Only return the object.  Compose a json object for this chat with the schema: {name: string, description: string, keywords: string[]}.  The description should be limited to 80 characters.  Break compound words in keywords into multiple terms in lowercase.
+
 Request = setmetatable({}, OpenAI)
 Request.__index = Request
 setmetatable(Request, {
@@ -70,12 +72,12 @@ function Request:init()
 	end
 
 	self.compose_entries = function(current_history, on_complete)
-		-- 	current_history.entries = {
-		-- 		name = "name",
-		-- 		description = "description",
-		-- 		keywords = { "name", "description" },
-		-- 	}
-		-- 	local body = {}
+		current_history.entries = {
+			name = "name",
+			description = "description",
+			keywords = { "name", "description" },
+		}
+		on_complete()
 	end
 
 	self.completions = function(on_start, on_chunk, on_complete, on_error)
