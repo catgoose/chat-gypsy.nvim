@@ -210,12 +210,9 @@ Several event hooks are provided for customization:
 
 - [ ] Create chat history functionality
 
-  - [ ] Save chats to disk
-  - [ ] Create picker to choose from previous chats
   - [ ] Edit conversation contents, i.e. remove large responses
 
 - [ ] Create model picker
 - [ ] Create templating for system prompts
 - [ ] When destroying layout, last window focused should be refocused
 - [ ] Check tokens before sending to model.
-- [ ] Responses should add to token count
