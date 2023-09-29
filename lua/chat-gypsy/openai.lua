@@ -39,4 +39,8 @@ function OpenAI:init()
 	Log.warn("OpenAI:layout_init: not implemented")
 end
 
+function OpenAI:query(...)
+	Log.warn(string.format("OpenAI:query: not implemented: %s"), vim.inspect({ ... }))
+end
+
 return OpenAI

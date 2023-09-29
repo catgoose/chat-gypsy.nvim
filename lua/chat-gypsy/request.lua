@@ -138,6 +138,7 @@ function Request:init()
 	return self
 end
 
+---@diagnostic disable-next-line: duplicate-set-field
 function Request:query(message, on_response_start, on_response_chunk, on_response_complete, on_response_error)
 	self.on_user_prompt(message)
 
@@ -155,17 +156,12 @@ function Request:query(message, on_response_start, on_response_chunk, on_respons
 		on_response_complete(self.chunks)
 	end
 
-	local on_error = function(err, after_error)
+	local on_error = function(err)
 		Events.pub("hook:request:error", "completions", err)
 		if type(err) == "table" then
 			err = vim.inspect(err)
 		end
 		Log.error(string.format("query: on_error: %s", err))
-		if after_error then
-			vim.schedule(function()
-				after_error()
-			end)
-		end
 		on_response_error(err)
 	end
 

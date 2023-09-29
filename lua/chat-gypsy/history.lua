@@ -51,7 +51,7 @@ function History:save()
 end
 
 function History:reset()
-	Log.debug("Resetting history")
+	Log.trace("Resetting history")
 	self.history_id = utils.generate_random_id(self.id_len)
 	self.file = string.format("%s.json", self.history_id)
 	self.json_path = string.format("%s/%s", self.data_dir, self.file)
@@ -66,7 +66,7 @@ function History:add_message(message, role, tokens)
 	if not vim.tbl_contains({ "user", "assistant" }, role) then
 		return
 	end
-	Log.debug(
+	Log.trace(
 		string.format(
 			[[Adding to history: message "%s" of role "%s" with tokens %s]],
 			message,
@@ -84,7 +84,7 @@ function History:add_message(message, role, tokens)
 		time = os.time(),
 		tokens = tokens,
 	})
-	Log.debug(
+	Log.trace(
 		string.format(
 			"Inserting new prompt into history: %s",
 			vim.inspect(self.current.messages[#self.current.messages])
