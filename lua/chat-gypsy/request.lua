@@ -1,11 +1,9 @@
----@diagnostic disable: undefined-field
 local Log = require("chat-gypsy").Log
 local Events = require("chat-gypsy").Events
 local OpenAI = require("chat-gypsy.openai")
 local opts = require("chat-gypsy").Config.get("opts")
 local curl = require("plenary.curl")
-
--- Only return the object.  Compose a json object for this chat with the schema: {name: string, description: string, keywords: string[]}.  The description should be limited to 80 characters.  Break compound words in keywords into multiple terms in lowercase.
+local utils = require("chat-gypsy.utils")
 
 Request = setmetatable({}, OpenAI)
 Request.__index = Request
@@ -72,13 +70,49 @@ function Request:init()
 	end
 
 	self.compose_entries = function(current_history, on_complete)
-		Log.debug("Setting entries from openai response")
-		current_history.entries = {
-			name = "name",
-			description = "description",
-			keywords = { "name", "description" },
-		}
-		on_complete()
+		local openai_params = utils.deepcopy(current_history.openai_params)
+		table.insert(openai_params.messages, {
+			role = "user",
+			content = "Return json object for this chat",
+		})
+		openai_params.stream = false
+		openai_params.messages[1].content =
+			"You will be reducing a openai chat to a json object.  I want you to only return the object.  The object's schema is {name: string, description: string, keywords: string[]}. The description should be limited to 80 characters.  Break compound words in keywords into multiple terms in lowercase."
+		Log.debug(string.format("Setting entries from openai response using %s", vim.inspect(openai_params)))
+		curl.post({
+			url = "https://api.openai.com/v1/chat/completions",
+			headers = {
+				content_type = "application/json",
+				Authorization = "Bearer " .. opts.openai_key,
+			},
+			body = vim.json.encode(openai_params),
+			callback = vim.schedule_wrap(function(response)
+				if response.status == 200 then
+					local response_json_ok, response_json = pcall(vim.json.decode, response.body)
+					if response_json_ok and response_json then
+						local content = response_json.choices[1].message.content
+						local content_ok, content_json = pcall(vim.json.decode, content)
+						if
+							content_ok
+							and content_json
+							and content_json.name
+							and content_json.description
+							and content_json.keywords
+							and #content_json.keywords > 0
+						then
+							current_history.entries = content_json
+						end
+					end
+				else
+					current_history.entries = {
+						name = "Unknown Chat",
+						description = "",
+						keywords = { "unknown" },
+					}
+				end
+				on_complete()
+			end),
+		})
 	end
 
 	self.completions = function(on_start, on_chunk, on_complete, on_error)
