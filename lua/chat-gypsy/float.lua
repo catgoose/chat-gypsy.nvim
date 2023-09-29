@@ -41,9 +41,9 @@ setmetatable(Float, {
 })
 
 ---@diagnostic disable-next-line: duplicate-set-field
-function Float:layout_init()
+function Float:init()
 	self._ = {}
-	self.openai = require("chat-gypsy.openai"):new()
+	self.request = require("chat-gypsy.request"):new()
 
 	self.init_state = function()
 		self._ = utils.deepcopy(state)
@@ -155,14 +155,14 @@ function Float:layout_init()
 	self.unmount = function()
 		self.layout:unmount()
 		local queue = require("chat-gypsy.queue"):new()
-		local float_unmount = function(queue_complete)
-			Events.pub("float:unmount", queue_complete)
+		local float_unmount = function(queue_next)
+			Events.pub("float:unmount", queue_next)
 		end
-		local request_shutdown = function(queue_complete)
-			Events.pub("request:shutdown", queue_complete)
+		local request_shutdown = function(queue_next)
+			Events.pub("request:shutdown", queue_next)
 		end
-		local history_reset = function(queue_complete)
-			Events.pub("history:reset", queue_complete)
+		local history_reset = function(queue_next)
+			Events.pub("history:reset", queue_next)
 		end
 		queue:add(request_shutdown, history_reset, float_unmount)
 	end
@@ -318,7 +318,7 @@ function Float:configure()
 			self.response_token_summary()
 		end
 
-		self.openai:send(prompt_message, before_start, on_start, on_chunk, on_complete, on_error)
+		self.request:send(prompt_message, before_start, on_start, on_chunk, on_complete, on_error)
 	end
 	if plugin_cfg.dev and dev.prompt.enabled then
 		send_prompt(dev.prompt.message)

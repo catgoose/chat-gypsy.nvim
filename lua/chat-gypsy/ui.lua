@@ -107,14 +107,14 @@ function UI:new(ui_config)
 	Log.trace(string.format("Building new ui with layout config: \n%s", vim.inspect(ui_config.layout)))
 	self.layout = ui.layout
 	self.boxes = ui.boxes
-	self:layout_init()
+	self:init()
 	if ui_config.mount then
 		self:mount()
 	end
 	return self
 end
 
-function UI:layout_init()
+function UI:init()
 	Log.warn("UI:layout_init: not implemented")
 end
 

@@ -24,12 +24,12 @@ local save = function()
 	Path:new(json_path):write(vim.fn.json_encode(current), "w")
 end
 
-Events.sub("history:reset", function(queue_complete)
+Events.sub("history:reset", function(queue_next)
 	local request = require("chat-gypsy.request"):new()
 	local on_complete = function()
 		save()
 		reset()
-		queue_complete()
+		queue_next()
 	end
 	request.compose_entries(current, on_complete)
 end)

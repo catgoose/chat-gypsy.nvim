@@ -1,34 +1,38 @@
 ---@diagnostic disable: undefined-field
 local Log = require("chat-gypsy").Log
 local Events = require("chat-gypsy").Events
+local OpenAI = require("chat-gypsy.openai")
 local opts = require("chat-gypsy").Config.get("opts")
 local curl = require("plenary.curl")
 
-local Request = {}
+Request = setmetatable({}, OpenAI)
 Request.__index = Request
+setmetatable(Request, {
+	__index = OpenAI,
+})
 
-function Request:new()
+---@diagnostic disable-next-line: duplicate-set-field
+function Request:init()
 	self.chunks = {}
 	self.error_chunks = {}
 	self.content = ""
 	self.handler = nil
-	-- self.openai_params = opts.openai_params
 	self.join_content = function()
 		self.content = table.concat(self.chunks, "")
 	end
-	self.on_assistant_response = function(openai_params)
+	self.on_assistant_response = function()
 		self.content = table.concat(self.chunks, "")
 		self.join_content()
 		Log.trace("on_assistant_response: " .. self.content)
-		table.insert(openai_params.messages, {
+		table.insert(self.openai_params.messages, {
 			role = "assistant",
 			content = self.content,
 		})
 	end
-	self.on_user_prompt = function(content, openai_params)
+	self.on_user_prompt = function(content)
 		self.content = content
 		Log.trace("on_user_prompt: " .. self.content)
-		table.insert(openai_params.messages, {
+		table.insert(self.openai_params.messages, {
 			role = "user",
 			content = self.content,
 		})
@@ -71,28 +75,11 @@ function Request:new()
 			description = "description",
 			keywords = { "name", "description" },
 		}
-		--  TODO: 2023-09-27 - store openai_params in openai class
 		--  TODO: 2023-09-28 - openai_params needs to be saved in history
-		-- vim.print(self.openai_params)
-		-- vim.print(current_history.messages)
 		local body = {}
-		-- curl.post({
-		-- 	url = "https://api.openai.com/v1/chat/completions",
-		-- 	raw = { "--no-buffer" },
-		-- 	headers = {
-		-- 		content_type = "application/json",
-		-- 		Authorization = "Bearer " .. opts.openai_key,
-		-- 	},
-		-- 	body = vim.json.encode(body),
-		-- 	callback = vim.schedule_wrap(function(response, code)
-		-- 		vim.print(code)
-		-- 		vim.print(response)
-		-- 		on_complete()
-		-- 	end),
-		-- })
 	end
 
-	self.completions = function(openai_params, on_start, on_chunk, on_complete, on_error)
+	self.completions = function(on_start, on_chunk, on_complete, on_error)
 		on_start()
 		local strategy = nil
 		if opts.dev_opts.request.throw_error then
@@ -106,7 +93,7 @@ function Request:new()
 					content_type = "application/json",
 					Authorization = "Bearer " .. opts.openai_key,
 				},
-				body = vim.json.encode(openai_params),
+				body = vim.json.encode(self.openai_params),
 				stream = function(_, chunk)
 					if chunk ~= "" then
 						vim.schedule(function()
@@ -134,33 +121,26 @@ function Request:new()
 					end
 				else
 					vim.schedule(function()
-						on_complete(openai_params)
+						on_complete()
 					end)
 				end
 			end)
 		end
 	end
 
-	Events.sub("request:shutdown", function(queue_complete)
+	Events.sub("request:shutdown", function(queue_next)
 		if self.handler and not self.handler.is_shutdown then
 			Log.debug("shutting down plenary.curl handler")
 			self.handler:shutdown()
 		end
-		queue_complete()
+		queue_next()
 	end)
 
 	return self
 end
 
-function Request:query(
-	message,
-	openai_params,
-	on_response_start,
-	on_response_chunk,
-	on_response_complete,
-	on_response_error
-)
-	self.on_user_prompt(message, openai_params)
+function Request:query(message, on_response_start, on_response_chunk, on_response_complete, on_response_error)
+	self.on_user_prompt(message)
 
 	local on_start = function()
 		Log.trace("query: on_start")
@@ -169,10 +149,10 @@ function Request:query(
 		on_response_start()
 	end
 
-	local on_complete = function(_openai_params)
+	local on_complete = function()
 		Log.trace("query: on_complete")
-		self.on_assistant_response(_openai_params)
-		Log.trace("query: openai_params: " .. vim.inspect(_openai_params))
+		self.on_assistant_response()
+		Log.trace("query: openai_params: " .. vim.inspect(self.openai_params))
 		on_response_complete(self.chunks)
 	end
 
@@ -200,7 +180,7 @@ function Request:query(
 		end
 	end
 
-	self.completions(openai_params, on_start, on_chunk, on_complete, on_error)
+	self.completions(on_start, on_chunk, on_complete, on_error)
 end
 
 return Request
