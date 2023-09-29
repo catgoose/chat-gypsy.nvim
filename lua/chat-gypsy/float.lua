@@ -267,7 +267,7 @@ function Float:configure()
 				self._.tokens.total = self._.tokens.total + self._.tokens.prompt
 				newln()
 				self.response_token_summary(self._.tokens.prompt)
-				History.add_prompt(prompt_message, self._.tokens)
+				History:add_prompt(prompt_message, self._.tokens)
 			end
 			utils.get_tokens(prompt_message, on_tokens)
 			vim.cmd("silent! undojoin")
@@ -288,7 +288,7 @@ function Float:configure()
 				self._.tokens.total = self._.tokens.total + self._.tokens.response
 				newln(2)
 				self.response_token_summary(self._.tokens.response)
-				History.add_response(table.concat(chunks, ""), self._.tokens)
+				History:add_response(table.concat(chunks, ""), self._.tokens)
 			end
 			utils.get_tokens(chunks, on_tokens)
 			vim.cmd("silent! undojoin")

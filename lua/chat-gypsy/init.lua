@@ -10,7 +10,7 @@ Gypsy.setup = function(opts)
 	Gypsy.Config.init(opts)
 
 	Gypsy.Log = require("chat-gypsy.logger").init()
-	Gypsy.History = require("chat-gypsy.history").init()
+	Gypsy.History = require("chat-gypsy.history"):new()
 
 	require("chat-gypsy.usercmd").init()
 	require("chat-gypsy.models").init()

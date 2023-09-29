@@ -1,5 +1,6 @@
 local Log = require("chat-gypsy").Log
 local opts = require("chat-gypsy").Config.get("opts")
+local History = require("chat-gypsy").History
 
 local OpenAI = {}
 OpenAI.__index = OpenAI
@@ -19,6 +20,7 @@ function OpenAI:send(message, before_start, on_start, on_chunk, on_chunks_comple
 		local on_complete = function(complete_chunks)
 			Log.trace("request completed")
 			on_chunks_complete(complete_chunks)
+			History:add_openai_params(self.openai_params)
 			queue_next()
 		end
 

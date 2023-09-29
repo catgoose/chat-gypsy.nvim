@@ -59,7 +59,7 @@ local get_picker_entries = function(entries, opts)
 end
 
 local function history_picker(opts)
-	History.get_picker_entries(get_picker_entries, opts)
+	History:get_picker_entries(get_picker_entries, opts)
 end
 
 function Telescope.history(opts)

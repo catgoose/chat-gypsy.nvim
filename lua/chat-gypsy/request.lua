@@ -70,13 +70,12 @@ function Request:init()
 	end
 
 	self.compose_entries = function(current_history, on_complete)
-		current_history.entries = {
-			name = "name",
-			description = "description",
-			keywords = { "name", "description" },
-		}
-		--  TODO: 2023-09-28 - openai_params needs to be saved in history
-		local body = {}
+		-- 	current_history.entries = {
+		-- 		name = "name",
+		-- 		description = "description",
+		-- 		keywords = { "name", "description" },
+		-- 	}
+		-- 	local body = {}
 	end
 
 	self.completions = function(on_start, on_chunk, on_complete, on_error)
