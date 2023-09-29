@@ -69,6 +69,7 @@ function Request:init()
 		on_error(self.error_chunks)
 	end
 
+	--  TODO: 2023-09-29 - add hook event for composing entries
 	self.compose_entries = function(current_history, on_complete)
 		local openai_params = utils.deepcopy(current_history.openai_params)
 		table.insert(openai_params.messages, {
