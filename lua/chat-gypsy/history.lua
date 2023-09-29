@@ -35,13 +35,17 @@ end
 function History:init()
 	self:init_current()
 	Path:new(self.data_dir):mkdir()
-	Events.sub("history:reset", function(queue_next)
+	local sub = "history:reset"
+	Events.sub(sub, function(queue_next)
 		local request = require("chat-gypsy.request"):new()
 		local on_complete = function()
 			self:save()
+			Log.debug(string.format("Event %s: Saving history", sub))
 			self:reset()
+			Log.debug(string.format("Event %s: Resetting history", sub))
 			queue_next()
 		end
+		Log.debug(string.format("Event %s: Composing entry table", sub))
 		request.compose_entries(self.current, on_complete)
 	end)
 end
@@ -76,7 +80,6 @@ function History:add_message(message, role, tokens)
 	)
 	if not self.current.id then
 		self:init_current()
-		-- 	-- Only return the object.  Compose a json object for this chat with the schema: {name: string, description: string, keywords: string[]}.  The description should be limited to 80 characters.  Break compound words in keywords into multiple terms in lowercase.
 	end
 	table.insert(self.current.messages, {
 		role = role,
