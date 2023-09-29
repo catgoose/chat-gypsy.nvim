@@ -208,10 +208,6 @@ Several event hooks are provided for customization:
 
 ## TODO
 
-- [ ] Create chat history functionality
-
-  - [ ] Edit conversation contents, i.e. remove large responses
-
 - [ ] Create model picker
 - [ ] Create templating for system prompts
 - [ ] When destroying layout, last window focused should be refocused
