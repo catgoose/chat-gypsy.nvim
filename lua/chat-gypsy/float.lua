@@ -10,6 +10,8 @@ local models = require("chat-gypsy.models")
 local nui_lo = require("nui.layout")
 local ev = require("nui.utils.autocmd").event
 
+--  TODO: 2023-09-29 - rename prompt/response to user/assistant.  use chat to
+--  refer to the response chat
 local state = {
 	hidden = false,
 	focused_win = "prompt",
