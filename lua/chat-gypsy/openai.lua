@@ -1,10 +1,12 @@
 local Log = require("chat-gypsy").Log
+local opts = require("chat-gypsy").Config.get("opts")
 
 local OpenAI = {}
 OpenAI.__index = OpenAI
 
 function OpenAI:new()
 	setmetatable(self, OpenAI)
+	self.params = opts.openai_params
 	self.queue = require("chat-gypsy.queue"):new()
 	self.request = require("chat-gypsy.request"):new()
 	return self
@@ -35,7 +37,8 @@ function OpenAI:send(message, before_start, on_start, on_chunk, on_chunks_comple
 			queue_complete()
 		end
 
-		self.request:query(message, on_start, on_chunk, on_complete, on_error)
+		self.request:query(message, self.params, on_start, on_chunk, on_complete, on_error)
+		vim.print(self.params)
 	end
 
 	self:add_queue(action)

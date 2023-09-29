@@ -4,8 +4,8 @@ function FuncQueue:new(config)
 	local instance = {}
 	setmetatable(instance, { __index = self })
 	config = config or {}
-	config.sync = config.sync or true
-	instance.sync = config.sync
+	config.sequential = config.sequential or true
+	instance.sequential = config.sequential
 	instance.queue = {}
 	instance.isRunning = false
 	return instance
@@ -20,7 +20,7 @@ function FuncQueue:add(...)
 end
 
 function FuncQueue:executeNext()
-	if self.sync then
+	if self.sequential then
 		if not self.isRunning and #self.queue > 0 then
 			self.isRunning = true
 			local func = table.remove(self.queue, 1)

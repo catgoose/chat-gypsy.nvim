@@ -12,23 +12,23 @@ function Request:new()
 	self.error_chunks = {}
 	self.content = ""
 	self.handler = nil
-	self.openai_params = opts.openai_params
+	-- self.openai_params = opts.openai_params
 	self.join_content = function()
 		self.content = table.concat(self.chunks, "")
 	end
-	self.on_assistant_response = function()
+	self.on_assistant_response = function(openai_params)
 		self.content = table.concat(self.chunks, "")
 		self.join_content()
 		Log.trace("on_assistant_response: " .. self.content)
-		table.insert(self.openai_params.messages, {
+		table.insert(openai_params.messages, {
 			role = "assistant",
 			content = self.content,
 		})
 	end
-	self.on_user_prompt = function(content)
+	self.on_user_prompt = function(content, openai_params)
 		self.content = content
 		Log.trace("on_user_prompt: " .. self.content)
-		table.insert(self.openai_params.messages, {
+		table.insert(openai_params.messages, {
 			role = "user",
 			content = self.content,
 		})
@@ -37,13 +37,6 @@ function Request:new()
 		self.chunks = {}
 		self.error_chunks = {}
 		self.content = ""
-	end
-	self.shutdown = function(queue_complete)
-		if self.handler and not self.handler.is_shutdown then
-			Log.debug("shutting down plenary.curl handler")
-			self.handler:shutdown()
-		end
-		queue_complete()
 	end
 
 	self.extract_data = function(chunk, on_chunk)
@@ -78,7 +71,6 @@ function Request:new()
 			description = "description",
 			keywords = { "name", "description" },
 		}
-		vim.print(self.openai_params)
 		--  TODO: 2023-09-27 - store openai_params in openai class
 		--  TODO: 2023-09-28 - openai_params needs to be saved in history
 		-- vim.print(self.openai_params)
@@ -100,7 +92,7 @@ function Request:new()
 		-- })
 	end
 
-	self.completions = function(on_start, on_chunk, on_complete, on_error)
+	self.completions = function(openai_params, on_start, on_chunk, on_complete, on_error)
 		on_start()
 		local strategy = nil
 		if opts.dev_opts.request.throw_error then
@@ -114,7 +106,7 @@ function Request:new()
 					content_type = "application/json",
 					Authorization = "Bearer " .. opts.openai_key,
 				},
-				body = vim.json.encode(self.openai_params),
+				body = vim.json.encode(openai_params),
 				stream = function(_, chunk)
 					if chunk ~= "" then
 						vim.schedule(function()
@@ -142,7 +134,7 @@ function Request:new()
 					end
 				else
 					vim.schedule(function()
-						on_complete()
+						on_complete(openai_params)
 					end)
 				end
 			end)
@@ -150,14 +142,25 @@ function Request:new()
 	end
 
 	Events.sub("request:shutdown", function(queue_complete)
-		self.shutdown(queue_complete)
+		if self.handler and not self.handler.is_shutdown then
+			Log.debug("shutting down plenary.curl handler")
+			self.handler:shutdown()
+		end
+		queue_complete()
 	end)
 
 	return self
 end
 
-function Request:query(message, on_response_start, on_response_chunk, on_response_complete, on_response_error)
-	self.on_user_prompt(message)
+function Request:query(
+	message,
+	openai_params,
+	on_response_start,
+	on_response_chunk,
+	on_response_complete,
+	on_response_error
+)
+	self.on_user_prompt(message, openai_params)
 
 	local on_start = function()
 		Log.trace("query: on_start")
@@ -166,10 +169,10 @@ function Request:query(message, on_response_start, on_response_chunk, on_respons
 		on_response_start()
 	end
 
-	local on_complete = function()
+	local on_complete = function(_openai_params)
 		Log.trace("query: on_complete")
-		self.on_assistant_response()
-		Log.trace("query: openai_params: " .. vim.inspect(self.openai_params))
+		self.on_assistant_response(_openai_params)
+		Log.trace("query: openai_params: " .. vim.inspect(_openai_params))
 		on_response_complete(self.chunks)
 	end
 
@@ -187,7 +190,6 @@ function Request:query(message, on_response_start, on_response_chunk, on_respons
 		on_response_error(err)
 	end
 
-	--  TODO: 2023-09-27 - use chat renderer
 	local on_chunk = function(chunk, strategy)
 		if not strategy then
 			return
@@ -198,7 +200,7 @@ function Request:query(message, on_response_start, on_response_chunk, on_respons
 		end
 	end
 
-	self.completions(on_start, on_chunk, on_complete, on_error)
+	self.completions(openai_params, on_start, on_chunk, on_complete, on_error)
 end
 
 return Request
