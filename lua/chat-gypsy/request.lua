@@ -72,6 +72,7 @@ function Request:init()
 	end
 
 	self.compose_entries = function(current_history, on_complete)
+		Log.debug("Setting entries from openai response")
 		current_history.entries = {
 			name = "name",
 			description = "description",
