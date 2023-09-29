@@ -158,6 +158,7 @@ function Float:init()
 		local history_reset = function(queue_next)
 			Events.pub("history:reset", queue_next)
 		end
+		-- Shutdown current request before resetting history
 		queue:add(float_unmount, request_shutdown, history_reset)
 	end
 	self.hide = function()
@@ -249,7 +250,7 @@ function Float:configure()
 			end
 		end
 
-		local on_start = function()
+		local on_request_start = function()
 			self.chat_set_cursor(self._.chat.line_nr + 1)
 			self.message_source("prompt")
 			for _, line in ipairs(prompt_lines) do
@@ -268,11 +269,11 @@ function Float:configure()
 			self.message_source("chat")
 		end
 
-		local before_start = function()
+		local before_request = function()
 			vim.api.nvim_buf_set_lines(self._.prompt.bufnr, 0, -1, false, {})
 		end
 
-		local on_complete = function(chunks)
+		local on_chunks_complete = function(chunks)
 			self.insert_chat_line()
 			Events.pub("hook:request:complete", self._.chat.lines)
 			Log.trace(string.format("on_complete: chunks: %s", vim.inspect(chunks)))
@@ -288,7 +289,7 @@ function Float:configure()
 			vim.cmd("silent! undojoin")
 		end
 
-		local on_error = function(err)
+		local on_chunk_error = function(err)
 			local message = err and err.error and err.error.message or type(err) == "string" and err or "Unknown error"
 			local preamble = { message, "" }
 			self.chat_set_lines(preamble, true)
@@ -312,7 +313,14 @@ function Float:configure()
 			self.chat_token_summary()
 		end
 
-		self.request:send(prompt_message, before_start, on_start, on_chunk, on_complete, on_error)
+		self.request:send(
+			prompt_message,
+			before_request,
+			on_request_start,
+			on_chunk,
+			on_chunks_complete,
+			on_chunk_error
+		)
 	end
 	if plugin_cfg.dev and dev.prompt.enabled then
 		send_prompt(dev.prompt.message)

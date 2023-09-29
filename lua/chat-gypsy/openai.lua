@@ -13,10 +13,14 @@ function OpenAI:new()
 	return self
 end
 
-function OpenAI:send(message, before_start, on_start, on_chunk, on_chunks_complete, on_chunk_error)
+function OpenAI:send(message, before_request, on_request_start, on_chunk, on_chunks_complete, on_chunk_error)
 	Log.trace(string.format("adding request to queue: \nmessage: %s", message))
-	before_start()
+	before_request()
 	local action = function(queue_next)
+		local on_start = function()
+			on_request_start()
+			History:add_openai_params(self.openai_params)
+		end
 		local on_complete = function(complete_chunks)
 			Log.trace("request completed")
 			on_chunks_complete(complete_chunks)
