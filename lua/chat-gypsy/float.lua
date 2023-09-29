@@ -158,7 +158,7 @@ function Float:init()
 		local history_reset = function(queue_next)
 			Events.pub("history:reset", queue_next)
 		end
-		queue:add(request_shutdown, history_reset, float_unmount)
+		queue:add(float_unmount, request_shutdown, history_reset)
 	end
 	self.hide = function()
 		self.layout:hide()
