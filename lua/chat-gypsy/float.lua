@@ -10,8 +10,6 @@ local models = require("chat-gypsy.models")
 local nui_lo = require("nui.layout")
 local ev = require("nui.utils.autocmd").event
 
---  TODO: 2023-09-29 - rename prompt/response to user/assistant.  use chat to
---  refer to the response chat
 local state = {
 	hidden = false,
 	focused_win = "prompt",
@@ -21,7 +19,7 @@ local state = {
 		bufnr = 0,
 		winid = 0,
 	},
-	response = {
+	chat = {
 		bufnr = 0,
 		winid = 0,
 		win_width = 0,
@@ -30,8 +28,8 @@ local state = {
 		line_nr = 0,
 	},
 	tokens = {
-		prompt = 0,
-		response = 0,
+		user = 0,
+		assistant = 0,
 		total = 0,
 	},
 }
@@ -50,59 +48,53 @@ function Float:init()
 	self.init_state = function()
 		self._ = utils.deepcopy(state)
 		self.set_ids()
-		self._.response.win_width = vim.api.nvim_win_get_width(self._.response.winid)
+		self._.chat.win_width = vim.api.nvim_win_get_width(self._.chat.winid)
 	end
 	self.set_ids = function()
-		self._.response.winid = self.layout._.box.box[1].component.winid
+		self._.chat.winid = self.layout._.box.box[1].component.winid
 		self._.prompt_winid = self.layout._.box.box[2].component.winid
-		self._.response.bufnr = self.layout._.box.box[1].component.bufnr
+		self._.chat.bufnr = self.layout._.box.box[1].component.bufnr
 		self._.prompt.bufnr = self.layout._.box.box[2].component.bufnr
 		Log.trace("Setting winids and bufnrs for mounted layout")
-		Log.trace(string.format("response.winid: %s", self._.response.winid))
+		Log.trace(string.format("chat.winid: %s", self._.chat.winid))
 		Log.trace(string.format("prompt_winid: %s", self._.prompt_winid))
-		Log.trace(string.format("response_bufnr: %s", self._.response.bufnr))
+		Log.trace(string.format("chat_bufnr: %s", self._.chat.bufnr))
 		Log.trace(string.format("prompt_bufnr: %s", self._.prompt.bufnr))
 	end
 
-	self.focus_response = function()
-		vim.api.nvim_set_current_win(self._.response.winid)
-		self._.focused_win = "response"
+	self.focus_chat = function()
+		vim.api.nvim_set_current_win(self._.chat.winid)
+		self._.focused_win = "chat"
 	end
 	self.focus_prompt = function()
 		vim.api.nvim_set_current_win(self._.prompt_winid)
 		self._.focused_win = "prompt"
 	end
 	self.focus_last_win = function()
-		if self._.focused_win == "response" then
-			vim.api.nvim_set_current_win(self._.response.winid)
+		if self._.focused_win == "chat" then
+			vim.api.nvim_set_current_win(self._.chat.winid)
 		end
 		if self._.focused_win == "prompt" then
 			vim.api.nvim_set_current_win(self._.prompt_winid)
 		end
 	end
 	self.is_focused = function()
-		return vim.tbl_contains({ self._.prompt_winid, self._.response.winid }, vim.api.nvim_get_current_win())
+		return vim.tbl_contains({ self._.prompt_winid, self._.chat.winid }, vim.api.nvim_get_current_win())
 	end
 
-	self.response_set_cursor = function(line)
-		if self._.response.winid and vim.api.nvim_win_is_valid(self._.response.winid) then
+	self.chat_set_cursor = function(line)
+		if self._.chat.winid and vim.api.nvim_win_is_valid(self._.chat.winid) then
 			line = line == 0 and 1 or line
-			vim.api.nvim_win_set_cursor(self._.response.winid, { line, 0 })
+			vim.api.nvim_win_set_cursor(self._.chat.winid, { line, 0 })
 		end
 	end
-	self.response_set_lines = function(lines, new_lines)
+	self.chat_set_lines = function(lines, new_lines)
 		new_lines = new_lines or false
-		if self._.response.bufnr and vim.api.nvim_buf_is_valid(self._.response.bufnr) then
-			vim.api.nvim_buf_set_lines(
-				self._.response.bufnr,
-				self._.response.line_nr,
-				self._.response.line_nr + 1,
-				false,
-				lines
-			)
+		if self._.chat.bufnr and vim.api.nvim_buf_is_valid(self._.chat.bufnr) then
+			vim.api.nvim_buf_set_lines(self._.chat.bufnr, self._.chat.line_nr, self._.chat.line_nr + 1, false, lines)
 			if new_lines then
-				self._.response.line_nr = self._.response.line_nr + #lines
-				self.response_set_cursor(self._.response.line_nr)
+				self._.chat.line_nr = self._.chat.line_nr + #lines
+				self.chat_set_cursor(self._.chat.line_nr)
 			end
 		end
 	end
@@ -113,15 +105,15 @@ function Float:init()
 		if not type then
 			return
 		end
-		if not vim.tbl_contains({ "prompt", "response" }, type) then
+		if not vim.tbl_contains({ "prompt", "chat" }, type) then
 			return
 		end
 		local source = type == "prompt" and "You" or model_config.model
 		local lines = { string.format("%s (%s):", source, os.date("%H:%M")), "", "" }
-		self.response_set_lines(lines, true)
+		self.chat_set_lines(lines, true)
 	end
 
-	self.response_token_summary = function(tokens)
+	self.chat_token_summary = function(tokens)
 		local model_config = models.get_config(opts.openai_params.model)
 		local tokens_display = string.format(
 			" Tokens: %s %s (%s/%s) %s",
@@ -132,15 +124,15 @@ function Float:init()
 			symbols.right_arrow
 		)
 		--  TODO: 2023-09-24 - add highlighting
-		local summary = symbols.horiz:rep(self._.response.win_width - #tokens_display + 4) .. tokens_display
+		local summary = symbols.horiz:rep(self._.chat.win_width - #tokens_display + 4) .. tokens_display
 		local lines = { summary, "", "" }
-		self.response_set_lines(lines)
-		self.response_set_cursor(self._.response.line_nr + #lines)
-		self._.response.line_nr = self._.response.line_nr + #lines
+		self.chat_set_lines(lines)
+		self.chat_set_cursor(self._.chat.line_nr + #lines)
+		self._.chat.line_nr = self._.chat.line_nr + #lines
 	end
 
-	self.insert_response_line = function()
-		table.insert(self._.response.lines, self._.response.line)
+	self.insert_chat_line = function()
+		table.insert(self._.chat.lines, self._.chat.line)
 	end
 
 	self.mount = function()
@@ -177,7 +169,7 @@ function Float:init()
 		self._.hidden = false
 		self.set_ids()
 		self.focus_last_win()
-		self.response_set_cursor(self._.response.line_nr)
+		self.chat_set_cursor(self._.chat.line_nr)
 	end
 	return self
 end
@@ -213,7 +205,7 @@ function Float:configure()
 			local float = opts.ui.layout.float
 			n_lines = n_lines < float.prompt_max_lines and n_lines or float.prompt_max_lines
 			self.layout:update(nui_lo.Box({
-				nui_lo.Box(self.boxes.response, {
+				nui_lo.Box(self.boxes.chat, {
 					size = "100%",
 				}),
 				nui_lo.Box(self.boxes.prompt, {
@@ -231,22 +223,22 @@ function Float:configure()
 		local function newln(n)
 			n = n or 1
 			for _ = 1, n do
-				self._.response.line_nr = self._.response.line_nr + 1
-				self._.response.line = ""
-				self.response_set_lines({ self._.response.line, self._.response.line })
-				self.response_set_cursor(self._.response.line_nr + 1)
+				self._.chat.line_nr = self._.chat.line_nr + 1
+				self._.chat.line = ""
+				self.chat_set_lines({ self._.chat.line, self._.chat.line })
+				self.chat_set_cursor(self._.chat.line_nr + 1)
 			end
 		end
 		local function append(chunk)
-			self._.response.line = self._.response.line .. chunk
-			self.response_set_lines({ self._.response.line })
-			self.response_set_cursor(self._.response.line_nr + 1)
+			self._.chat.line = self._.chat.line .. chunk
+			self.chat_set_lines({ self._.chat.line })
+			self.chat_set_cursor(self._.chat.line_nr + 1)
 		end
 		local on_chunk = function(chunk)
 			if string.match(chunk, "\n") then
 				for _chunk in chunk:gmatch(".") do
 					if string.match(_chunk, "\n") then
-						self.insert_response_line()
+						self.insert_chat_line()
 						newln()
 					else
 						append(_chunk)
@@ -258,22 +250,22 @@ function Float:configure()
 		end
 
 		local on_start = function()
-			self.response_set_cursor(self._.response.line_nr + 1)
+			self.chat_set_cursor(self._.chat.line_nr + 1)
 			self.message_source("prompt")
 			for _, line in ipairs(prompt_lines) do
-				self.response_set_lines({ line }, true)
+				self.chat_set_lines({ line }, true)
 			end
 			local on_tokens = function(tokens)
 				tokens = tokens or 0
-				self._.tokens.prompt = tokens
-				self._.tokens.total = self._.tokens.total + self._.tokens.prompt
+				self._.tokens.user = tokens
+				self._.tokens.total = self._.tokens.total + self._.tokens.user
 				newln()
-				self.response_token_summary(self._.tokens.prompt)
+				self.chat_token_summary(self._.tokens.user)
 				History:add_prompt(prompt_message, self._.tokens)
 			end
 			utils.get_tokens(prompt_message, on_tokens)
 			vim.cmd("silent! undojoin")
-			self.message_source("response")
+			self.message_source("chat")
 		end
 
 		local before_start = function()
@@ -281,16 +273,16 @@ function Float:configure()
 		end
 
 		local on_complete = function(chunks)
-			self.insert_response_line()
-			Events.pub("hook:request:complete", self._.response.lines)
+			self.insert_chat_line()
+			Events.pub("hook:request:complete", self._.chat.lines)
 			Log.trace(string.format("on_complete: chunks: %s", vim.inspect(chunks)))
 			local on_tokens = function(tokens)
 				tokens = tokens or 0
-				self._.tokens.response = tokens
-				self._.tokens.total = self._.tokens.total + self._.tokens.response
+				self._.tokens.assistant = tokens
+				self._.tokens.total = self._.tokens.total + self._.tokens.assistant
 				newln(2)
-				self.response_token_summary(self._.tokens.response)
-				History:add_response(table.concat(chunks, ""), self._.tokens)
+				self.chat_token_summary(self._.tokens.assistant)
+				History:add_chat(table.concat(chunks, ""), self._.tokens)
 			end
 			utils.get_tokens(chunks, on_tokens)
 			vim.cmd("silent! undojoin")
@@ -299,25 +291,25 @@ function Float:configure()
 		local on_error = function(err)
 			local message = err and err.error and err.error.message or type(err) == "string" and err or "Unknown error"
 			local preamble = { message, "" }
-			self.response_set_lines(preamble, true)
+			self.chat_set_lines(preamble, true)
 			Log.trace(
 				string.format(
-					"adding error highlight to response buffer: %s, current_response_line: %s",
-					self._.response.bufnr,
-					self._.response.line_nr
+					"adding error highlight to chat buffer: %s, current_chat_line: %s",
+					self._.chat.bufnr,
+					self._.chat.line_nr
 				)
 			)
 			for i = 0, #preamble do
 				vim.api.nvim_buf_add_highlight(
-					self._.response.bufnr,
+					self._.chat.bufnr,
 					-1,
 					"ErrorMsg",
-					self._.response.line_nr - #preamble + i,
+					self._.chat.line_nr - #preamble + i,
 					0,
 					-1
 				)
 			end
-			self.response_token_summary()
+			self.chat_token_summary()
 		end
 
 		self.request:send(prompt_message, before_start, on_start, on_chunk, on_complete, on_error)
@@ -333,9 +325,9 @@ function Float:configure()
 	local modes = { "n", "i" }
 	for _, mode in ipairs(modes) do
 		self.boxes.prompt:map(mode, "<C-k>", function()
-			self.focus_response()
+			self.focus_chat()
 		end, { noremap = true, silent = true })
-		self.boxes.response:map(mode, "<C-j>", function()
+		self.boxes.chat:map(mode, "<C-j>", function()
 			self.focus_prompt()
 		end, { noremap = true, silent = true })
 	end

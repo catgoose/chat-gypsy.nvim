@@ -99,7 +99,7 @@ function History:add_prompt(message, tokens)
 	self:add_message(message, role, tokens)
 end
 
-function History:add_response(message, tokens)
+function History:add_chat(message, tokens)
 	local role = "assistant"
 	self:add_message(message, role, tokens)
 end

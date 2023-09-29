@@ -21,14 +21,14 @@ local function build_ui(layout_config)
 		},
 		enter = true,
 	})
-	local response_config = vim.tbl_deep_extend("force", popup_base, {
+	local chat_config = vim.tbl_deep_extend("force", popup_base, {
 		buf_options = {
 			filetype = "markdown",
 		},
 	})
 
 	local prompt = nui_pu(prompt_config)
-	local response = nui_pu(response_config)
+	local chat = nui_pu(chat_config)
 
 	local layout_strategy = function(_layout_config)
 		local float = nui_lo(
@@ -38,7 +38,7 @@ local function build_ui(layout_config)
 				relative = "editor",
 			},
 			nui_lo.Box({
-				nui_lo.Box(response, {
+				nui_lo.Box(chat, {
 					size = "100%",
 				}),
 				nui_lo.Box(prompt, {
@@ -59,7 +59,7 @@ local function build_ui(layout_config)
 					relative = "editor",
 				}, side_config),
 				nui_lo.Box({
-					nui_lo.Box(response, {
+					nui_lo.Box(chat, {
 						size = {
 							height = vim.o.lines - opts.ui.layout[side].prompt_height - 1,
 						},
@@ -88,7 +88,7 @@ local function build_ui(layout_config)
 	return {
 		layout = layout,
 		layout_config = layout_config,
-		boxes = { response = response, prompt = prompt },
+		boxes = { chat = chat, prompt = prompt },
 	}
 end
 
