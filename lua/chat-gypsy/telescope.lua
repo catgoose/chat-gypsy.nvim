@@ -32,7 +32,7 @@ local define_preview = function(self, entry)
 	vim.api.nvim_buf_set_option(self.state.bufnr, "filetype", "markdown")
 	local contents = utils.decode_json_from_path(entry.filename)
 	for _, message_tbls in pairs(contents.messages) do
-		vim.api.nvim_buf_set_lines(self.state.bufnr, -1, -1, false, { message_tbls.type, "" })
+		vim.api.nvim_buf_set_lines(self.state.bufnr, -1, -1, false, { message_tbls.role, "" })
 		for line in message_tbls.message:gmatch("[^\n]+") do
 			vim.api.nvim_buf_set_lines(self.state.bufnr, -1, -1, false, { line })
 		end
