@@ -1,3 +1,4 @@
+local Log = require("chat-gypsy").Log
 local History = require("chat-gypsy").History
 local finders = require("telescope.finders")
 local conf = require("telescope.config").values
@@ -22,7 +23,7 @@ local attach_mappings = function(prompt_bufnr)
 	actions.select_default:replace(function()
 		actions.close(prompt_bufnr)
 		local selection = action_state.get_selected_entry()
-		log.debug(string.format("history %s selected", vim.inspect(selection)))
+		Log.debug(string.format("history %s selected", vim.inspect(selection)))
 	end)
 	return true
 end
