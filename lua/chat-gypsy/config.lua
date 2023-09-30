@@ -38,7 +38,7 @@ local symbols = {
 }
 
 local plugin_cfg = {
-	name = "gypsy",
+	name = "chat-gypsy",
 	log_level = default_log_level,
 	dev = false,
 }

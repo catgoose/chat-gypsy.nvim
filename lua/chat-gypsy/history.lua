@@ -2,13 +2,14 @@ local Log = require("chat-gypsy").Log
 local Events = require("chat-gypsy").Events
 local Path = require("plenary.path")
 local utils = require("chat-gypsy.utils")
+local plugin_cfg = require("chat-gypsy").Config.get("plugin_cfg")
 
 local History = {}
 History.__index = History
 
 function History:new()
 	setmetatable(self, History)
-	self.data_dir = vim.fn.stdpath("data") .. "/chat-gypsy"
+	self.data_dir = string.format("%s/%s", vim.fn.stdpath("data"), plugin_cfg.name)
 	self.id_len = 16
 	self.history_id = utils.generate_random_id(self.id_len)
 	self.file = string.format("%s.json", self.history_id)
