@@ -3,6 +3,9 @@ local default_log_level = "warn"
 local Events = require("chat-gypsy").Events
 local utils = require("chat-gypsy.utils")
 
+--  TODO: 2023-09-30 - validate config with vim.validate
+--  TODO: 2023-09-30 - Add @type and @param for project
+
 local Config = {}
 
 local openai_models = {
