@@ -214,3 +214,4 @@ Several event hooks are provided for customization:
 - [ ] Check tokens before sending to model.
 - [ ] Add to configuration the option to select which model to use for entry
       composition
+- [ ] When requests are queued, show indicator in ui
