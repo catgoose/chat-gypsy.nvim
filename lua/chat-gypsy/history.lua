@@ -113,6 +113,19 @@ function History:add_openai_params(openai_params)
 	self:save()
 end
 
+function History:get_current()
+	return self.current
+end
+
+function History:load_from_file_path(file_path)
+	local json = utils.decode_json_from_path(file_path)
+	if json then
+		self.current = json
+		return true
+	end
+	return false
+end
+
 local get_entries_from_file = function(file_path, on_error)
 	local history_json = utils.decode_json_from_path(file_path, on_error)
 	if
@@ -141,11 +154,15 @@ function History:get_picker_entries(picker_cb)
 			local entries = get_entries_from_file(file_path, on_error)
 			if entries then
 				table.insert(picker_entries, {
-					path = {
-						full = file_path,
-						base = vim.fn.fnamemodify(file_path, ":t"),
+					entries = {
+						name = entries.name,
+						description = entries.description,
+						keywords = entries.keywords,
+						path = {
+							full = file_path,
+							base = vim.fn.fnamemodify(file_path, ":t"),
+						},
 					},
-					entries = entries,
 				})
 			end
 		end

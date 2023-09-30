@@ -15,7 +15,7 @@ local entry_maker = function(item)
 		value = item.entries,
 		display = string.format("%s: %s", item.entries.name, item.entries.description),
 		ordinal = item.entries.name,
-		filename = item.path.full,
+		file_path = item.entries.path.full,
 	}
 end
 
@@ -24,6 +24,8 @@ local attach_mappings = function(prompt_bufnr)
 		actions.close(prompt_bufnr)
 		local selection = action_state.get_selected_entry()
 		Log.debug(string.format("history %s selected", vim.inspect(selection)))
+		History:load_from_file_path(selection.file_path)
+		vim.print(History:get_current())
 	end)
 	return true
 end
@@ -31,7 +33,7 @@ end
 --  TODO: 2023-09-27 - use chat renderer here
 local define_preview = function(self, entry)
 	vim.api.nvim_buf_set_option(self.state.bufnr, "filetype", "markdown")
-	local contents = utils.decode_json_from_path(entry.filename)
+	local contents = utils.decode_json_from_path(entry.file_path)
 	for _, message_tbls in pairs(contents.messages) do
 		vim.api.nvim_buf_set_lines(self.state.bufnr, -1, -1, false, { message_tbls.role, "" })
 		for line in message_tbls.message:gmatch("[^\n]+") do
