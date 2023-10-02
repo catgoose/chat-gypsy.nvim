@@ -31,6 +31,7 @@ local attach_mappings = function(prompt_bufnr)
 end
 
 --  TODO: 2023-09-27 - use chat renderer here
+--  TODO: 2023-10-02 - show entry display at the top of preview
 local define_preview = function(self, entry)
 	vim.api.nvim_buf_set_option(self.state.bufnr, "filetype", "markdown")
 	local contents = utils.decode_json_from_path(entry.file_path)
