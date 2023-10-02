@@ -47,7 +47,7 @@ function History:init()
 			queue_next()
 		end
 		Log.debug(string.format("Event %s: Composing entry table", sub))
-		request.compose_entries(self.current, on_complete)
+		request:compose_entries(self.current, on_complete)
 	end)
 end
 

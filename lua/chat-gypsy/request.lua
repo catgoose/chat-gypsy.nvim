@@ -70,7 +70,7 @@ function Request:init()
 	end
 
 	--  TODO: 2023-09-29 - add hook event for composing entries
-	self.compose_entries = function(current_history, on_complete)
+	function Request:compose_entries(current_history, on_complete)
 		local openai_params = utils.deepcopy(current_history.openai_params)
 		table.insert(openai_params.messages, {
 			role = "user",
