@@ -102,6 +102,7 @@ function UI:new(ui_config)
 		layout = {
 			direction = "center",
 		},
+		render_history = false,
 	}
 	local ui = build_ui(ui_config.layout)
 	Log.trace(string.format("Building new ui with layout config: \n%s", vim.inspect(ui_config.layout)))

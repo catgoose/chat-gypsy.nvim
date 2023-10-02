@@ -25,23 +25,20 @@ local attach_mappings = function(prompt_bufnr)
 		local selection = action_state.get_selected_entry()
 		Log.debug(string.format("history %s selected", vim.inspect(selection)))
 		History:load_from_file_path(selection.file_path)
-		vim.print(History:get_current())
+		local current = History:get_current()
+		local chat = require("chat-gypsy.float"):new({
+			mount = require("chat-gypsy").Config.get("opts").ui.behavior.mount,
+			layout = require("chat-gypsy").Config.get("opts").ui.behavior.layout,
+			render_history = false,
+		})
 	end)
 	return true
 end
 
---  TODO: 2023-09-27 - use chat renderer here
 --  TODO: 2023-10-02 - show entry display at the top of preview
 local define_preview = function(self, entry)
-	vim.api.nvim_buf_set_option(self.state.bufnr, "filetype", "markdown")
-	local contents = utils.decode_json_from_path(entry.file_path)
-	for _, message_tbls in pairs(contents.messages) do
-		vim.api.nvim_buf_set_lines(self.state.bufnr, -1, -1, false, { message_tbls.role, "" })
-		for line in message_tbls.message:gmatch("[^\n]+") do
-			vim.api.nvim_buf_set_lines(self.state.bufnr, -1, -1, false, { line })
-		end
-		vim.api.nvim_buf_set_lines(self.state.bufnr, -1, -1, false, { "" })
-	end
+	local render = require("chat-gypsy.render"):new()
+	render:chat_from_history(self.state.bufnr, entry.file_path)
 end
 
 local get_picker_entries = function(entries, opts)
