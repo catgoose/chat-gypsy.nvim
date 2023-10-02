@@ -16,7 +16,6 @@ function Request:init()
 	self.chunks = {}
 	self.error_chunks = {}
 	self.content = ""
-	-- self.handler = nil
 	self.handlers = {}
 	self.join_content = function()
 		self.content = table.concat(self.chunks, "")
