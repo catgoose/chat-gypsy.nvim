@@ -40,6 +40,11 @@ function History:init()
 	Events.sub(sub, function(queue_next)
 		local request = require("chat-gypsy.request"):new()
 		local on_complete = function()
+			--  BUG: 2023-10-02 - After a chat is closed, but before the
+			--  compose_entries method is complete, if the telescope picker has opened
+			--  the file for history, the first user message is not saved to history
+			--  FIX: 2023-10-02 - This can probably be fixed by using sqlite to store
+			--  chat histories
 			self:save()
 			Log.debug(string.format("Event %s: Saving history", sub))
 			self:reset()
