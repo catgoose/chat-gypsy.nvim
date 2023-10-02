@@ -84,7 +84,7 @@ function Request:init()
 			content = "Important: ONLY RETURN THE OBJECT.  You will be reducing a openai chat to a json object.  The object's schema is {name: string, description: string, keywords: string[]}. The description should be limited to 80 characters.  Break compound words in keywords into multiple terms in lowercase.  Only return the object.",
 		}
 		Log.trace(string.format("Setting entries from openai response using %s", vim.inspect(openai_params)))
-		curl.post({
+		self.handler = curl.post({
 			url = "https://api.openai.com/v1/chat/completions",
 			headers = {
 				content_type = "application/json",
