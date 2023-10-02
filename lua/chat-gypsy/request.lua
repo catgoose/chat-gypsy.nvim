@@ -16,6 +16,8 @@ function Request:init()
 	self.chunks = {}
 	self.error_chunks = {}
 	self.content = ""
+	--  TODO: 2023-10-02 - Should a handlers table be used to keep a list of
+	--  handlers that need to be shutdown?
 	self.handler = nil
 	self.join_content = function()
 		self.content = table.concat(self.chunks, "")
