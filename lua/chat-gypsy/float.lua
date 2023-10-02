@@ -230,7 +230,7 @@ function Float:configure()
 				self.chat_set_cursor(self._.chat.line_nr + 1)
 			end
 		end
-		local function append(chunk)
+		local append = function(chunk)
 			self._.chat.line = self._.chat.line .. chunk
 			self.chat_set_lines({ self._.chat.line })
 			self.chat_set_cursor(self._.chat.line_nr + 1)
