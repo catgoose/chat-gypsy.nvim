@@ -16,9 +16,8 @@ function Request:init()
 	self.chunks = {}
 	self.error_chunks = {}
 	self.content = ""
-	--  TODO: 2023-10-02 - Should a handlers table be used to keep a list of
-	--  handlers that need to be shutdown?
-	self.handler = nil
+	-- self.handler = nil
+	self.handlers = {}
 	self.join_content = function()
 		self.content = table.concat(self.chunks, "")
 	end
@@ -86,7 +85,7 @@ function Request:init()
 		Log.trace(string.format("Setting entries from openai response using %s", vim.inspect(openai_params)))
 		--  TODO: 2023-10-02 - This is depending on an active request being shutdown
 		--  first.  Could cause issues if the other request is not shut down
-		self.handler = curl.post({
+		local handler = curl.post({
 			url = "https://api.openai.com/v1/chat/completions",
 			headers = {
 				content_type = "application/json",
@@ -120,6 +119,7 @@ function Request:init()
 				on_complete()
 			end),
 		})
+		table.insert(self.handlers, handler)
 	end
 
 	self.completions = function(on_start, on_chunk, on_complete, on_error)
@@ -128,8 +128,7 @@ function Request:init()
 		if opts.dev_opts.request.throw_error then
 			on_error(opts.dev_opts.request.error)
 		else
-			--  TODO: 2023-09-27 - abstract this so it can be used by compose_entries
-			self.handler = curl.post({
+			local handler = curl.post({
 				url = "https://api.openai.com/v1/chat/completions",
 				raw = { "--no-buffer" },
 				headers = {
@@ -153,7 +152,7 @@ function Request:init()
 				end,
 				on_error = on_error,
 			})
-			self.handler:after_success(function()
+			handler:after_success(function()
 				if #self.error_chunks > 0 then
 					local error = table.concat(self.error_chunks, "")
 					local ok, json = pcall(vim.json.decode, error)
@@ -168,13 +167,17 @@ function Request:init()
 					end)
 				end
 			end)
+			table.insert(self.handlers, handler)
 		end
 	end
 
 	Events.sub("request:shutdown", function(queue_next)
-		if self.handler and not self.handler.is_shutdown then
-			Log.debug("shutting down plenary.curl handler")
-			self.handler:shutdown()
+		while #self.handlers > 0 do
+			local handler = table.remove(self.handlers, 1)
+			if handler and not handler.is_shutdown then
+				Log.debug(string.format("shutting down plenary.curl handler: %s", handler))
+				handler:shutdown()
+			end
 		end
 		queue_next()
 	end)
