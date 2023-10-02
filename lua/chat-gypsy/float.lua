@@ -156,7 +156,7 @@ function Float:init()
 			Events.pub("request:shutdown", queue_next)
 		end
 		local history_reset = function(queue_next)
-			Events.pub("history:reset", queue_next)
+			Events.pub("history:reset", queue_next, self.request)
 		end
 		-- Shutdown current request before resetting history
 		queue:add(float_unmount, request_shutdown, history_reset)

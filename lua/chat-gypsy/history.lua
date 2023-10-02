@@ -37,8 +37,7 @@ function History:init()
 	self:init_current()
 	Path:new(self.data_dir):mkdir()
 	local sub = "history:reset"
-	Events.sub(sub, function(queue_next)
-		local request = require("chat-gypsy.request"):new()
+	Events.sub(sub, function(queue_next, request)
 		local on_complete = function()
 			--  BUG: 2023-10-02 - After a chat is closed, but before the
 			--  compose_entries method is complete, if the telescope picker has opened
