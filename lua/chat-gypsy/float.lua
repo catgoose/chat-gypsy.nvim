@@ -149,9 +149,6 @@ function Float:init()
 	self.unmount = function()
 		self.layout:unmount()
 		local queue = require("chat-gypsy.queue"):new()
-		local float_unmount = function(queue_next)
-			Events.pub("float:unmount", queue_next)
-		end
 		local request_shutdown = function(queue_next)
 			Events.pub("request:shutdown", queue_next)
 		end
@@ -159,7 +156,7 @@ function Float:init()
 			Events.pub("history:reset", queue_next, self.request)
 		end
 		-- Shutdown current request before resetting history
-		queue:add(float_unmount, request_shutdown, history_reset)
+		queue:add(request_shutdown, history_reset)
 	end
 	self.hide = function()
 		self.layout:hide()
