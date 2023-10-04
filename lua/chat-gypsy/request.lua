@@ -170,18 +170,28 @@ function Request:init()
 		end
 	end
 
-	Events.sub("request:shutdown", function(queue_next)
-		while #self.handlers > 0 do
-			local handler = table.remove(self.handlers, 1)
-			if handler and not handler.is_shutdown then
-				Log.debug(string.format("shutting down plenary.curl handler: %s", handler))
-				handler:shutdown()
-			end
-		end
-		queue_next()
-	end)
+	-- Events.sub("request:shutdown", function(queue_next)
+	-- 	while #self.handlers > 0 do
+	-- 		local handler = table.remove(self.handlers, 1)
+	-- 		if handler and not handler.is_shutdown then
+	-- 			Log.debug(string.format("shutting down plenary.curl handler: %s", handler))
+	-- 			handler:shutdown()
+	-- 		end
+	-- 	end
+	-- 	queue_next()
+	-- end)
 
 	return self
+end
+
+function Request:shutdown_handlers()
+	while #self.handlers > 0 do
+		local handler = table.remove(self.handlers, 1)
+		if handler and not handler.is_shutdown then
+			Log.debug(string.format("shutting down plenary.curl handler: %s", handler))
+			handler:shutdown()
+		end
+	end
 end
 
 ---@diagnostic disable-next-line: duplicate-set-field

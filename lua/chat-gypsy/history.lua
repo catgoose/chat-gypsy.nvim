@@ -36,18 +36,18 @@ end
 function History:init()
 	self:init_current()
 	Path:new(self.data_dir):mkdir()
-	local sub = "history:reset"
-	Events.sub(sub, function(queue_next, request)
-		local on_complete = function()
-			self:save()
-			Log.debug(string.format("Event %s: Saving history", sub))
-			self:reset()
-			Log.debug(string.format("Event %s: Resetting history", sub))
-			queue_next()
-		end
-		Log.debug(string.format("Event %s: Composing entry table", sub))
-		request:compose_entries(self.current, on_complete)
-	end)
+	-- local sub = "history:reset"
+	-- Events.sub(sub, function(queue_next, request)
+	-- 	local on_complete = function()
+	-- 		self:save()
+	-- 		Log.debug(string.format("Event %s: Saving history", sub))
+	-- 		self:reset()
+	-- 		Log.debug(string.format("Event %s: Resetting history", sub))
+	-- 		queue_next()
+	-- 	end
+	-- 	Log.debug(string.format("Event %s: Composing entry table", sub))
+	-- 	request:compose_entries(self.current, on_complete)
+	-- end)
 end
 
 function History:save()
