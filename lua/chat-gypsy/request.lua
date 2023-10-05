@@ -91,6 +91,7 @@ function Request:init()
 			body = vim.json.encode(openai_params),
 			callback = vim.schedule_wrap(function(response)
 				if response.status == 200 then
+					Events.pub("hook:entries:start", response.body)
 					local response_json_ok, response_json = pcall(vim.json.decode, response.body)
 					if response_json_ok and response_json then
 						local content = response_json.choices[1].message.content
@@ -113,6 +114,7 @@ function Request:init()
 						keywords = { "unknown" },
 					}
 				end
+				Events.pub("hook:entries:complete", response.body)
 				on_complete()
 			end),
 		})

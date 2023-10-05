@@ -135,6 +135,10 @@ local opts = {
 			get = function(--[[models]]) end,
 			error = function(--[[source, error_tbl]]) end,
 		},
+		entries = {
+			start = function(--[[response]]) end,
+			complete = function(--[[response]]) end,
+		},
 	},
 	dev_opts = {
 		prompt = {

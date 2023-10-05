@@ -205,6 +205,8 @@ Several event hooks are provided for customization:
 | request.error    | source, error_tbl | An error has occurred in a request    |
 | models.get       | models            | Models retrieved from OpenAI          |
 | models.error     | source, error_tbl | Error occurred retrieving models      |
+| entries.start    | response          | Start response composing entries      |
+| entries.complete | response          | Complete response composing entries   |
 
 ## TODO
 
