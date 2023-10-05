@@ -41,9 +41,10 @@ function History:compose_entries(request)
 	local on_complete = function()
 		self:save()
 		Log.debug("Saving history")
-		--  BUG: 2023-10-05 - Closing the float too fast when auto-sending prompt,
-		--  will send self.current as the initialized table, i.e.
-		--  self.current.messages = {}
+		--  BUG: 2023-10-05 - Sending a history to compose entries while another
+		--  history composition is finishing will result in the history being reset
+		--  by the on_complete of the previous request which causes the history to
+		--  be reset prematurely
 		--  FIX: 2023-10-05 - Stop storing history as state, use sqlite instead
 		self:reset()
 		Log.debug("Resetting history")
