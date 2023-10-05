@@ -97,13 +97,17 @@ UI.__index = UI
 
 function UI:new(ui_config)
 	setmetatable(self, UI)
-	ui_config = ui_config or {
+	local ui_config_defaults = {
 		mount = false,
 		layout = {
 			direction = "center",
 		},
 		render_history = false,
 	}
+	--  TODO: 2023-10-05 - extend ui_config_defaults over ui_config, keeping
+	--  values from ui_config
+	-- vim.tbl_deep_extend("force", ui_config_defaults, ui_config)
+	vim.print(ui_config)
 	local ui = build_ui(ui_config.layout)
 	Log.trace(string.format("Building new ui with layout config: \n%s", vim.inspect(ui_config.layout)))
 	self.layout = ui.layout

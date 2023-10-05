@@ -6,7 +6,6 @@ local pickers = require("telescope.pickers")
 local actions = require("telescope.actions")
 local action_state = require("telescope.actions.state")
 local previewers = require("telescope.previewers")
-local utils = require("chat-gypsy.utils")
 
 local Telescope = {}
 
@@ -25,12 +24,13 @@ local attach_mappings = function(prompt_bufnr)
 		local selection = action_state.get_selected_entry()
 		Log.debug(string.format("history %s selected", vim.inspect(selection)))
 		History:load_from_file_path(selection.file_path)
-		local current = History:get_current()
-		local chat = require("chat-gypsy.float"):new({
-			mount = require("chat-gypsy").Config.get("opts").ui.behavior.mount,
-			layout = require("chat-gypsy").Config.get("opts").ui.behavior.layout,
-			render_history = false,
-		})
+		-- local current = History:get_current()
+		-- local chat = require("chat-gypsy.float"):new({
+		-- 	mount = require("chat-gypsy").Config.get("opts").ui.behavior.mount,
+		-- 	layout = require("chat-gypsy").Config.get("opts").ui.behavior.layout,
+		-- 	render_history = false,
+		-- })
+		require("chat-gypsy").Session:restore()
 	end)
 	return true
 end
