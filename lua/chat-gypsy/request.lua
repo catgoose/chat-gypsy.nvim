@@ -136,7 +136,7 @@ function Request:init()
 				},
 				body = vim.json.encode(self.openai_params),
 				stream = function(_, chunk)
-					if chunk ~= "" then
+					if chunk and chunk ~= "" then
 						vim.schedule(function()
 							if not strategy then
 								if string.match(chunk, "data:") then
