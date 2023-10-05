@@ -2,14 +2,12 @@ local Log = require("chat-gypsy").Log
 local opts = require("chat-gypsy").Config.get("opts")
 local nui_pu, nui_lo = require("nui.popup"), require("nui.layout")
 
-local layout_configs = { "center", "left", "right" }
+local placements = { "center", "left", "right" }
 
-local function build_ui(layout_config)
-	layout_config = layout_config or {
-		direction = "center",
-	}
-	if not vim.tbl_contains(layout_configs, layout_config.direction) then
-		layout_config.direction = "center"
+local function build_ui(placement)
+	placement = placement or "center"
+	if not vim.tbl_contains(placements, placement) then
+		placement = "center"
 	end
 
 	local popup_base = vim.tbl_deep_extend("force", opts.ui.config, {
@@ -30,7 +28,7 @@ local function build_ui(layout_config)
 	local prompt = nui_pu(prompt_config)
 	local chat = nui_pu(chat_config)
 
-	local layout_strategy = function(_layout_config)
+	local placement_strategy = function(_placement)
 		local float = nui_lo(
 			{
 				position = opts.ui.layout.float.position,
@@ -74,20 +72,19 @@ local function build_ui(layout_config)
 			return side_layout
 		end
 
-		if _layout_config.direction == "center" then
+		if _placement == "center" then
 			return float
 		end
-		if _layout_config.direction == "right" then
-			return create_side_layout(_layout_config.direction)
+		if _placement == "right" then
+			return create_side_layout(_placement)
 		end
-		if _layout_config.direction == "left" then
-			return create_side_layout(_layout_config.direction)
+		if _placement == "left" then
+			return create_side_layout(_placement)
 		end
 	end
-	local layout = layout_strategy(layout_config)
+	local layout = placement_strategy(placement)
 	return {
 		layout = layout,
-		layout_config = layout_config,
 		boxes = { chat = chat, prompt = prompt },
 	}
 end
@@ -95,25 +92,19 @@ end
 local UI = {}
 UI.__index = UI
 
-function UI:new(ui_config)
+function UI:new(ui_opts)
 	setmetatable(self, UI)
-	local ui_config_defaults = {
+	local default_ui_opts = {
 		mount = false,
-		layout = {
-			direction = "center",
-		},
-		render_history = false,
+		placement = opts.ui.layout_placement,
 	}
-	--  TODO: 2023-10-05 - extend ui_config_defaults over ui_config, keeping
-	--  values from ui_config
-	-- vim.tbl_deep_extend("force", ui_config_defaults, ui_config)
-	vim.print(ui_config)
-	local ui = build_ui(ui_config.layout)
-	Log.trace(string.format("Building new ui with layout config: \n%s", vim.inspect(ui_config.layout)))
+	ui_opts = vim.tbl_deep_extend("force", default_ui_opts, ui_opts)
+	local ui = build_ui(ui_opts.layout_placement)
+	Log.trace(string.format("Building new ui with layout config: \n%s", vim.inspect(ui_opts.layout)))
 	self.layout = ui.layout
 	self.boxes = ui.boxes
 	self:init()
-	if ui_config.mount then
+	if ui_opts.mount then
 		self:mount()
 	end
 	return self

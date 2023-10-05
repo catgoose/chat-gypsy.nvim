@@ -57,14 +57,9 @@ local opts = {
 		},
 	},
 	ui = {
-		behavior = {
-			mount = true,
-			prompt = {
-				start_insert = true,
-			},
-			layout = {
-				type = "float",
-			},
+		layout_placement = "center",
+		prompt = {
+			start_insert = true,
 		},
 		config = {
 			zindex = 50,

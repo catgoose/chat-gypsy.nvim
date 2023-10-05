@@ -64,15 +64,7 @@ local opts = {
   },
   log_level = "warn", -- trace, debug, info, warn, error, fatal
   ui = {
-    behavior = {
-      mount = true,
-      prompt = {
-        start_insert = true,
-      },
-      layout = {
-        direction = "center", -- left, center, right
-      },
-    },
+    layout_placement = "center",
     prompt = {
       start_insert = true,
     },

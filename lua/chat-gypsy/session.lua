@@ -43,8 +43,7 @@ end
 function Session:open()
 	if not self.chat._.instance then
 		self.chat = require("chat-gypsy.float"):new({
-			mount = opts,
-			layout = opts,
+			mount = true,
 		})
 		self.chat._.instance = true
 		return
@@ -57,8 +56,6 @@ function Session:restore()
 	if not self.chat._.instance then
 		self.chat = require("chat-gypsy.float"):new({
 			mount = false,
-			--  BUG: 2023-10-05 - this is ending the entire opts table
-			layout = opts,
 		})
 		self.chat._.instance = true
 	end
