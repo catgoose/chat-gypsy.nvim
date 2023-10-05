@@ -40,7 +40,6 @@ function Session:toggle()
 	end
 end
 
---  TODO: 2023-10-04 - Should chat be reinstantiated each time?
 function Session:open()
 	if not self.chat._.instance then
 		self.chat = require("chat-gypsy.float"):new({
