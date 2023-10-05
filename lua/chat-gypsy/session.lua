@@ -52,10 +52,12 @@ function Session:open()
 	end
 end
 
-function Session:restore()
+function Session:restore(current)
 	if not self.chat._.instance then
 		self.chat = require("chat-gypsy.float"):new({
-			mount = false,
+			mount = true,
+			restore_history = true,
+			current = current,
 		})
 		self.chat._.instance = true
 	end

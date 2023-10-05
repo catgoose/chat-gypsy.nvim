@@ -163,7 +163,16 @@ function Float:init()
 		self.focus_last_win()
 		self.chat_set_cursor(self._.chat.line_nr)
 	end
-	return self
+	self:actions()
+end
+
+function Float:actions()
+	if self.ui_opts.mount then
+		self.mount()
+	end
+	if self.ui_opts.restore_history then
+		vim.print(string.format("Restoring history: %s", vim.inspect(self.ui_opts.current)))
+	end
 end
 
 function Float:configure()

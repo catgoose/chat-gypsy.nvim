@@ -97,16 +97,16 @@ function UI:new(ui_opts)
 	local default_ui_opts = {
 		mount = false,
 		placement = opts.ui.layout_placement,
+		restore_history = false,
+		current = nil,
 	}
 	ui_opts = vim.tbl_deep_extend("force", default_ui_opts, ui_opts)
 	local ui = build_ui(ui_opts.layout_placement)
 	Log.trace(string.format("Building new ui with layout config: \n%s", vim.inspect(ui_opts.layout)))
 	self.layout = ui.layout
 	self.boxes = ui.boxes
+	self.ui_opts = ui_opts
 	self:init()
-	if ui_opts.mount then
-		self:mount()
-	end
 	return self
 end
 
