@@ -53,6 +53,16 @@ function Session:open()
 	end
 end
 
+function Session:restore()
+	if not self.chat._.instance then
+		self.chat = require("chat-gypsy.float"):new({
+			mount = false,
+			layout = opts,
+		})
+		self.chat._.instance = true
+	end
+end
+
 function Session:hide()
 	if self.chat._.mounted and not self.chat._.hidden then
 		self.chat.hide()
