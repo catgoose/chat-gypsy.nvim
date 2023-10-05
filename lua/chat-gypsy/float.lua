@@ -220,12 +220,12 @@ function Float:configure()
 				self.chat_set_cursor(self._.chat.line_nr + 1)
 			end
 		end
-		local append = function(chunk)
-			self._.chat.line = self._.chat.line .. chunk
-			self.chat_set_lines({ self._.chat.line })
-			self.chat_set_cursor(self._.chat.line_nr + 1)
-		end
 		local on_chunk = function(chunk)
+			local append = function(chk)
+				self._.chat.line = self._.chat.line .. chk
+				self.chat_set_lines({ self._.chat.line })
+				self.chat_set_cursor(self._.chat.line_nr + 1)
+			end
 			if string.match(chunk, "\n") then
 				for _chunk in chunk:gmatch(".") do
 					if string.match(_chunk, "\n") then
@@ -238,6 +238,10 @@ function Float:configure()
 			else
 				append(chunk)
 			end
+		end
+
+		local before_request = function()
+			vim.api.nvim_buf_set_lines(self._.prompt.bufnr, 0, -1, false, {})
 		end
 
 		local on_request_start = function()
@@ -257,10 +261,6 @@ function Float:configure()
 			utils.get_tokens(prompt_message, on_tokens)
 			vim.cmd("silent! undojoin")
 			self.message_source("chat")
-		end
-
-		local before_request = function()
-			vim.api.nvim_buf_set_lines(self._.prompt.bufnr, 0, -1, false, {})
 		end
 
 		local on_chunks_complete = function(chunks)
@@ -312,9 +312,11 @@ function Float:configure()
 			on_chunk_error
 		)
 	end
+
 	if plugin_cfg.dev and dev.prompt.enabled then
 		send_prompt(dev.prompt.message)
 	end
+
 	self.boxes.prompt:map("n", "<Enter>", function()
 		local prompt_lines = vim.api.nvim_buf_get_lines(self._.prompt.bufnr, 0, -1, false)
 		send_prompt(prompt_lines)
