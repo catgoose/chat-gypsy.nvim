@@ -37,6 +37,17 @@ function History:init()
 	Path:new(self.data_dir):mkdir()
 end
 
+function History:compose_entries(request)
+	local on_complete = function()
+		self:save()
+		Log.debug("Saving history")
+		self:reset()
+		Log.debug("Resetting history")
+	end
+	Log.debug("Composing history entries for telescope picker")
+	request:compose_entries(self.current, on_complete)
+end
+
 function History:save()
 	Path:new(self.json_path):write(vim.fn.json_encode(self.current), "w")
 end
