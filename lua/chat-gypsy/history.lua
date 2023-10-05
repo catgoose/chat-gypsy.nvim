@@ -1,5 +1,4 @@
 local Log = require("chat-gypsy").Log
-local Events = require("chat-gypsy").Events
 local Path = require("plenary.path")
 local utils = require("chat-gypsy.utils")
 local plugin_cfg = require("chat-gypsy").Config.get("plugin_cfg")
@@ -36,18 +35,6 @@ end
 function History:init()
 	self:init_current()
 	Path:new(self.data_dir):mkdir()
-	-- local sub = "history:reset"
-	-- Events.sub(sub, function(queue_next, request)
-	-- 	local on_complete = function()
-	-- 		self:save()
-	-- 		Log.debug(string.format("Event %s: Saving history", sub))
-	-- 		self:reset()
-	-- 		Log.debug(string.format("Event %s: Resetting history", sub))
-	-- 		queue_next()
-	-- 	end
-	-- 	Log.debug(string.format("Event %s: Composing entry table", sub))
-	-- 	request:compose_entries(self.current, on_complete)
-	-- end)
 end
 
 function History:save()
