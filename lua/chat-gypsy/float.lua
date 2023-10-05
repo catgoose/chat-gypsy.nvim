@@ -147,9 +147,10 @@ function Float:init()
 		end
 	end
 	self.unmount = function()
-		self._.instance = false
 		self.layout:unmount()
 		self.request:shutdown_handlers()
+		self._.instance = false
+		History:compose_entries(self.request)
 	end
 	self.hide = function()
 		self.layout:hide()
