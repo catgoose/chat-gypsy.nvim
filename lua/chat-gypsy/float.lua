@@ -1,12 +1,9 @@
 local Log = require("chat-gypsy").Log
-local Events = require("chat-gypsy").Events
 local History = require("chat-gypsy").History
 local Config = require("chat-gypsy").Config
 local UI = require("chat-gypsy.ui")
-local plugin_cfg, dev, opts, symbols =
-	Config.get("plugin_cfg"), Config.get("dev"), Config.get("opts"), Config.get("symbols")
+local plugin_cfg, dev, opts = Config.get("plugin_cfg"), Config.get("dev"), Config.get("opts")
 local utils = require("chat-gypsy.utils")
-local models = require("chat-gypsy.models")
 local nui_lo = require("nui.layout")
 local ev = require("nui.utils.autocmd").event
 
@@ -47,6 +44,7 @@ function Float:init()
 
 	self.init_state = function()
 		self._ = utils.deepcopy(state)
+		self.render = require("chat-gypsy.chat_render"):new(self._)
 		self.set_ids()
 		self._.chat.win_width = vim.api.nvim_win_get_width(self._.chat.winid)
 	end
@@ -82,59 +80,6 @@ function Float:init()
 		return vim.tbl_contains({ self._.prompt_winid, self._.chat.winid }, vim.api.nvim_get_current_win())
 	end
 
-	self.chat_set_cursor = function(line)
-		if self._.chat.winid and vim.api.nvim_win_is_valid(self._.chat.winid) then
-			line = line == 0 and 1 or line
-			vim.api.nvim_win_set_cursor(self._.chat.winid, { line, 0 })
-		end
-	end
-	self.chat_set_lines = function(lines, new_lines)
-		new_lines = new_lines or false
-		if self._.chat.bufnr and vim.api.nvim_buf_is_valid(self._.chat.bufnr) then
-			vim.api.nvim_buf_set_lines(self._.chat.bufnr, self._.chat.line_nr, self._.chat.line_nr + 1, false, lines)
-			if new_lines then
-				self._.chat.line_nr = self._.chat.line_nr + #lines
-				self.chat_set_cursor(self._.chat.line_nr)
-			end
-		end
-	end
-
-	--  TODO: 2023-09-24 - highlight name
-	self.message_source = function(type)
-		local model_config = models.get_config(opts.openai_params.model)
-		if not type then
-			return
-		end
-		if not vim.tbl_contains({ "prompt", "chat" }, type) then
-			return
-		end
-		local source = type == "prompt" and "You" or model_config.model
-		local lines = { string.format("%s (%s):", source, os.date("%H:%M")), "", "" }
-		self.chat_set_lines(lines, true)
-	end
-
-	self.chat_token_summary = function(tokens)
-		local model_config = models.get_config(opts.openai_params.model)
-		local tokens_display = string.format(
-			" Tokens: %s %s (%s/%s) %s",
-			symbols.left_arrow,
-			tokens,
-			self._.tokens.total,
-			model_config.max_tokens,
-			symbols.right_arrow
-		)
-		--  TODO: 2023-09-24 - add highlighting
-		local summary = symbols.horiz:rep(self._.chat.win_width - #tokens_display + 4) .. tokens_display
-		local lines = { summary, "", "" }
-		self.chat_set_lines(lines)
-		self.chat_set_cursor(self._.chat.line_nr + #lines)
-		self._.chat.line_nr = self._.chat.line_nr + #lines
-	end
-
-	self.insert_chat_line = function()
-		table.insert(self._.chat.lines, self._.chat.line)
-	end
-
 	self.mount = function()
 		Log.trace("Mounting UI")
 		self.layout:mount()
@@ -161,7 +106,7 @@ function Float:init()
 		self._.hidden = false
 		self.set_ids()
 		self.focus_last_win()
-		self.chat_set_cursor(self._.chat.line_nr)
+		self.render:chat_set_cursor(self._.chat.line_nr)
 	end
 	self:actions()
 end
@@ -226,7 +171,7 @@ function Float:configure()
 		}
 
 		local on_chunk = function(chunk)
-			self:render_chat("add_chat_by_chunks", { chunk = chunk })
+			self.render:add_chat_by_chunks(chunk)
 		end
 
 		local before_request = function()
@@ -234,16 +179,16 @@ function Float:configure()
 		end
 
 		local on_request_start = function()
-			self:render_chat("add_prompt", { prompt_lines = prompt.lines })
-			self:render_chat("add_prompt_summary", { prompt_message = prompt.message })
+			self.render:add_prompt(prompt.lines)
+			self.render:add_prompt_summary(prompt.message)
 		end
 
 		local on_chunks_complete = function(chunks)
-			self:render_chat("add_chat_summary", { chunks = chunks })
+			self.render:add_chat_summary(chunks)
 		end
 
 		local on_chunk_error = function(err)
-			self:render_chat("add_error", { err = err })
+			self.render:add_error(err)
 		end
 
 		self.request:send(
@@ -273,122 +218,6 @@ function Float:configure()
 		self.boxes.chat:map(mode, "<C-j>", function()
 			self.focus_prompt()
 		end, { noremap = true, silent = true })
-	end
-end
-
-function Float:render_chat(action, o)
-	if action == "newline" then
-		if not o then
-			o = {
-				new_lines = 1,
-			}
-		end
-		o.new_lines = o.new_lines or 1
-		for _ = 1, o.new_lines do
-			self._.chat.line_nr = self._.chat.line_nr + 1
-			self._.chat.line = ""
-			self.chat_set_lines({ self._.chat.line, self._.chat.line })
-			self.chat_set_cursor(self._.chat.line_nr + 1)
-		end
-	end
-
-	if action == "add_chat_by_chunks" then
-		if not o.chunk then
-			return
-		end
-		local append = function(chunk)
-			self._.chat.line = self._.chat.line .. chunk
-			self.chat_set_lines({ self._.chat.line })
-			self.chat_set_cursor(self._.chat.line_nr + 1)
-		end
-		if string.match(o.chunk, "\n") then
-			for chunk in o.chunk:gmatch(".") do
-				if string.match(chunk, "\n") then
-					self.insert_chat_line()
-					self:render_chat("newline")
-				else
-					append(chunk)
-				end
-			end
-		else
-			append(o.chunk)
-		end
-	end
-
-	if action == "add_prompt" then
-		if not o.prompt_lines then
-			return
-		end
-		self.chat_set_cursor(self._.chat.line_nr + 1)
-		self.message_source("prompt")
-		for _, line in ipairs(o.prompt_lines) do
-			self.chat_set_lines({ line }, true)
-		end
-	end
-
-	if action == "add_prompt_summary" then
-		if not o.prompt_message then
-			return
-		end
-		local on_tokens = function(tokens)
-			tokens = tokens or 0
-			self._.tokens.user = tokens
-			self._.tokens.total = self._.tokens.total + self._.tokens.user
-			self:render_chat("newline")
-			self.chat_token_summary(self._.tokens.user)
-			History:add_prompt(o.prompt_message, self._.tokens)
-		end
-		utils.get_tokens(o.prompt_message, on_tokens)
-		vim.cmd("silent! undojoin")
-		self.message_source("chat")
-	end
-
-	if action == "add_chat_summary" then
-		if not o.chunks then
-			return
-		end
-		self.insert_chat_line()
-		Events.pub("hook:request:complete", self._.chat.lines)
-		Log.trace(string.format("on_complete: chunks: %s", vim.inspect(o.chunks)))
-		local on_tokens = function(tokens)
-			tokens = tokens or 0
-			self._.tokens.assistant = tokens
-			self._.tokens.total = self._.tokens.total + self._.tokens.assistant
-			self:render_chat("newline", { new_lines = 2 })
-			self.chat_token_summary(self._.tokens.assistant)
-			History:add_chat(table.concat(o.chunks, ""), self._.tokens)
-		end
-		utils.get_tokens(o.chunks, on_tokens)
-		vim.cmd("silent! undojoin")
-	end
-
-	if action == "add_error" then
-		if not o.err then
-			return
-		end
-		local message = o.err and o.err.error and o.err.error.message
-			or type(o.err) == "string" and o.err
-			or "Unknown error"
-		local preamble = { message, "" }
-		self.chat_set_lines(preamble, true)
-		Log.trace(
-			string.format(
-				"adding error highlight to chat buffer: %s, current_chat_line: %s",
-				self._.chat.bufnr,
-				self._.chat.line_nr
-			)
-		)
-		for i = 0, #preamble do
-			vim.api.nvim_buf_add_highlight(
-				self._.chat.bufnr,
-				-1,
-				"ErrorMsg",
-				self._.chat.line_nr - #preamble + i,
-				0,
-				-1
-			)
-		end
-		self.chat_token_summary()
 	end
 end
 
