@@ -49,6 +49,8 @@ function History:compose_entries(request)
 		self:reset()
 		Log.debug("Resetting history")
 	end
+	--  TODO: 2023-10-06 - When reloading a history, don't recompose entries
+	--  unless a new message has been added
 	if #self.current.messages > 0 then
 		Log.debug("Composing history entries for telescope picker")
 		request:compose_entries(self.current, on_complete)
