@@ -42,10 +42,11 @@ function Float:init()
 		self.set_winids()
 	end
 	self.set_winids = function()
+		Log.trace("Setting winids and bufnrs for mounted layout")
 		self._.chat.winid = self.layout._.box.box[1].component.winid
 		self._.prompt_winid = self.layout._.box.box[2].component.winid
+		Log.debug("Updating winids for renderer")
 		self.render:set_winid(self._.chat.winid)
-		Log.trace("Setting winids and bufnrs for mounted layout")
 		Log.trace(string.format("chat.winid: %s", self._.chat.winid))
 		Log.trace(string.format("prompt_winid: %s", self._.prompt_winid))
 	end
