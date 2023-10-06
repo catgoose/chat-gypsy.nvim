@@ -221,33 +221,11 @@ function Float:configure()
 			return
 		end
 		local prompt_message = table.concat(prompt_lines, "\n")
-		local function newln(n)
-			n = n or 1
-			for _ = 1, n do
-				self._.chat.line_nr = self._.chat.line_nr + 1
-				self._.chat.line = ""
-				self.chat_set_lines({ self._.chat.line, self._.chat.line })
-				self.chat_set_cursor(self._.chat.line_nr + 1)
-			end
+		local newln = function(n)
+			self:render_chat("newline", { new_lines = n })
 		end
 		local on_chunk = function(chunk)
-			local append = function(chk)
-				self._.chat.line = self._.chat.line .. chk
-				self.chat_set_lines({ self._.chat.line })
-				self.chat_set_cursor(self._.chat.line_nr + 1)
-			end
-			if string.match(chunk, "\n") then
-				for _chunk in chunk:gmatch(".") do
-					if string.match(_chunk, "\n") then
-						self.insert_chat_line()
-						newln()
-					else
-						append(_chunk)
-					end
-				end
-			else
-				append(chunk)
-			end
+			self:render_chat("add_chat_by_chunks", { chunk = chunk })
 		end
 
 		local before_request = function()
@@ -255,22 +233,7 @@ function Float:configure()
 		end
 
 		local on_request_start = function()
-			self.chat_set_cursor(self._.chat.line_nr + 1)
-			self.message_source("prompt")
-			for _, line in ipairs(prompt_lines) do
-				self.chat_set_lines({ line }, true)
-			end
-			local on_tokens = function(tokens)
-				tokens = tokens or 0
-				self._.tokens.user = tokens
-				self._.tokens.total = self._.tokens.total + self._.tokens.user
-				newln()
-				self.chat_token_summary(self._.tokens.user)
-				History:add_prompt(prompt_message, self._.tokens)
-			end
-			utils.get_tokens(prompt_message, on_tokens)
-			vim.cmd("silent! undojoin")
-			self.message_source("chat")
+			self:render_chat("add_prompt", { prompt_lines = prompt_lines, prompt_message = prompt_message })
 		end
 
 		local on_chunks_complete = function(chunks)
@@ -340,6 +303,66 @@ function Float:configure()
 		self.boxes.chat:map(mode, "<C-j>", function()
 			self.focus_prompt()
 		end, { noremap = true, silent = true })
+	end
+end
+
+function Float:render_chat(action, o)
+	if action == "newline" then
+		if not o then
+			o = {
+				new_lines = 1,
+			}
+		end
+		o.new_lines = o.new_lines or 1
+		for _ = 1, o.new_lines do
+			self._.chat.line_nr = self._.chat.line_nr + 1
+			self._.chat.line = ""
+			self.chat_set_lines({ self._.chat.line, self._.chat.line })
+			self.chat_set_cursor(self._.chat.line_nr + 1)
+		end
+	end
+	if action == "add_chat_by_chunks" then
+		if not o.chunk then
+			return
+		end
+		local append = function(chunk)
+			self._.chat.line = self._.chat.line .. chunk
+			self.chat_set_lines({ self._.chat.line })
+			self.chat_set_cursor(self._.chat.line_nr + 1)
+		end
+		if string.match(o.chunk, "\n") then
+			for chunk in o.chunk:gmatch(".") do
+				if string.match(chunk, "\n") then
+					self.insert_chat_line()
+					self:render_chat("newline")
+				else
+					append(chunk)
+				end
+			end
+		else
+			append(o.chunk)
+		end
+	end
+	if action == "add_prompt" then
+		if not o.prompt_message or not o.prompt_lines then
+			return
+		end
+		self.chat_set_cursor(self._.chat.line_nr + 1)
+		self.message_source("prompt")
+		for _, line in ipairs(o.prompt_lines) do
+			self.chat_set_lines({ line }, true)
+		end
+		local on_tokens = function(tokens)
+			tokens = tokens or 0
+			self._.tokens.user = tokens
+			self._.tokens.total = self._.tokens.total + self._.tokens.user
+			self:render_chat("newline")
+			self.chat_token_summary(self._.tokens.user)
+			History:add_prompt(o.prompt_message, self._.tokens)
+		end
+		utils.get_tokens(o.prompt_message, on_tokens)
+		vim.cmd("silent! undojoin")
+		self.message_source("chat")
 	end
 end
 
