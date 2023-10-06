@@ -9,9 +9,8 @@ local ev = require("nui.utils.autocmd").event
 
 local state = {
 	hidden = false,
-	focused_win = "prompt",
 	mounted = false,
-	type = "float",
+	focused_win = "prompt",
 	chat = {
 		bufnr = 0,
 		winid = 0,
@@ -36,6 +35,8 @@ function Float:init()
 	self.init_state = function()
 		self._ = utils.deepcopy(state)
 		self.set_ids()
+		--  BUG: 2023-10-06 - If ui is hidden, the cursor is not set to the last
+		--  line when it shown again
 		if not self.render then
 			self.render = require("chat-gypsy.chat_render"):new(self._.chat.winid, self._.chat.bufnr)
 		end
@@ -98,7 +99,6 @@ function Float:init()
 		self._.hidden = false
 		self.set_ids()
 		self.focus_last_win()
-		-- self.render:chat_set_cursor(self._.chat.line_nr)
 		self.render:set_cursor_to_line_nr()
 	end
 	self:actions()
@@ -139,7 +139,7 @@ function Float:configure()
 		ev.TextChangedI,
 		ev.TextChanged,
 	}, function(e)
-		if self._.type == "float" then
+		if self.ui_opts.placement == "center" then
 			local n_lines = vim.api.nvim_buf_line_count(e.buf)
 			local float = opts.ui.layout.float
 			n_lines = n_lines < float.prompt_max_lines and n_lines or float.prompt_max_lines
