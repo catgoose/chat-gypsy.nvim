@@ -39,6 +39,7 @@ function ChatRender:init()
 			end
 		end
 	end
+
 	self.token_summary = function(tokens)
 		local model_config = models.get_config(opts.openai_params.model)
 		local tokens_display = string.format(
@@ -56,6 +57,7 @@ function ChatRender:init()
 		self.set_cursor(self._.line_nr + #lines)
 		self._.line_nr = self._.line_nr + #lines
 	end
+
 	self.insert_line = function()
 		table.insert(self._.lines, self._.line)
 	end
