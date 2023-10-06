@@ -220,10 +220,11 @@ function Float:configure()
 		if prompt_lines[1] == "" and #prompt_lines == 1 then
 			return
 		end
-		local prompt_message = table.concat(prompt_lines, "\n")
-		local newln = function(n)
-			self:render_chat("newline", { new_lines = n })
-		end
+		local prompt = {
+			lines = prompt_lines,
+			message = table.concat(prompt_lines, "\n"),
+		}
+
 		local on_chunk = function(chunk)
 			self:render_chat("add_chat_by_chunks", { chunk = chunk })
 		end
@@ -233,51 +234,20 @@ function Float:configure()
 		end
 
 		local on_request_start = function()
-			self:render_chat("add_prompt", { prompt_lines = prompt_lines, prompt_message = prompt_message })
+			self:render_chat("add_prompt", { prompt_lines = prompt.lines })
+			self:render_chat("add_prompt_summary", { prompt_message = prompt.message })
 		end
 
 		local on_chunks_complete = function(chunks)
-			self.insert_chat_line()
-			Events.pub("hook:request:complete", self._.chat.lines)
-			Log.trace(string.format("on_complete: chunks: %s", vim.inspect(chunks)))
-			local on_tokens = function(tokens)
-				tokens = tokens or 0
-				self._.tokens.assistant = tokens
-				self._.tokens.total = self._.tokens.total + self._.tokens.assistant
-				newln(2)
-				self.chat_token_summary(self._.tokens.assistant)
-				History:add_chat(table.concat(chunks, ""), self._.tokens)
-			end
-			utils.get_tokens(chunks, on_tokens)
-			vim.cmd("silent! undojoin")
+			self:render_chat("add_chat_summary", { chunks = chunks })
 		end
 
 		local on_chunk_error = function(err)
-			local message = err and err.error and err.error.message or type(err) == "string" and err or "Unknown error"
-			local preamble = { message, "" }
-			self.chat_set_lines(preamble, true)
-			Log.trace(
-				string.format(
-					"adding error highlight to chat buffer: %s, current_chat_line: %s",
-					self._.chat.bufnr,
-					self._.chat.line_nr
-				)
-			)
-			for i = 0, #preamble do
-				vim.api.nvim_buf_add_highlight(
-					self._.chat.bufnr,
-					-1,
-					"ErrorMsg",
-					self._.chat.line_nr - #preamble + i,
-					0,
-					-1
-				)
-			end
-			self.chat_token_summary()
+			self:render_chat("add_error", { err = err })
 		end
 
 		self.request:send(
-			prompt_message,
+			prompt.message,
 			before_request,
 			on_request_start,
 			on_chunk,
@@ -321,6 +291,7 @@ function Float:render_chat(action, o)
 			self.chat_set_cursor(self._.chat.line_nr + 1)
 		end
 	end
+
 	if action == "add_chat_by_chunks" then
 		if not o.chunk then
 			return
@@ -343,14 +314,21 @@ function Float:render_chat(action, o)
 			append(o.chunk)
 		end
 	end
+
 	if action == "add_prompt" then
-		if not o.prompt_message or not o.prompt_lines then
+		if not o.prompt_lines then
 			return
 		end
 		self.chat_set_cursor(self._.chat.line_nr + 1)
 		self.message_source("prompt")
 		for _, line in ipairs(o.prompt_lines) do
 			self.chat_set_lines({ line }, true)
+		end
+	end
+
+	if action == "add_prompt_summary" then
+		if not o.prompt_message then
+			return
 		end
 		local on_tokens = function(tokens)
 			tokens = tokens or 0
@@ -363,6 +341,54 @@ function Float:render_chat(action, o)
 		utils.get_tokens(o.prompt_message, on_tokens)
 		vim.cmd("silent! undojoin")
 		self.message_source("chat")
+	end
+
+	if action == "add_chat_summary" then
+		if not o.chunks then
+			return
+		end
+		self.insert_chat_line()
+		Events.pub("hook:request:complete", self._.chat.lines)
+		Log.trace(string.format("on_complete: chunks: %s", vim.inspect(o.chunks)))
+		local on_tokens = function(tokens)
+			tokens = tokens or 0
+			self._.tokens.assistant = tokens
+			self._.tokens.total = self._.tokens.total + self._.tokens.assistant
+			self:render_chat("newline", { new_lines = 2 })
+			self.chat_token_summary(self._.tokens.assistant)
+			History:add_chat(table.concat(o.chunks, ""), self._.tokens)
+		end
+		utils.get_tokens(o.chunks, on_tokens)
+		vim.cmd("silent! undojoin")
+	end
+
+	if action == "add_error" then
+		if not o.err then
+			return
+		end
+		local message = o.err and o.err.error and o.err.error.message
+			or type(o.err) == "string" and o.err
+			or "Unknown error"
+		local preamble = { message, "" }
+		self.chat_set_lines(preamble, true)
+		Log.trace(
+			string.format(
+				"adding error highlight to chat buffer: %s, current_chat_line: %s",
+				self._.chat.bufnr,
+				self._.chat.line_nr
+			)
+		)
+		for i = 0, #preamble do
+			vim.api.nvim_buf_add_highlight(
+				self._.chat.bufnr,
+				-1,
+				"ErrorMsg",
+				self._.chat.line_nr - #preamble + i,
+				0,
+				-1
+			)
+		end
+		self.chat_token_summary()
 	end
 end
 
