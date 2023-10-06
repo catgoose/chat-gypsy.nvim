@@ -98,6 +98,10 @@ function ChatRender:set_winid(winid)
 	self._.win_width = vim.api.nvim_win_get_width(winid)
 end
 
+function ChatRender:set_bufnr(bufnr)
+	self._.bufnr = bufnr
+end
+
 function ChatRender:add_prompt(lines)
 	self.set_cursor(self._.line_nr + 1)
 	self.message_source("prompt")
