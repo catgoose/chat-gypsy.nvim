@@ -323,7 +323,7 @@ function Float:configure()
 		)
 	end
 
-	if plugin_cfg.dev and dev.prompt.enabled then
+	if plugin_cfg.dev and dev.prompt.enabled and not self.ui_opts.restore_history then
 		send_prompt(dev.prompt.message)
 	end
 
