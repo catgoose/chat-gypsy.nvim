@@ -49,8 +49,10 @@ function History:compose_entries(request)
 		self:reset()
 		Log.debug("Resetting history")
 	end
-	Log.debug("Composing history entries for telescope picker")
-	request:compose_entries(self.current, on_complete)
+	if #self.current.messages > 0 then
+		Log.debug("Composing history entries for telescope picker")
+		request:compose_entries(self.current, on_complete)
+	end
 end
 
 function History:save()
