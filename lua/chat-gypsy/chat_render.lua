@@ -14,6 +14,7 @@ function ChatRender:new(winid, bufnr)
 	self._ = {
 		winid = winid,
 		bufnr = bufnr,
+		win_width = 0,
 		tokens = {
 			user = 0,
 			assistant = 0,
@@ -23,7 +24,6 @@ function ChatRender:new(winid, bufnr)
 		lines = {},
 		line_nr = 0,
 	}
-	self._.win_width = vim.api.nvim_win_get_width(self._.winid)
 	self:init()
 	return self
 end
@@ -91,6 +91,11 @@ function ChatRender:init()
 			vim.api.nvim_win_set_cursor(self._.winid, { line, 0 })
 		end
 	end
+end
+
+function ChatRender:set_winid(winid)
+	self._.winid = winid
+	self._.win_width = vim.api.nvim_win_get_width(winid)
 end
 
 function ChatRender:add_prompt(lines)

@@ -31,26 +31,23 @@ setmetatable(Float, {
 function Float:init()
 	self._ = {}
 	self.request = require("chat-gypsy.request"):new()
+	self.render = require("chat-gypsy.chat_render"):new(self._.chat.winid, self._.chat.bufnr)
 
 	self.init_state = function()
 		self._ = utils.deepcopy(state)
-		self.set_ids()
-		--  BUG: 2023-10-06 - If ui is hidden, the cursor is not set to the last
-		--  line when it shown again
-		if not self.render then
-			self.render = require("chat-gypsy.chat_render"):new(self._.chat.winid, self._.chat.bufnr)
-		end
-	end
-	self.set_ids = function()
-		self._.chat.winid = self.layout._.box.box[1].component.winid
-		self._.prompt_winid = self.layout._.box.box[2].component.winid
 		self._.chat.bufnr = self.layout._.box.box[1].component.bufnr
 		self._.prompt.bufnr = self.layout._.box.box[2].component.bufnr
+		Log.trace(string.format("chat_bufnr: %s", self._.chat.bufnr))
+		Log.trace(string.format("prompt_bufnr: %s", self._.prompt.bufnr))
+		self.set_winids()
+	end
+	self.set_winids = function()
+		self._.chat.winid = self.layout._.box.box[1].component.winid
+		self._.prompt_winid = self.layout._.box.box[2].component.winid
+		self.render:set_winid(self._.chat.winid)
 		Log.trace("Setting winids and bufnrs for mounted layout")
 		Log.trace(string.format("chat.winid: %s", self._.chat.winid))
 		Log.trace(string.format("prompt_winid: %s", self._.prompt_winid))
-		Log.trace(string.format("chat_bufnr: %s", self._.chat.bufnr))
-		Log.trace(string.format("prompt_bufnr: %s", self._.prompt.bufnr))
 	end
 
 	self.focus_chat = function()
@@ -97,7 +94,7 @@ function Float:init()
 	self.show = function()
 		self.layout:show()
 		self._.hidden = false
-		self.set_ids()
+		self.set_winids()
 		self.focus_last_win()
 		self.render:set_cursor_to_line_nr()
 	end
