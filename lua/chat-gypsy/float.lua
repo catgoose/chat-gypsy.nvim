@@ -12,22 +12,13 @@ local state = {
 	focused_win = "prompt",
 	mounted = false,
 	type = "float",
-	prompt = {
-		bufnr = 0,
-		winid = 0,
-	},
 	chat = {
 		bufnr = 0,
 		winid = 0,
-		win_width = 0,
-		line = "",
-		lines = {},
-		line_nr = 0,
 	},
-	tokens = {
-		user = 0,
-		assistant = 0,
-		total = 0,
+	prompt = {
+		bufnr = 0,
+		winid = 0,
 	},
 }
 
@@ -44,9 +35,10 @@ function Float:init()
 
 	self.init_state = function()
 		self._ = utils.deepcopy(state)
-		self.render = require("chat-gypsy.chat_render"):new(self._)
 		self.set_ids()
-		self._.chat.win_width = vim.api.nvim_win_get_width(self._.chat.winid)
+		if not self.render then
+			self.render = require("chat-gypsy.chat_render"):new(self._.chat.winid, self._.chat.bufnr)
+		end
 	end
 	self.set_ids = function()
 		self._.chat.winid = self.layout._.box.box[1].component.winid
@@ -106,7 +98,8 @@ function Float:init()
 		self._.hidden = false
 		self.set_ids()
 		self.focus_last_win()
-		self.render:chat_set_cursor(self._.chat.line_nr)
+		-- self.render:chat_set_cursor(self._.chat.line_nr)
+		self.render:set_cursor_to_line_nr()
 	end
 	self:actions()
 end
@@ -171,7 +164,7 @@ function Float:configure()
 		}
 
 		local on_chunk = function(chunk)
-			self.render:add_chat_by_chunks(chunk)
+			self.render:add_lines_by_chunks(chunk)
 		end
 
 		local before_request = function()
