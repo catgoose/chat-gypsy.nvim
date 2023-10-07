@@ -157,10 +157,6 @@ function Float:configure()
 			message = table.concat(prompt_lines, "\n"),
 		}
 
-		local on_chunk = function(chunk)
-			self.render:add_lines_by_chunks(chunk)
-		end
-
 		local before_request = function()
 			vim.api.nvim_buf_set_lines(self._.prompt.bufnr, 0, -1, false, {})
 		end
@@ -168,6 +164,10 @@ function Float:configure()
 		local on_request_start = function()
 			self.render:add_prompt(prompt.lines)
 			self.render:add_prompt_summary(prompt.message)
+		end
+
+		local on_chunk = function(chunk)
+			self.render:add_lines_by_chunks(chunk)
 		end
 
 		local on_chunks_complete = function(chunks)
