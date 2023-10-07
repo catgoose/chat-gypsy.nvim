@@ -34,6 +34,12 @@ function ChatRender:new(cfg)
 	return self
 end
 
+function ChatRender:reset()
+	self._.line = ""
+	self._.lines = {}
+	self._.line_nr = 0
+end
+
 function ChatRender:init()
 	self.set_lines = function(lines, new_lines)
 		new_lines = new_lines or false
@@ -69,13 +75,10 @@ function ChatRender:init()
 	end
 
 	self.message_source = function(type)
+		if not type or not vim.tbl_contains({ "prompt", "chat" }, type) then
+			return
+		end
 		local model_config = models.get_config(opts.openai_params.model)
-		if not type then
-			return
-		end
-		if not vim.tbl_contains({ "prompt", "chat" }, type) then
-			return
-		end
 		local source = type == "prompt" and "You" or model_config.model
 		local lines = { string.format("%s (%s):", source, os.date("%H:%M")), "", "" }
 		self.set_lines(lines, true)
@@ -183,15 +186,21 @@ function ChatRender:set_cursor_to_line_nr()
 	self.set_cursor(self._.line_nr)
 end
 
-function ChatRender:from_history(bufnr, file_path)
-	vim.api.nvim_buf_set_option(bufnr, "filetype", "markdown")
+function ChatRender:from_history(file_path)
 	local contents = utils.decode_json_from_path(file_path)
-	for _, message_tbls in pairs(contents.messages) do
-		vim.api.nvim_buf_set_lines(bufnr, -1, -1, false, { message_tbls.role, "" })
-		for line in message_tbls.message:gmatch("[^\n]+") do
-			vim.api.nvim_buf_set_lines(bufnr, -1, -1, false, { line })
+	for _, tbl in pairs(contents.messages) do
+		if tbl.role == "user" then
+			self:add_prompt({ tbl.message })
+			-- self:add_prompt_summary(tbl.message)
+			vim.print(tbl.message)
+			-- vim.print(self._.bufnr)
 		end
-		vim.api.nvim_buf_set_lines(bufnr, -1, -1, false, { "" })
+		-- self:add_prompt({ tbl.messages })
+		-- vim.api.nvim_buf_set_lines(bufnr, -1, -1, false, { message_tbls.role, "" })
+		-- for line in message_tbls.message:gmatch("[^\n]+") do
+		-- 	vim.api.nvim_buf_set_lines(bufnr, -1, -1, false, { line })
+		-- end
+		-- vim.api.nvim_buf_set_lines(bufnr, -1, -1, false, { "" })
 	end
 end
 
