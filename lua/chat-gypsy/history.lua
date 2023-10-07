@@ -40,19 +40,16 @@ end
 function History:compose_entries(request)
 	local on_complete = function()
 		self:save()
-		Log.debug("Saving history")
 		--  BUG: 2023-10-05 - Sending a history to compose entries while another
 		--  history composition is finishing will result in the history being reset
 		--  by the on_complete of the previous request which causes the history to
 		--  be reset prematurely
 		--  FIX: 2023-10-05 - Stop storing history as state, use sqlite instead
 		self:reset()
-		Log.debug("Resetting history")
 	end
 	--  TODO: 2023-10-06 - When reloading a history, don't recompose entries
 	--  unless a new message has been added
 	if #self.current.messages > 0 then
-		Log.debug("Composing history entries for telescope picker")
 		request:compose_entries(self.current, on_complete)
 	end
 end
