@@ -2,7 +2,7 @@ local Log = require("chat-gypsy").Log
 local History = require("chat-gypsy").History
 local Config = require("chat-gypsy").Config
 local UI = require("chat-gypsy.ui")
-local plugin_cfg, dev, opts = Config.get("plugin_cfg"), Config.get("dev"), Config.get("opts")
+local plugin_opts, dev, opts = Config.get("plugin_opts"), Config.get("dev"), Config.get("opts")
 local utils = require("chat-gypsy.utils")
 local nui_lo = require("nui.layout")
 local ev = require("nui.utils.autocmd").event
@@ -188,7 +188,7 @@ function Float:configure()
 		)
 	end
 
-	if plugin_cfg.dev and dev.prompt.enabled and not self.ui_opts.restore_history then
+	if plugin_opts.dev and dev.prompt.enabled and not self.ui_opts.restore_history then
 		send_prompt(dev.prompt.message)
 	end
 

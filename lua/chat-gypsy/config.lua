@@ -8,7 +8,7 @@ local utils = require("chat-gypsy.utils")
 
 local Config = {}
 
-local openai_models = {
+local _openai_models = {
 	{
 		model = "gpt-3.5-turbo",
 		max_tokens = 4097,
@@ -31,19 +31,19 @@ local openai_models = {
 	},
 }
 
-local symbols = {
+local _symbols = {
 	horiz = "━",
 	left_arrow = "◀",
 	right_arrow = "▶",
 }
 
-local plugin_cfg = {
+local _plugin_opts = {
 	name = "chat-gypsy",
 	log_level = default_log_level,
 	dev = false,
 }
 
-local opts = {
+local _opts = {
 	openai_key = os.getenv("OPENAI_API_KEY"),
 	openai_params = {
 		model = "gpt-3.5-turbo",
@@ -147,24 +147,24 @@ local opts = {
 	},
 }
 
-local dev = opts.dev_opts
+local _dev = _opts.dev_opts
 
 Config.get = function(cfg)
 	if cfg == "openai_models" then
-		return utils.deepcopy(openai_models)
+		return utils.deepcopy(_openai_models)
 	elseif cfg == "symbols" then
-		return utils.deepcopy(symbols)
-	elseif cfg == "plugin_cfg" then
-		return utils.deepcopy(plugin_cfg)
+		return utils.deepcopy(_symbols)
+	elseif cfg == "plugin_opts" then
+		return utils.deepcopy(_plugin_opts)
 	elseif cfg == "opts" then
-		return utils.deepcopy(opts)
+		return utils.deepcopy(_opts)
 	elseif cfg == "dev" then
-		return utils.deepcopy(dev)
+		return utils.deepcopy(_dev)
 	end
 end
 
 local init_event_hooks = function()
-	local types = opts.hooks
+	local types = _opts.hooks
 	for type, _ in pairs(types) do
 		for hook, _ in pairs(types[type]) do
 			Events.sub("hook:" .. type .. ":" .. hook, types[type][hook])
@@ -172,22 +172,22 @@ local init_event_hooks = function()
 	end
 end
 
-Config.init = function(_opts)
-	_opts = _opts or {}
-	_opts = vim.tbl_deep_extend("force", opts, _opts)
-	if not _opts.openai_key then
-		local err_msg = string.format("opts:new: invalid opts: missing openai_key\nopts: %s", vim.inspect(opts))
+Config.init = function(opts)
+	opts = opts or {}
+	opts = vim.tbl_deep_extend("force", _opts, opts)
+	if not opts.openai_key then
+		local err_msg = string.format("opts:new: invalid opts: missing openai_key\nopts: %s", vim.inspect(_opts))
 		error(err_msg)
 	end
-	plugin_cfg.log_level = vim.tbl_contains(log_levels, _opts.log_level) and _opts.log_level or default_log_level
-	opts = _opts
+	_plugin_opts.log_level = vim.tbl_contains(log_levels, opts.log_level) and opts.log_level or default_log_level
+	_opts = opts
 
-	plugin_cfg.dev = plugin_cfg.dev or opts.dev
-	if plugin_cfg.dev then
-		dev = vim.tbl_deep_extend("force", dev, opts.dev_opts)
-		dev.prompt.message = {}
-		for word in dev.prompt.user_prompt:gmatch("[^\n]+") do
-			table.insert(dev.prompt.message, word)
+	_plugin_opts.dev = _plugin_opts.dev or _opts.dev
+	if _plugin_opts.dev then
+		_dev = vim.tbl_deep_extend("force", _dev, _opts.dev_opts)
+		_dev.prompt.message = {}
+		for word in _dev.prompt.user_prompt:gmatch("[^\n]+") do
+			table.insert(_dev.prompt.message, word)
 		end
 	end
 

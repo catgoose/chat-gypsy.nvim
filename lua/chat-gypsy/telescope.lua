@@ -32,7 +32,7 @@ end
 
 --  TODO: 2023-10-02 - show entry display at the top of preview
 local define_preview = function(self, entry)
-	local render = require("chat-gypsy.chat_render"):new(self.state.winid, self.state.bufnr)
+	local render = require("chat-gypsy.chat_render"):new({ winid = self.state.winid, bufnr = self.state.bufnr })
 	render:from_history(self.state.bufnr, entry.file_path)
 end
 

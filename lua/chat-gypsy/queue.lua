@@ -1,11 +1,11 @@
 FuncQueue = {}
 
-function FuncQueue:new(config)
+function FuncQueue:new(cfg)
 	local instance = {}
 	setmetatable(instance, { __index = self })
-	config = config or {}
-	config.sequential = config.sequential or true
-	instance.sequential = config.sequential
+	cfg = cfg or {}
+	cfg.sequential = cfg.sequential or true
+	instance.sequential = cfg.sequential
 	instance.queue = {}
 	instance.isRunning = false
 	return instance

@@ -1,5 +1,3 @@
-local opts = require("chat-gypsy").Config.get("opts")
-
 local Session = {}
 Session.__index = Session
 

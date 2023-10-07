@@ -9,12 +9,18 @@ local utils = require("chat-gypsy.utils")
 local ChatRender = {}
 ChatRender.__index = ChatRender
 
-function ChatRender:new(winid, bufnr)
+function ChatRender:new(cfg)
+	cfg = cfg or {
+		winid = nil,
+		bufnr = nil,
+	}
+	cfg.winid = cfg.winid or nil
+	cfg.bufnr = cfg.bufnr or nil
 	setmetatable(self, ChatRender)
 	self._ = {
-		winid = winid,
-		bufnr = bufnr,
-		win_width = 0,
+		winid = cfg.winid,
+		bufnr = cfg.bufnr,
+		win_width = cfg.winid and vim.api.nvim_win_get_width(cfg.winid) or 0,
 		tokens = {
 			user = 0,
 			assistant = 0,
