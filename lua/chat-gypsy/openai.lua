@@ -13,21 +13,12 @@ function OpenAI:new()
 	return self
 end
 
-function OpenAI:send(
-	lines,
-	before_send,
-	before_request_start,
-	on_stream_start,
-	on_chunk,
-	on_chunks_complete,
-	on_chunk_error
-)
+function OpenAI:send(lines, on_stream_start, on_chunk, on_chunks_complete, on_chunk_error)
 	local message = table.concat(lines, "\n")
 	Log.trace(string.format("adding request to queue: \nmessage: %s", message))
-	before_send()
 	local action = function(queue_next)
-		local before_start = function()
-			before_request_start()
+		local _on_stream_start = function()
+			on_stream_start()
 			History:add_openai_params(self.openai_params)
 		end
 		local on_complete = function(complete_chunks)
@@ -42,7 +33,7 @@ function OpenAI:send(
 			queue_next()
 		end
 
-		self:query(message, before_start, on_stream_start, on_chunk, on_complete, on_error)
+		self:query(message, _on_stream_start, on_chunk, on_complete, on_error)
 	end
 
 	self.queue:add(action)

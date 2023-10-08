@@ -152,18 +152,12 @@ function Float:configure()
 		if lines[1] == "" and #lines == 1 then
 			return
 		end
+		vim.api.nvim_buf_set_lines(self._.prompt.bufnr, 0, -1, false, {})
 
-		local before_send = function()
-			vim.api.nvim_buf_set_lines(self._.prompt.bufnr, 0, -1, false, {})
-		end
-
-		local before_request_start = function()
+		local on_stream_start = function()
 			self.render:from_agent("user")
 			self.render:lines(lines)
 			self.render:summarize_prompt(lines)
-		end
-
-		local on_stream_start = function()
 			self.render:from_agent("assistant")
 		end
 
@@ -180,15 +174,7 @@ function Float:configure()
 			self.render:add_error(err)
 		end
 
-		self.request:send(
-			lines,
-			before_send,
-			before_request_start,
-			on_stream_start,
-			on_chunk,
-			on_chunks_complete,
-			on_chunk_error
-		)
+		self.request:send(lines, on_stream_start, on_chunk, on_chunks_complete, on_chunk_error)
 	end
 
 	if plugin_opts.dev and dev.prompt.enabled and not self.ui_opts.restore_history then

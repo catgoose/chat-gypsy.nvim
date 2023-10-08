@@ -69,13 +69,12 @@ function Request:init()
 		on_error(self.error_chunks)
 	end
 
-	self.completions = function(before_start, on_start, on_stream_start, on_chunk, on_complete, on_error)
-		before_start()
+	self.completions = function(before_request, on_stream_start, on_chunk, on_complete, on_error)
 		local strategy = nil
 		if opts.dev_opts.request.throw_error then
 			on_error(opts.dev_opts.request.error)
 		else
-			on_start()
+			before_request()
 			local stream_started = false
 			local handler = curl.post({
 				url = "https://api.openai.com/v1/chat/completions",
@@ -189,17 +188,10 @@ function Request:shutdown_handlers()
 end
 
 ---@diagnostic disable-next-line: duplicate-set-field
-function Request:query(
-	message,
-	before_start,
-	on_stream_start,
-	on_response_chunk,
-	on_response_complete,
-	on_response_error
-)
+function Request:query(message, on_stream_start, on_response_chunk, on_response_complete, on_response_error)
 	self.on_user_prompt(message)
 
-	local on_start = function()
+	local before_request = function()
 		Log.trace("query: on_start")
 		Events.pub("hook:request:start", message)
 		self.reset()
@@ -231,7 +223,7 @@ function Request:query(
 		end
 	end
 
-	self.completions(before_start, on_start, on_stream_start, on_chunk, on_complete, on_error)
+	self.completions(before_request, on_stream_start, on_chunk, on_complete, on_error)
 end
 
 return Request
