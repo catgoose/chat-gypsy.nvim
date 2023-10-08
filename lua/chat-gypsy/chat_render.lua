@@ -1,6 +1,4 @@
-local Log = require("chat-gypsy").Log
 local History = require("chat-gypsy").History
-local Events = require("chat-gypsy").Events
 local Config = require("chat-gypsy").Config
 local models = require("chat-gypsy.models")
 local opts, symbols = Config.get("opts"), Config.get("symbols")
@@ -60,21 +58,18 @@ function ChatRender:init()
 			model_config.max_tokens,
 			symbols.right_arrow
 		)
-		--  TODO: 2023-09-24 - add highlighting
 		local summary = symbols.horiz:rep(self._.win_width - #tokens_display + 4) .. tokens_display
 		local lines = { summary }
 		self.set_lines(lines)
 	end
 
-	--  QUESTION: 2023-10-08 - what is this for?
-	self.insert_line = function()
-		table.insert(self._.lines, self._.line)
-	end
-
 	self.identity_for = function(agent)
 		local model_config = models.get_config(opts.openai_params.model)
-		local source = agent == "user" and "You" or agent == "assistant" and model_config.model
+		local source = agent == "user" and "You"
+			or agent == "assistant" and model_config.model
+			or agent == "error" and "Error"
 		local lines = { string.format("%s (%s):", source, os.date("%H:%M")) }
+		--  TODO: 2023-10-08 - add highlighting for each agent type
 		self.set_lines(lines)
 	end
 
@@ -104,8 +99,8 @@ function ChatRender:set_bufnr(bufnr)
 	self._.bufnr = bufnr
 end
 
-function ChatRender:from_agent(identity)
-	if not identity or not vim.tbl_contains({ "user", "assistant" }, identity) then
+function ChatRender:agent(identity)
+	if not identity or not vim.tbl_contains({ "user", "assistant", "error" }, identity) then
 		return
 	end
 	self.identity_for(identity)
@@ -117,31 +112,20 @@ function ChatRender:lines(lines)
 	self:newline()
 end
 
-function ChatRender:summarize_prompt(lines)
-	local message = table.concat(lines, "\n")
+function ChatRender:calculate_tokens(agent, data)
+	if not vim.tbl_contains({ "user", "assistant" }, agent) then
+		return
+	end
+	local delimin_char = agent == "user" and "\n" or agent == "assistant" and "" or nil
+	local message = table.concat(data, delimin_char)
 	local on_tokens = function(tokens)
 		tokens = tokens or 0
-		self._.tokens.user = tokens
-		self._.tokens.total = self._.tokens.total + self._.tokens.user
-		self.token_summary(self._.tokens.user)
-		History:add_chat(message, self._.tokens)
+		self._.tokens[agent] = tokens
+		self._.tokens.total = self._.tokens.total + self._.tokens[agent]
+		self.token_summary(self._.tokens[agent])
+		History:add_message(message, agent, self._.tokens)
 	end
 	utils.get_tokens(message, on_tokens)
-	vim.cmd("silent! undojoin")
-	self:newline()
-end
-
-function ChatRender:summarize_chat(chunks)
-	Events.pub("hook:request:complete", self._.lines)
-	Log.trace(string.format("on_complete: chunks: %s", vim.inspect(chunks)))
-	local on_tokens = function(tokens)
-		tokens = tokens or 0
-		self._.tokens.assistant = tokens
-		self._.tokens.total = self._.tokens.total + self._.tokens.assistant
-		self.token_summary(self._.tokens.assistant)
-		History:add_chat(table.concat(chunks, ""), self._.tokens)
-	end
-	utils.get_tokens(chunks, on_tokens)
 	vim.cmd("silent! undojoin")
 	self:newline()
 end
@@ -155,7 +139,7 @@ function ChatRender:add_lines_by_chunks(chunk)
 	if string.match(chunk, "\n") then
 		for _chunk in chunk:gmatch(".") do
 			if string.match(_chunk, "\n") then
-				self.insert_line()
+				table.insert(self._.lines, self._.line)
 				self:newline()
 			else
 				append(_chunk)
@@ -171,6 +155,7 @@ function ChatRender:add_error(err)
 	local message_lines = { message }
 	self.set_lines(message_lines)
 	vim.api.nvim_buf_add_highlight(self._.bufnr, -1, "ErrorMsg", self._.row - #message_lines, 0, -1)
+	self:newline()
 end
 
 function ChatRender:from_history(file_path)

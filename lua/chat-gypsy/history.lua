@@ -67,13 +67,13 @@ function History:reset()
 end
 
 function History:add_message(message, role, tokens)
-	tokens = utils.deepcopy(tokens)
 	if not role then
 		return
 	end
 	if not vim.tbl_contains({ "user", "assistant" }, role) then
 		return
 	end
+	tokens = utils.deepcopy(tokens)
 	Log.trace(
 		string.format(
 			[[Adding to history: message "%s" of role "%s" with tokens %s]],
@@ -99,16 +99,6 @@ function History:add_message(message, role, tokens)
 	)
 	self.current.updatedAt = os.time()
 	self:save()
-end
-
-function History:add_prompt(message, tokens)
-	local role = "user"
-	self:add_message(message, role, tokens)
-end
-
-function History:add_chat(message, tokens)
-	local role = "assistant"
-	self:add_message(message, role, tokens)
 end
 
 function History:add_openai_params(openai_params)

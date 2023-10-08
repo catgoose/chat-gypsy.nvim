@@ -155,10 +155,10 @@ function Float:configure()
 		vim.api.nvim_buf_set_lines(self._.prompt.bufnr, 0, -1, false, {})
 
 		local on_stream_start = function()
-			self.render:from_agent("user")
+			self.render:agent("user")
 			self.render:lines(lines)
-			self.render:summarize_prompt(lines)
-			self.render:from_agent("assistant")
+			self.render:calculate_tokens("user", lines)
+			self.render:agent("assistant")
 		end
 
 		local on_chunk = function(chunk)
@@ -167,10 +167,11 @@ function Float:configure()
 
 		local on_chunks_complete = function(chunks)
 			self.render:newline()
-			self.render:summarize_chat(chunks)
+			self.render:calculate_tokens("assistant", chunks)
 		end
 
 		local on_chunk_error = function(err)
+			self.render:agent("error")
 			self.render:add_error(err)
 		end
 
