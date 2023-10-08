@@ -10,9 +10,7 @@ local function build_ui(placement)
 		placement = "center"
 	end
 
-	local popup_base = vim.tbl_deep_extend("force", opts.ui.config, {
-		zindex = 50,
-	})
+	local popup_base = opts.ui.config
 	local prompt_config = vim.tbl_deep_extend("force", popup_base, {
 		buf_options = {
 			filetype = "prompt",
