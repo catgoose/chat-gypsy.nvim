@@ -82,6 +82,8 @@ function Float:init()
 		self.layout:unmount()
 		self.request:shutdown_handlers()
 		self._.instance = false
+		--  QUESTION: 2023-10-08 - How does this function if there was an
+		--  error?
 		History:compose_entries(self.request)
 	end
 	self.hide = function()
