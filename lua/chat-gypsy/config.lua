@@ -80,6 +80,7 @@ local _opts = {
 				winhighlight = "Normal:Normal,FloatBorder:FloatBorder",
 				wrap = true,
 				fillchars = "lastline: ",
+				number = true,
 			},
 		},
 		layout = {

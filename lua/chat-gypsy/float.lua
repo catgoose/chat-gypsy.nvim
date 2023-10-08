@@ -159,15 +159,12 @@ function Float:configure()
 
 		local before_request_start = function()
 			self.render:from_agent("user")
-			self.render:newline(3)
 			self.render:lines(lines)
-			self.render:newline(2)
 			self.render:summarize_prompt(lines)
 		end
 
 		local on_stream_start = function()
 			self.render:from_agent("assistant")
-			self.render:newline(3)
 		end
 
 		local on_chunk = function(chunk)
@@ -175,7 +172,7 @@ function Float:configure()
 		end
 
 		local on_chunks_complete = function(chunks)
-			self.render:newline(2)
+			self.render:newline()
 			self.render:summarize_chat(chunks)
 		end
 

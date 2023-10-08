@@ -28,7 +28,7 @@ function ChatRender:new(cfg)
 		},
 		line = "",
 		lines = {},
-		line_nr = 0,
+		row = 1,
 	}
 	self:init()
 	return self
@@ -37,13 +37,16 @@ end
 function ChatRender:reset()
 	self._.line = ""
 	self._.lines = {}
-	self._.line_nr = 0
+	self._.row = 1
 end
 
 function ChatRender:init()
 	self.set_lines = function(lines)
+		if type(lines) == "string" then
+			lines = { lines }
+		end
 		if self._.bufnr and vim.api.nvim_buf_is_valid(self._.bufnr) then
-			vim.api.nvim_buf_set_lines(self._.bufnr, self._.line_nr, self._.line_nr + 1, false, lines)
+			vim.api.nvim_buf_set_lines(self._.bufnr, self._.row - 1, -1, false, lines)
 		end
 	end
 
@@ -59,12 +62,11 @@ function ChatRender:init()
 		)
 		--  TODO: 2023-09-24 - add highlighting
 		local summary = symbols.horiz:rep(self._.win_width - #tokens_display + 4) .. tokens_display
-		local lines = { summary, "", "" }
+		local lines = { summary }
 		self.set_lines(lines)
-		self.set_cursor(self._.line_nr + #lines)
-		self._.line_nr = self._.line_nr + #lines
 	end
 
+	--  QUESTION: 2023-10-08 - what is this for?
 	self.insert_line = function()
 		table.insert(self._.lines, self._.line)
 	end
@@ -72,13 +74,12 @@ function ChatRender:init()
 	self.identity_for = function(agent)
 		local model_config = models.get_config(opts.openai_params.model)
 		local source = agent == "user" and "You" or agent == "assistant" and model_config.model
-		local lines = { string.format("%s (%s):", source, os.date("%H:%M")), "", "" }
+		local lines = { string.format("%s (%s):", source, os.date("%H:%M")) }
 		self.set_lines(lines)
 	end
 
 	self.set_cursor = function(line)
 		if self._.winid and vim.api.nvim_win_is_valid(self._.winid) then
-			line = line == 0 and 1 or line
 			vim.api.nvim_win_set_cursor(self._.winid, { line, 0 })
 		end
 	end
@@ -87,10 +88,10 @@ end
 function ChatRender:newline(new_lines)
 	new_lines = new_lines or 1
 	for _ = 1, new_lines do
-		self._.line_nr = self._.line_nr + 1
+		self._.row = self._.row + 1
 		self._.line = ""
-		self.set_lines({ self._.line, self._.line })
-		self.set_cursor(self._.line_nr + 1)
+		self.set_lines(self._.line)
+		self.set_cursor(self._.row)
 	end
 end
 
@@ -108,10 +109,12 @@ function ChatRender:from_agent(identity)
 		return
 	end
 	self.identity_for(identity)
+	self:newline()
 end
 
 function ChatRender:lines(lines)
 	self.set_lines(lines)
+	self:newline()
 end
 
 function ChatRender:summarize_prompt(lines)
@@ -125,13 +128,29 @@ function ChatRender:summarize_prompt(lines)
 	end
 	utils.get_tokens(message, on_tokens)
 	vim.cmd("silent! undojoin")
+	self:newline()
+end
+
+function ChatRender:summarize_chat(chunks)
+	Events.pub("hook:request:complete", self._.lines)
+	Log.trace(string.format("on_complete: chunks: %s", vim.inspect(chunks)))
+	local on_tokens = function(tokens)
+		tokens = tokens or 0
+		self._.tokens.assistant = tokens
+		self._.tokens.total = self._.tokens.total + self._.tokens.assistant
+		self.token_summary(self._.tokens.assistant)
+		History:add_chat(table.concat(chunks, ""), self._.tokens)
+	end
+	utils.get_tokens(chunks, on_tokens)
+	vim.cmd("silent! undojoin")
+	self:newline()
 end
 
 function ChatRender:add_lines_by_chunks(chunk)
 	local append = function(_chunk)
 		self._.line = self._.line .. _chunk
-		self.set_lines({ self._.line })
-		self.set_cursor(self._.line_nr + 1)
+		self.set_lines(self._.line)
+		self.set_cursor(self._.row)
 	end
 	if string.match(chunk, "\n") then
 		for _chunk in chunk:gmatch(".") do
@@ -147,33 +166,11 @@ function ChatRender:add_lines_by_chunks(chunk)
 	end
 end
 
-function ChatRender:summarize_chat(chunks)
-	self.insert_line()
-	Events.pub("hook:request:complete", self._.lines)
-	Log.trace(string.format("on_complete: chunks: %s", vim.inspect(chunks)))
-	local on_tokens = function(tokens)
-		tokens = tokens or 0
-		self._.tokens.assistant = tokens
-		self._.tokens.total = self._.tokens.total + self._.tokens.assistant
-		self.token_summary(self._.tokens.assistant)
-		History:add_chat(table.concat(chunks, ""), self._.tokens)
-	end
-	utils.get_tokens(chunks, on_tokens)
-	vim.cmd("silent! undojoin")
-end
-
 function ChatRender:add_error(err)
 	local message = err and err.error and err.error.message or type(err) == "string" and err or "Unknown error"
 	local message_lines = { message }
 	self.set_lines(message_lines)
-	Log.trace(
-		string.format("adding error highlight to chat buffer: %s, current_chat_line: %s", self._.bufnr, self._.line_nr)
-	)
-	vim.api.nvim_buf_add_highlight(self._.bufnr, -1, "ErrorMsg", self._.line_nr - #message_lines + 1, 0, -1)
-	self._.line_nr = self._.line_nr + #message_lines + 1
-	self.set_cursor(self._.line_nr)
-	--  TODO: 2023-10-08 - display error summary (hr symbol without tokens)
-	self:newline()
+	vim.api.nvim_buf_add_highlight(self._.bufnr, -1, "ErrorMsg", self._.row - #message_lines, 0, -1)
 end
 
 function ChatRender:from_history(file_path)
