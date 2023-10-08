@@ -135,14 +135,14 @@ function Float:configure()
 	}, function(e)
 		if self.ui_opts.placement == "center" then
 			local n_lines = vim.api.nvim_buf_line_count(e.buf)
-			local float = opts.ui.layout.float
-			n_lines = n_lines < float.prompt_max_lines and n_lines or float.prompt_max_lines
+			local center = opts.ui.layout.center
+			n_lines = n_lines < center.prompt_max_lines and n_lines or center.prompt_max_lines
 			self.layout:update(nui_lo.Box({
 				nui_lo.Box(self.boxes.chat, {
 					size = "100%",
 				}),
 				nui_lo.Box(self.boxes.prompt, {
-					size = n_lines + float.prompt_height - 1,
+					size = n_lines + center.prompt_height - 1,
 				}),
 			}, { dir = "col" }))
 		end
