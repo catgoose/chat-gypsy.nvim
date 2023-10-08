@@ -6,7 +6,7 @@ local pickers = require("telescope.pickers")
 local actions = require("telescope.actions")
 local action_state = require("telescope.actions.state")
 local previewers = require("telescope.previewers")
-local render = require("chat-gypsy.chat_render"):new()
+local render = require("chat-gypsy.chat_render"):new():set_move_cursor(false)
 
 local Telescope = {}
 
@@ -34,9 +34,8 @@ end
 --  TODO: 2023-10-02 - show entry display at the top of preview
 local define_preview = function(self, entry)
 	vim.api.nvim_buf_set_option(self.state.bufnr, "filetype", "markdown")
-	render:set_bufnr(self.state.bufnr)
-	render:set_winid(self.state.winid)
-	render:reset()
+	vim.api.nvim_win_set_option(self.state.winid, "wrap", true)
+	render:set_bufnr(self.state.bufnr):set_winid(self.state.winid):reset()
 	render:from_history(entry.file_path)
 end
 

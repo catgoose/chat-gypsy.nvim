@@ -24,10 +24,9 @@ function ChatRender:new(cfg)
 			assistant = 0,
 			total = 0,
 		},
-		line = "",
-		lines = {},
-		row = 1,
 	}
+	self.move_cursor = true
+	self:reset()
 	self:init()
 	return self
 end
@@ -36,6 +35,17 @@ function ChatRender:reset()
 	self._.line = ""
 	self._.lines = {}
 	self._.row = 1
+	return self
+end
+
+function ChatRender:set_move_cursor(state)
+	if state == true then
+		self.move_cursor = state
+	end
+	if state == false then
+		self.move_cursor = state
+	end
+	return self
 end
 
 function ChatRender:init()
@@ -44,7 +54,7 @@ function ChatRender:init()
 			lines = { lines }
 		end
 		if self._.bufnr and vim.api.nvim_buf_is_valid(self._.bufnr) then
-			vim.api.nvim_buf_set_lines(self._.bufnr, self._.row - 1, -1, false, lines)
+			vim.api.nvim_buf_set_lines(self._.bufnr, self._.row - #lines, -1, false, lines)
 		end
 	end
 
@@ -63,9 +73,10 @@ function ChatRender:init()
 		self.set_lines(lines)
 	end
 
-	self.identity_for = function(agent)
+	self.identity_for = function(agent, override)
 		local model_config = models.get_config(opts.openai_params.model)
-		local source = agent == "user" and "You"
+		local source = override and override
+			or agent == "user" and "You"
 			or agent == "assistant" and model_config.model
 			or agent == "error" and "Error"
 		local lines = { string.format("%s (%s):", source, os.date("%H:%M")) }
@@ -86,24 +97,29 @@ function ChatRender:newline(new_lines)
 		self._.row = self._.row + 1
 		self._.line = ""
 		self.set_lines(self._.line)
-		self.set_cursor(self._.row)
+		if self.move_cursor then
+			self.set_cursor(self._.row)
+		end
 	end
+	return self
 end
 
 function ChatRender:set_winid(winid)
 	self._.winid = winid
 	self._.win_width = vim.api.nvim_win_get_width(winid)
+	return self
 end
 
 function ChatRender:set_bufnr(bufnr)
 	self._.bufnr = bufnr
+	return self
 end
 
-function ChatRender:agent(identity)
+function ChatRender:agent(identity, override)
 	if not identity or not vim.tbl_contains({ "user", "assistant", "error" }, identity) then
 		return
 	end
-	self.identity_for(identity)
+	self.identity_for(identity, override)
 	self:newline()
 	return self
 end
@@ -164,19 +180,17 @@ end
 
 function ChatRender:from_history(file_path)
 	local contents = utils.decode_json_from_path(file_path)
-	for _, tbl in pairs(contents.messages) do
-		if tbl.role == "user" then
-			self:add_user({ tbl.message })
-			-- self:summarize_prompt(tbl.message)
-			vim.print(tbl.message)
-			-- vim.print(self._.bufnr)
+	local model = contents.openai_params.model
+	for _, messages in pairs(contents.messages) do
+		if messages.role == "user" then
+			self:agent(messages.role):newline(2)
+			self:lines(messages.message):newline()
 		end
-		-- self:add_user({ tbl.messages })
-		-- vim.api.nvim_buf_set_lines(bufnr, -1, -1, false, { message_tbls.role, "" })
-		-- for line in message_tbls.message:gmatch("[^\n]+") do
-		-- 	vim.api.nvim_buf_set_lines(bufnr, -1, -1, false, { line })
-		-- end
-		-- vim.api.nvim_buf_set_lines(bufnr, -1, -1, false, { "" })
+		if messages.role == "assistant" then
+			self:agent(messages.role, model):newline(2)
+			local message = utils.string_split(messages.message, "\n")
+			self:lines(message):newline()
+		end
 	end
 end
 
