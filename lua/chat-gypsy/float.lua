@@ -153,13 +153,21 @@ function Float:configure()
 			return
 		end
 
-		local before_request = function()
+		local before_send = function()
 			vim.api.nvim_buf_set_lines(self._.prompt.bufnr, 0, -1, false, {})
 		end
 
-		local on_request_start = function()
-			self.render:add_prompt(lines)
-			self.render:add_prompt_summary(lines)
+		local before_request_start = function()
+			self.render:from_agent("user")
+			self.render:newline(3)
+			self.render:lines(lines)
+			self.render:newline(2)
+			self.render:summarize_prompt(lines)
+		end
+
+		local on_stream_start = function()
+			self.render:from_agent("assistant")
+			self.render:newline(3)
 		end
 
 		local on_chunk = function(chunk)
@@ -167,14 +175,23 @@ function Float:configure()
 		end
 
 		local on_chunks_complete = function(chunks)
-			self.render:add_chat_summary(chunks)
+			self.render:newline(2)
+			self.render:summarize_chat(chunks)
 		end
 
 		local on_chunk_error = function(err)
 			self.render:add_error(err)
 		end
 
-		self.request:send(lines, before_request, on_request_start, on_chunk, on_chunks_complete, on_chunk_error)
+		self.request:send(
+			lines,
+			before_send,
+			before_request_start,
+			on_stream_start,
+			on_chunk,
+			on_chunks_complete,
+			on_chunk_error
+		)
 	end
 
 	if plugin_opts.dev and dev.prompt.enabled and not self.ui_opts.restore_history then

@@ -69,6 +69,61 @@ function Request:init()
 		on_error(self.error_chunks)
 	end
 
+	self.completions = function(before_start, on_start, on_stream_start, on_chunk, on_complete, on_error)
+		before_start()
+		local strategy = nil
+		if opts.dev_opts.request.throw_error then
+			on_error(opts.dev_opts.request.error)
+		else
+			on_start()
+			local stream_started = false
+			local handler = curl.post({
+				url = "https://api.openai.com/v1/chat/completions",
+				raw = { "--no-buffer" },
+				headers = {
+					content_type = "application/json",
+					Authorization = "Bearer " .. opts.openai_key,
+				},
+				body = vim.json.encode(self.openai_params),
+				stream = function(_, chunk)
+					if not stream_started then
+						vim.schedule(on_stream_start)
+						stream_started = true
+					end
+					if chunk and chunk ~= "" then
+						vim.schedule(function()
+							if not strategy then
+								if string.match(chunk, "data:") then
+									strategy = "data"
+								else
+									strategy = "error"
+								end
+							end
+							on_chunk(chunk, strategy)
+						end)
+					end
+				end,
+				on_error = on_error,
+			})
+			handler:after_success(function()
+				if #self.error_chunks > 0 then
+					local error = table.concat(self.error_chunks, "")
+					local ok, json = pcall(vim.json.decode, error)
+					if ok then
+						on_error(json)
+					else
+						on_error(self.error_chunks)
+					end
+				else
+					vim.schedule(function()
+						on_complete()
+					end)
+				end
+			end)
+			table.insert(self.handlers, handler)
+		end
+	end
+
 	function Request:compose_entries(current_history, on_complete)
 		local openai_params = utils.deepcopy(current_history.openai_params)
 		table.insert(openai_params.messages, {
@@ -120,55 +175,6 @@ function Request:init()
 		table.insert(self.handlers, handler)
 	end
 
-	self.completions = function(on_start, on_chunk, on_complete, on_error)
-		on_start()
-		local strategy = nil
-		if opts.dev_opts.request.throw_error then
-			on_error(opts.dev_opts.request.error)
-		else
-			local handler = curl.post({
-				url = "https://api.openai.com/v1/chat/completions",
-				raw = { "--no-buffer" },
-				headers = {
-					content_type = "application/json",
-					Authorization = "Bearer " .. opts.openai_key,
-				},
-				body = vim.json.encode(self.openai_params),
-				stream = function(_, chunk)
-					if chunk and chunk ~= "" then
-						vim.schedule(function()
-							if not strategy then
-								if string.match(chunk, "data:") then
-									strategy = "data"
-								else
-									strategy = "error"
-								end
-							end
-							on_chunk(chunk, strategy)
-						end)
-					end
-				end,
-				on_error = on_error,
-			})
-			handler:after_success(function()
-				if #self.error_chunks > 0 then
-					local error = table.concat(self.error_chunks, "")
-					local ok, json = pcall(vim.json.decode, error)
-					if ok then
-						on_error(json)
-					else
-						on_error(self.error_chunks)
-					end
-				else
-					vim.schedule(function()
-						on_complete()
-					end)
-				end
-			end)
-			table.insert(self.handlers, handler)
-		end
-	end
-
 	return self
 end
 
@@ -183,14 +189,20 @@ function Request:shutdown_handlers()
 end
 
 ---@diagnostic disable-next-line: duplicate-set-field
-function Request:query(message, on_response_start, on_response_chunk, on_response_complete, on_response_error)
+function Request:query(
+	message,
+	before_start,
+	on_stream_start,
+	on_response_chunk,
+	on_response_complete,
+	on_response_error
+)
 	self.on_user_prompt(message)
 
 	local on_start = function()
 		Log.trace("query: on_start")
 		Events.pub("hook:request:start", message)
 		self.reset()
-		on_response_start()
 	end
 
 	local on_complete = function()
@@ -219,7 +231,7 @@ function Request:query(message, on_response_start, on_response_chunk, on_respons
 		end
 	end
 
-	self.completions(on_start, on_chunk, on_complete, on_error)
+	self.completions(before_start, on_start, on_stream_start, on_chunk, on_complete, on_error)
 end
 
 return Request
