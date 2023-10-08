@@ -86,6 +86,7 @@ local opts = {
         winblend = 0,
         winhighlight = "Normal:Normal,FloatBorder:FloatBorder",
         wrap = true,
+        fillchars = "lastline: ",
       },
     },
     layout = {
