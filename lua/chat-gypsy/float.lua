@@ -148,22 +148,18 @@ function Float:configure()
 		end
 	end)
 
-	local send_prompt = function(prompt_lines)
-		if prompt_lines[1] == "" and #prompt_lines == 1 then
+	local send_prompt = function(lines)
+		if lines[1] == "" and #lines == 1 then
 			return
 		end
-		local prompt = {
-			lines = prompt_lines,
-			message = table.concat(prompt_lines, "\n"),
-		}
 
 		local before_request = function()
 			vim.api.nvim_buf_set_lines(self._.prompt.bufnr, 0, -1, false, {})
 		end
 
 		local on_request_start = function()
-			self.render:add_prompt(prompt.lines)
-			self.render:add_prompt_summary(prompt.message)
+			self.render:add_prompt(lines)
+			self.render:add_prompt_summary(lines)
 		end
 
 		local on_chunk = function(chunk)
@@ -178,14 +174,7 @@ function Float:configure()
 			self.render:add_error(err)
 		end
 
-		self.request:send(
-			prompt.message,
-			before_request,
-			on_request_start,
-			on_chunk,
-			on_chunks_complete,
-			on_chunk_error
-		)
+		self.request:send(lines, before_request, on_request_start, on_chunk, on_chunks_complete, on_chunk_error)
 	end
 
 	if plugin_opts.dev and dev.prompt.enabled and not self.ui_opts.restore_history then
