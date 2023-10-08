@@ -105,11 +105,13 @@ function ChatRender:agent(identity)
 	end
 	self.identity_for(identity)
 	self:newline()
+	return self
 end
 
 function ChatRender:lines(lines)
 	self.set_lines(lines)
 	self:newline()
+	return self
 end
 
 function ChatRender:calculate_tokens(agent, data)
@@ -128,6 +130,7 @@ function ChatRender:calculate_tokens(agent, data)
 	utils.get_tokens(message, on_tokens)
 	vim.cmd("silent! undojoin")
 	self:newline()
+	return self
 end
 
 function ChatRender:add_lines_by_chunks(chunk)
@@ -156,6 +159,7 @@ function ChatRender:add_error(err)
 	self.set_lines(message_lines)
 	vim.api.nvim_buf_add_highlight(self._.bufnr, -1, "ErrorMsg", self._.row - #message_lines, 0, -1)
 	self:newline()
+	return self
 end
 
 function ChatRender:from_history(file_path)
