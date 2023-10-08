@@ -162,7 +162,6 @@ function ChatRender:summarize_chat(chunks)
 	vim.cmd("silent! undojoin")
 end
 
---  TODO: 2023-10-08 - Test error display
 function ChatRender:add_error(err)
 	local message = err and err.error and err.error.message or type(err) == "string" and err or "Unknown error"
 	local preamble = { message, "" }
@@ -173,7 +172,6 @@ function ChatRender:add_error(err)
 	for i = 0, #preamble do
 		vim.api.nvim_buf_add_highlight(self._.bufnr, -1, "ErrorMsg", self._.line_nr - #preamble + i, 0, -1)
 	end
-	self.token_summary()
 end
 
 function ChatRender:set_cursor_to_line_nr()
