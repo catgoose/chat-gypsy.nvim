@@ -164,18 +164,16 @@ end
 
 function ChatRender:add_error(err)
 	local message = err and err.error and err.error.message or type(err) == "string" and err or "Unknown error"
-	local preamble = { message, "" }
-	self.set_lines(preamble)
+	local message_lines = { message }
+	self.set_lines(message_lines)
 	Log.trace(
 		string.format("adding error highlight to chat buffer: %s, current_chat_line: %s", self._.bufnr, self._.line_nr)
 	)
-	for i = 0, #preamble do
-		vim.api.nvim_buf_add_highlight(self._.bufnr, -1, "ErrorMsg", self._.line_nr - #preamble + i, 0, -1)
-	end
-end
-
-function ChatRender:set_cursor_to_line_nr()
+	vim.api.nvim_buf_add_highlight(self._.bufnr, -1, "ErrorMsg", self._.line_nr - #message_lines + 1, 0, -1)
+	self._.line_nr = self._.line_nr + #message_lines + 1
 	self.set_cursor(self._.line_nr)
+	--  TODO: 2023-10-08 - display error summary (hr symbol without tokens)
+	self:newline()
 end
 
 function ChatRender:from_history(file_path)
