@@ -111,7 +111,7 @@ local opts = {
           col = "100%",
         },
       },
-      float = {
+      center = {
         prompt_height = 5,
         prompt_max_lines = 6,
         position = {

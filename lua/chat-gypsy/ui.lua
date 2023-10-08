@@ -31,8 +31,8 @@ local function build_ui(placement)
 	local placement_strategy = function(_placement)
 		local float = nui_lo(
 			{
-				position = opts.ui.layout.float.position,
-				size = opts.ui.layout.float.size,
+				position = opts.ui.layout.center.position,
+				size = opts.ui.layout.center.size,
 				relative = "editor",
 			},
 			nui_lo.Box({
@@ -41,7 +41,7 @@ local function build_ui(placement)
 				}),
 				nui_lo.Box(prompt, {
 					size = {
-						height = opts.ui.layout.float.prompt_height,
+						height = opts.ui.layout.center.prompt_height,
 					},
 				}),
 			}, { dir = "col" })
