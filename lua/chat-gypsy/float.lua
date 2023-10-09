@@ -95,7 +95,7 @@ function Float:init()
 		self._.hidden = false
 		self.set_winids()
 		self.focus_last_win()
-		self.render:set_cursor_to_line_nr()
+		self.render:set_cursor()
 	end
 	self:actions()
 end

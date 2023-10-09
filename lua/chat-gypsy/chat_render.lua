@@ -55,8 +55,10 @@ function ChatRender:init()
 			lines = { lines }
 		end
 		if self._.bufnr and vim.api.nvim_buf_is_valid(self._.bufnr) then
-			vim.api.nvim_buf_set_lines(self._.bufnr, self._.row - #lines, -1, false, lines)
-			self._.row = self._.row + #lines + 1
+			vim.api.nvim_buf_set_lines(self._.bufnr, self._.row - 1, -1, false, lines)
+			if #lines > 1 then
+				self._.row = self._.row + #lines - 1
+			end
 		end
 	end
 
@@ -82,25 +84,24 @@ function ChatRender:init()
 			or agent == "assistant" and model_config.model
 			or agent == "error" and "Error"
 		local lines = { string.format("%s (%s):", source, os.date("%H:%M")) }
-		--  TODO: 2023-10-08 - add highlighting for each agent type
 		self.set_lines(lines)
 	end
+end
 
-	self.set_cursor = function()
-		if self._.winid and vim.api.nvim_win_is_valid(self._.winid) then
-			vim.api.nvim_win_set_cursor(self._.winid, { self._.row - 1, 0 })
-		end
+function ChatRender:set_cursor()
+	if self._.winid and vim.api.nvim_win_is_valid(self._.winid) then
+		vim.api.nvim_win_set_cursor(self._.winid, { self._.row, 0 })
 	end
 end
 
 function ChatRender:newline(new_lines)
 	new_lines = new_lines or 1
 	for _ = 1, new_lines do
-		self._.row = self._.row + 1
 		self._.line = ""
+		self._.row = self._.row + 1
 		self.set_lines(self._.line)
 		if self.move_cursor then
-			self.set_cursor()
+			self:set_cursor()
 		end
 	end
 	return self
@@ -156,7 +157,7 @@ function ChatRender:add_lines_by_chunks(chunk)
 	local append = function(_chunk)
 		self._.line = self._.line .. _chunk
 		self.set_lines(self._.line)
-		self.set_cursor()
+		self:set_cursor()
 	end
 	if string.match(chunk, "\n") then
 		for _chunk in chunk:gmatch(".") do
@@ -183,10 +184,10 @@ end
 
 function ChatRender:from_history(file_path)
 	local contents = utils.decode_json_from_path(file_path)
-	local model = contents.openai_params.model
 	for _, messages in pairs(contents.messages) do
-		self:agent(messages.role):newline()
-		self:lines(messages.message):newline()
+		self:agent(messages.role):newline(2)
+		self:lines(messages.message):newline(2)
+		--  TODO: 2023-10-08 - display token count
 	end
 end
 
