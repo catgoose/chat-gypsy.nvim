@@ -8,14 +8,15 @@ local ChatRender = {}
 ChatRender.__index = ChatRender
 
 function ChatRender:new(cfg)
+	local instance = {}
 	cfg = cfg or {
 		winid = nil,
 		bufnr = nil,
 	}
 	cfg.winid = cfg.winid or nil
 	cfg.bufnr = cfg.bufnr or nil
-	setmetatable(self, ChatRender)
-	self._ = {
+	setmetatable(instance, ChatRender)
+	instance._ = {
 		winid = cfg.winid,
 		bufnr = cfg.bufnr,
 		win_width = cfg.winid and vim.api.nvim_win_get_width(cfg.winid) or 0,
@@ -25,10 +26,10 @@ function ChatRender:new(cfg)
 			total = 0,
 		},
 	}
-	self.move_cursor = true
-	self:reset()
-	self:init()
-	return self
+	instance.move_cursor = true
+	instance:reset()
+	instance:init()
+	return instance
 end
 
 function ChatRender:reset()
