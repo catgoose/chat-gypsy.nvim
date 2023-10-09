@@ -113,6 +113,8 @@ function ChatRender:agent(identity, override)
 		or identity == "user" and "You"
 		or identity == "assistant" and model_config.model
 		or identity == "error" and "Error"
+	--  BUG: 2023-10-09 - os.date should only be used for chats, not for
+	--  replaying history
 	local lines = { string.format("%s (%s):", source, os.date("%H:%M")) }
 	self.set_lines(lines)
 	return self
