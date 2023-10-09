@@ -158,23 +158,23 @@ function Float:configure()
 
 		local on_stream_start = function()
 			self.render:agent("user"):newline(2)
-			self.render:lines(lines):newline()
+			self.render:lines(lines):newline(2)
 			self.render:calculate_tokens("user", lines):newline()
 			self.render:agent("assistant"):newline(2)
 		end
 
 		local on_chunk = function(chunk)
-			self.render:add_lines_by_chunks(chunk)
+			self.render:append_chunk(chunk)
 		end
 
 		local on_chunks_complete = function(chunks)
 			self.render:newline(2)
-			self.render:calculate_tokens("assistant", chunks)
+			self.render:calculate_tokens("assistant", chunks):newline()
 		end
 
 		local on_chunk_error = function(err)
 			self.render:agent("error"):newline()
-			self.render:add_error(err):newline()
+			self.render:error(err):newline()
 		end
 
 		self.request:send(lines, on_stream_start, on_chunk, on_chunks_complete, on_chunk_error)

@@ -7,6 +7,7 @@ local actions = require("telescope.actions")
 local action_state = require("telescope.actions.state")
 local previewers = require("telescope.previewers")
 local render = require("chat-gypsy.chat_render"):new():set_move_cursor(false)
+local utils = require("chat-gypsy.utils")
 
 local Telescope = {}
 
@@ -36,7 +37,12 @@ local define_preview = function(self, entry)
 	vim.api.nvim_buf_set_option(self.state.bufnr, "filetype", "markdown")
 	vim.api.nvim_win_set_option(self.state.winid, "wrap", true)
 	render:set_bufnr(self.state.bufnr):set_winid(self.state.winid):reset()
-	render:from_history(entry.file_path)
+	local contents = utils.decode_json_from_path(entry.file_path)
+	for _, messages in pairs(contents.messages) do
+		render:agent(messages.role):newline(2)
+		render:lines(messages.message):newline(2)
+		--  TODO: 2023-10-08 - display token count
+	end
 end
 
 local get_picker_entries = function(entries, opts)

@@ -9,13 +9,13 @@ ChatRender.__index = ChatRender
 
 function ChatRender:new(cfg)
 	local instance = {}
+	setmetatable(instance, ChatRender)
 	cfg = cfg or {
 		winid = nil,
 		bufnr = nil,
 	}
 	cfg.winid = cfg.winid or nil
 	cfg.bufnr = cfg.bufnr or nil
-	setmetatable(instance, ChatRender)
 	instance._ = {
 		winid = cfg.winid,
 		bufnr = cfg.bufnr,
@@ -34,7 +34,6 @@ end
 
 function ChatRender:reset()
 	self._.line = ""
-	self._.lines = {}
 	self._.row = 1
 	return self
 end
@@ -56,16 +55,15 @@ function ChatRender:init()
 		end
 		if self._.bufnr and vim.api.nvim_buf_is_valid(self._.bufnr) then
 			vim.api.nvim_buf_set_lines(self._.bufnr, self._.row - 1, -1, false, lines)
-			if #lines > 1 then
-				self._.row = self._.row + #lines - 1
-			end
+			self._.row = self._.row + #lines - 1
+			self:set_cursor()
 		end
 	end
 
 	self.token_summary = function(tokens)
 		local model_config = models.get_config(opts.openai_params.model)
 		local tokens_display = string.format(
-			" Tokens: %s %s (%s/%s) %s",
+			" %s %s (%s/%s) %s",
 			symbols.left_arrow,
 			tokens,
 			self._.tokens.total,
@@ -75,21 +73,12 @@ function ChatRender:init()
 		local summary = symbols.horiz:rep(self._.win_width - #tokens_display + 4) .. tokens_display
 		local lines = { summary }
 		self.set_lines(lines)
-	end
-
-	self.identity_for = function(agent, override)
-		local model_config = models.get_config(opts.openai_params.model)
-		local source = override and override
-			or agent == "user" and "You"
-			or agent == "assistant" and model_config.model
-			or agent == "error" and "Error"
-		local lines = { string.format("%s (%s):", source, os.date("%H:%M")) }
-		self.set_lines(lines)
+		self:newline()
 	end
 end
 
 function ChatRender:set_cursor()
-	if self._.winid and vim.api.nvim_win_is_valid(self._.winid) then
+	if self._.winid and vim.api.nvim_win_is_valid(self._.winid) and self.move_cursor then
 		vim.api.nvim_win_set_cursor(self._.winid, { self._.row, 0 })
 	end
 end
@@ -100,9 +89,6 @@ function ChatRender:newline(new_lines)
 		self._.line = ""
 		self._.row = self._.row + 1
 		self.set_lines(self._.line)
-		if self.move_cursor then
-			self:set_cursor()
-		end
 	end
 	return self
 end
@@ -122,15 +108,19 @@ function ChatRender:agent(identity, override)
 	if not identity or not vim.tbl_contains({ "user", "assistant", "error" }, identity) then
 		return
 	end
-	self.identity_for(identity, override)
-	self:newline()
+	local model_config = models.get_config(opts.openai_params.model)
+	local source = override and override
+		or identity == "user" and "You"
+		or identity == "assistant" and model_config.model
+		or identity == "error" and "Error"
+	local lines = { string.format("%s (%s):", source, os.date("%H:%M")) }
+	self.set_lines(lines)
 	return self
 end
 
 function ChatRender:lines(lines)
 	lines = #lines == 1 and lines or utils.string_split(lines, "\n")
 	self.set_lines(lines)
-	self:newline()
 	return self
 end
 
@@ -149,20 +139,17 @@ function ChatRender:calculate_tokens(agent, data)
 	end
 	utils.get_tokens(message, on_tokens)
 	vim.cmd("silent! undojoin")
-	self:newline()
 	return self
 end
 
-function ChatRender:add_lines_by_chunks(chunk)
+function ChatRender:append_chunk(chunk)
 	local append = function(_chunk)
 		self._.line = self._.line .. _chunk
 		self.set_lines(self._.line)
-		self:set_cursor()
 	end
 	if string.match(chunk, "\n") then
 		for _chunk in chunk:gmatch(".") do
 			if string.match(_chunk, "\n") then
-				table.insert(self._.lines, self._.line)
 				self:newline()
 			else
 				append(_chunk)
@@ -173,22 +160,12 @@ function ChatRender:add_lines_by_chunks(chunk)
 	end
 end
 
-function ChatRender:add_error(err)
+function ChatRender:error(err)
 	local message = err and err.error and err.error.message or type(err) == "string" and err or "Unknown error"
 	local message_lines = { message }
 	self.set_lines(message_lines)
 	vim.api.nvim_buf_add_highlight(self._.bufnr, -1, "ErrorMsg", self._.row - #message_lines, 0, -1)
-	self:newline()
 	return self
-end
-
-function ChatRender:from_history(file_path)
-	local contents = utils.decode_json_from_path(file_path)
-	for _, messages in pairs(contents.messages) do
-		self:agent(messages.role):newline(2)
-		self:lines(messages.message):newline(2)
-		--  TODO: 2023-10-08 - display token count
-	end
 end
 
 return ChatRender
