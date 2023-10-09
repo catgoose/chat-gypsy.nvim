@@ -55,6 +55,7 @@ function ChatRender:init()
 		end
 		if self._.bufnr and vim.api.nvim_buf_is_valid(self._.bufnr) then
 			vim.api.nvim_buf_set_lines(self._.bufnr, self._.row - #lines, -1, false, lines)
+			self._.row = self._.row + #lines + 1
 		end
 	end
 
@@ -84,9 +85,9 @@ function ChatRender:init()
 		self.set_lines(lines)
 	end
 
-	self.set_cursor = function(line)
+	self.set_cursor = function()
 		if self._.winid and vim.api.nvim_win_is_valid(self._.winid) then
-			vim.api.nvim_win_set_cursor(self._.winid, { line, 0 })
+			vim.api.nvim_win_set_cursor(self._.winid, { self._.row - 1, 0 })
 		end
 	end
 end
@@ -98,7 +99,7 @@ function ChatRender:newline(new_lines)
 		self._.line = ""
 		self.set_lines(self._.line)
 		if self.move_cursor then
-			self.set_cursor(self._.row)
+			self.set_cursor()
 		end
 	end
 	return self
@@ -125,6 +126,7 @@ function ChatRender:agent(identity, override)
 end
 
 function ChatRender:lines(lines)
+	lines = #lines == 1 and lines or utils.string_split(lines, "\n")
 	self.set_lines(lines)
 	self:newline()
 	return self
@@ -153,7 +155,7 @@ function ChatRender:add_lines_by_chunks(chunk)
 	local append = function(_chunk)
 		self._.line = self._.line .. _chunk
 		self.set_lines(self._.line)
-		self.set_cursor(self._.row)
+		self.set_cursor()
 	end
 	if string.match(chunk, "\n") then
 		for _chunk in chunk:gmatch(".") do
@@ -182,15 +184,8 @@ function ChatRender:from_history(file_path)
 	local contents = utils.decode_json_from_path(file_path)
 	local model = contents.openai_params.model
 	for _, messages in pairs(contents.messages) do
-		if messages.role == "user" then
-			self:agent(messages.role):newline(2)
-			self:lines(messages.message):newline()
-		end
-		if messages.role == "assistant" then
-			self:agent(messages.role, model):newline(2)
-			local message = utils.string_split(messages.message, "\n")
-			self:lines(message):newline()
-		end
+		self:agent(messages.role):newline()
+		self:lines(messages.message):newline()
 	end
 end
 
