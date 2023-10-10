@@ -126,9 +126,9 @@ function ChatRender:from_agent(role, time, space)
 	time = time or os.time()
 	local agent = self.agent(role)
 	local date = self.date(time, "%m/%d/%Y %I:%M%p")
-	local lines = string.format("%s%s%s", agent, space:rep(self._.win_width - #agent - #date), date)
-	self.set_lines(lines)
-	vim.api.nvim_buf_add_highlight(self._.bufnr, -1, opts.ui.highlight.agent[role], self._.row - #{ lines }, 0, -1)
+	local line = string.format("%s%s%s", agent, space:rep(self._.win_width - #agent - #date), date)
+	self.set_lines(line)
+	vim.api.nvim_buf_add_highlight(self._.bufnr, -1, opts.ui.highlight.agent[role], self._.row - #{ line }, 0, -1)
 	return self
 end
 
