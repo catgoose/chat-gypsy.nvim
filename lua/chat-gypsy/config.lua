@@ -58,7 +58,7 @@ local _opts = {
 	},
 	ui = {
 		highlight = {
-			agent = {
+			role = {
 				error = "ErrorMsg",
 				system = "LineNr",
 				user = "Statement",

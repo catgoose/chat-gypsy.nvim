@@ -75,7 +75,7 @@ function ChatRender:init()
 		self:newline()
 	end
 
-	self.agent = function(identity)
+	self.format_role = function(identity)
 		if not identity or not vim.tbl_contains({ "user", "assistant", "error" }, identity) then
 			return
 		end
@@ -121,14 +121,17 @@ function ChatRender:set_bufnr(bufnr)
 	return self
 end
 
-function ChatRender:from_agent(role, time, space)
+function ChatRender:from_role(role, time, space)
+	if not vim.tbl_contains({ "user", "assistant" }, role) then
+		return
+	end
 	space = space or " "
 	time = time or os.time()
-	local agent = self.agent(role)
+	local role_display = self.format_role(role)
 	local date = self.date(time, "%m/%d/%Y %I:%M%p")
-	local line = string.format("%s%s%s", agent, space:rep(self._.win_width - #agent - #date), date)
+	local line = string.format("%s%s%s", role_display, space:rep(self._.win_width - #role_display - #date), date)
 	self.set_lines(line)
-	vim.api.nvim_buf_add_highlight(self._.bufnr, -1, opts.ui.highlight.agent[role], self._.row - #{ line }, 0, -1)
+	vim.api.nvim_buf_add_highlight(self._.bufnr, -1, opts.ui.highlight.role[role], self._.row - #{ line }, 0, -1)
 	return self
 end
 
@@ -138,18 +141,18 @@ function ChatRender:lines(lines)
 	return self
 end
 
-function ChatRender:calculate_tokens(agent, data)
-	if not vim.tbl_contains({ "user", "assistant" }, agent) then
+function ChatRender:calculate_tokens(role, data)
+	if not vim.tbl_contains({ "user", "assistant" }, role) then
 		return
 	end
-	local delimin_char = agent == "user" and "\n" or agent == "assistant" and "" or nil
+	local delimin_char = role == "user" and "\n" or role == "assistant" and "" or nil
 	local message = table.concat(data, delimin_char)
 	local on_tokens = function(tokens)
 		tokens = tokens or 0
-		self._.tokens[agent] = tokens
-		self._.tokens.total = self._.tokens.total + self._.tokens[agent]
-		self.token_summary(self._.tokens[agent])
-		History:add_message(message, agent, self._.tokens)
+		self._.tokens[role] = tokens
+		self._.tokens.total = self._.tokens.total + self._.tokens[role]
+		self.token_summary(self._.tokens[role])
+		History:add_message(message, role, self._.tokens)
 	end
 	utils.get_tokens(message, on_tokens)
 	vim.cmd("silent! undojoin")
