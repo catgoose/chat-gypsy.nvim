@@ -79,6 +79,16 @@ function ChatRender:init()
 		local date = os.date(format, time)
 		return date
 	end
+
+	self.newline = function(new_lines)
+		new_lines = new_lines or 1
+		for _ = 1, new_lines do
+			self._.line = ""
+			self._.row = self._.row + 1
+			self.set_lines(self._.line)
+		end
+		return self
+	end
 end
 
 function ChatRender:set_cursor()
@@ -87,18 +97,8 @@ function ChatRender:set_cursor()
 	end
 end
 
-function ChatRender:newline(new_lines)
-	new_lines = new_lines or 1
-	for _ = 1, new_lines do
-		self._.line = ""
-		self._.row = self._.row + 1
-		self.set_lines(self._.line)
-	end
-	return self
-end
-
 function ChatRender:newlines()
-	self:newline(2)
+	self.newline(2)
 	return self
 end
 
@@ -186,7 +186,7 @@ function ChatRender:append_chunk(chunk)
 	if string.match(chunk, "\n") then
 		for _chunk in chunk:gmatch(".") do
 			if string.match(_chunk, "\n") then
-				self:newline()
+				self.newline()
 			else
 				append(_chunk)
 			end

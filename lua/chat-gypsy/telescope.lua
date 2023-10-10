@@ -8,7 +8,6 @@ local action_state = require("telescope.actions.state")
 local previewers = require("telescope.previewers")
 local render = require("chat-gypsy.chat_render"):new():set_move_cursor(false)
 local utils = require("chat-gypsy.utils")
-local config_opts = require("chat-gypsy").Config.get("opts")
 
 local Telescope = {}
 
@@ -41,8 +40,11 @@ local define_preview = function(self, entry)
 	local contents = utils.decode_json_from_path(entry.file_path)
 	for _, messages in pairs(contents.messages) do
 		render:from_role(messages.role, messages.time):newlines()
-		--  TODO: 2023-10-10 - add message highlighting for system role
-		render:lines(messages.message):newlines()
+		if messages.role == "system" then
+			render:lines(messages.content):highlight(messages.role, messages.content):newlines()
+		else
+			render:lines(messages.message):newlines()
+		end
 		render:token_summary(messages.tokens, messages.role):newlines()
 	end
 end
