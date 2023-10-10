@@ -13,8 +13,9 @@ function OpenAI:new()
 	return self
 end
 
-function OpenAI:send(lines, on_stream_start, on_chunk, on_chunks_complete, on_chunk_error)
+function OpenAI:send(lines, before_request, on_stream_start, on_chunk, on_chunks_complete, on_chunk_error)
 	local message = table.concat(lines, "\n")
+	before_request()
 	Log.trace(string.format("adding request to queue: \nmessage: %s", message))
 	local action = function(queue_next)
 		local _on_stream_start = function()

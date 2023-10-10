@@ -76,12 +76,13 @@ function ChatRender:init()
 	end
 
 	self.format_role = function(identity)
-		if not identity or not vim.tbl_contains({ "user", "assistant", "error" }, identity) then
+		if not identity or not vim.tbl_contains({ "system", "user", "assistant", "error" }, identity) then
 			return
 		end
 		local model_config = models.get_config(opts.openai_params.model)
 		local source = identity == "user" and "You"
 			or identity == "assistant" and model_config.model
+			or identity == "system" and "System"
 			or identity == "error" and "Error"
 		return string.format("%s", source)
 	end
@@ -122,7 +123,7 @@ function ChatRender:set_bufnr(bufnr)
 end
 
 function ChatRender:from_role(role, time, space)
-	if not vim.tbl_contains({ "user", "assistant" }, role) then
+	if not vim.tbl_contains({ "system", "user", "assistant", "error" }, role) then
 		return
 	end
 	space = space or " "
@@ -131,7 +132,12 @@ function ChatRender:from_role(role, time, space)
 	local date = self.date(time, "%m/%d/%Y %I:%M%p")
 	local line = string.format("%s%s%s", role_display, space:rep(self._.win_width - #role_display - #date), date)
 	self.set_lines(line)
-	vim.api.nvim_buf_add_highlight(self._.bufnr, -1, opts.ui.highlight.role[role], self._.row - #{ line }, 0, -1)
+	self:highlight(role, line)
+	return self
+end
+
+function ChatRender:highlight(role, lines)
+	vim.api.nvim_buf_add_highlight(self._.bufnr, -1, opts.ui.highlight.role[role], self._.row - #{ lines }, 0, -1)
 	return self
 end
 
@@ -141,8 +147,9 @@ function ChatRender:lines(lines)
 	return self
 end
 
+--  TODO: 2023-10-09 - add system token calculation
 function ChatRender:calculate_tokens(role, data)
-	if not vim.tbl_contains({ "user", "assistant" }, role) then
+	if not vim.tbl_contains({ "system", "user", "assistant" }, role) then
 		return
 	end
 	local delimin_char = role == "user" and "\n" or role == "assistant" and "" or nil
@@ -180,7 +187,7 @@ end
 function ChatRender:error(err)
 	local message = err and err.error and err.error.message or type(err) == "string" and err or "Unknown error"
 	self.set_lines(message)
-	vim.api.nvim_buf_add_highlight(self._.bufnr, -1, opts.ui.highlight.error_message, self._.row - #{ message }, 0, -1)
+	self:highlight("error", message)
 	return self
 end
 

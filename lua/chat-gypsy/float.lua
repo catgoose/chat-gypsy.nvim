@@ -150,11 +150,18 @@ function Float:configure()
 		end
 	end)
 
+	self.render:from_role("system"):newline(2)
+	local prompt = opts.openai_params.messages[1].content
+	self.render:lines(prompt):highlight("system", prompt):newline(2)
+
 	local send_prompt = function(lines)
 		if lines[1] == "" and #lines == 1 then
 			return
 		end
-		vim.api.nvim_buf_set_lines(self._.prompt.bufnr, 0, -1, false, {})
+
+		local before_request = function()
+			vim.api.nvim_buf_set_lines(self._.prompt.bufnr, 0, -1, false, {})
+		end
 
 		local on_stream_start = function()
 			self.render:from_role("user"):newline(2)
@@ -177,7 +184,7 @@ function Float:configure()
 			self.render:error(err):newline()
 		end
 
-		self.request:send(lines, on_stream_start, on_chunk, on_chunks_complete, on_chunk_error)
+		self.request:send(lines, before_request, on_stream_start, on_chunk, on_chunks_complete, on_chunk_error)
 	end
 
 	if plugin_opts.dev and dev.prompt.enabled and not self.ui_opts.restore_history then
