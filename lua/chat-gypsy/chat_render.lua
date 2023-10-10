@@ -21,6 +21,7 @@ function ChatRender:new(cfg)
 		bufnr = cfg.bufnr,
 		win_width = cfg.winid and vim.api.nvim_win_get_width(cfg.winid) or 0,
 		tokens = {
+			system = 0,
 			user = 0,
 			assistant = 0,
 			total = 0,
@@ -80,10 +81,10 @@ function ChatRender:init()
 			return
 		end
 		local model_config = models.get_config(opts.openai_params.model)
-		local source = identity == "user" and "You"
-			or identity == "assistant" and model_config.model
-			or identity == "system" and "System"
-			or identity == "error" and "Error"
+		local source = role == "user" and "You"
+			or role == "assistant" and model_config.model
+			or role == "system" and "System"
+			or role == "error" and "Error"
 		return string.format("%s", source)
 	end
 
@@ -126,11 +127,10 @@ function ChatRender:from_role(role, time)
 	if not utils.check_roles(role, true) then
 		return
 	end
-	space = space or " "
 	time = time or os.time()
 	local role_display = self.format_role(role)
 	local date = self.date(time, "%m/%d/%Y %I:%M%p")
-	local line = string.format("%s%s%s", role_display, space:rep(self._.win_width - #role_display - #date), date)
+	local line = string.format("%s%s%s", role_display, (" "):rep(self._.win_width - #role_display - #date), date)
 	self.set_lines(line)
 	self:highlight(role, line)
 	return self
@@ -147,12 +147,16 @@ function ChatRender:lines(lines)
 	return self
 end
 
---  TODO: 2023-10-09 - add system token calculation
 function ChatRender:calculate_tokens(role, data)
 	if not utils.check_roles(role) then
 		return
 	end
-	local delimin_char = role == "user" and "\n" or role == "assistant" and "" or nil
+	--  TODO: 2023-10-10 - does data need to be split?  This should be generalized
+	--  somehow
+	if type(data) == "string" then
+		data = { data }
+	end
+	local delimin_char = role == "user" and "\n" or role == "assistant" and "" or role == "system" and "" or nil
 	local message = table.concat(data, delimin_char)
 	local on_tokens = function(tokens)
 		tokens = tokens or 0

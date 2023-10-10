@@ -72,7 +72,7 @@ function History:add_message(message, role, tokens)
 		return
 	end
 	tokens = utils.deepcopy(tokens)
-	Log.trace(
+	Log.debug(
 		string.format(
 			[[Adding to history: message "%s" of role "%s" with tokens %s]],
 			message,

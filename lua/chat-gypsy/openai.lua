@@ -9,23 +9,42 @@ function OpenAI:new()
 	setmetatable(self, OpenAI)
 	self.openai_params = opts.openai_params
 	self.queue = require("chat-gypsy.queue"):new()
+	self._ = {
+		system_rendered = false,
+	}
+	self.save_history = function()
+		History:add_openai_params(self.openai_params)
+	end
 	self:init()
 	return self
 end
 
-function OpenAI:send(lines, before_request, on_stream_start, on_chunk, on_chunks_complete, on_chunk_error)
+function OpenAI:send(
+	lines,
+	before_request,
+	system_render,
+	on_stream_start,
+	on_chunk,
+	on_chunks_complete,
+	on_chunk_error
+)
 	local message = table.concat(lines, "\n")
 	before_request()
+	if not self._.system_rendered and self.openai_params.messages[1].role == "system" then
+		system_render(self.openai_params.messages[1])
+		self._.system_rendered = true
+		self.save_history()
+	end
 	Log.trace(string.format("adding request to queue: \nmessage: %s", message))
 	local action = function(queue_next)
 		local _on_stream_start = function()
 			on_stream_start()
-			History:add_openai_params(self.openai_params)
+			self.save_history()
 		end
 		local on_complete = function(complete_chunks)
 			Log.trace("request completed")
 			on_chunks_complete(complete_chunks)
-			History:add_openai_params(self.openai_params)
+			self.save_history()
 			queue_next()
 		end
 

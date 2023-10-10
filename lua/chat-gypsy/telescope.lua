@@ -40,9 +40,7 @@ local define_preview = function(self, entry)
 	render:set_bufnr(self.state.bufnr):set_winid(self.state.winid):reset()
 	local contents = utils.decode_json_from_path(entry.file_path)
 	for _, messages in pairs(contents.messages) do
-		local prompt = config_opts.openai_params.messages[1].content
-		render:from_role("system", prompt):newline(2)
-		render:from_role(messages.role, messages.time, " "):newline(2)
+		render:from_role(messages.role, messages.time):newline(2)
 		render:lines(messages.message):newline(2)
 	end
 end
