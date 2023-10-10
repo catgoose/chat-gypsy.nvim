@@ -39,10 +39,8 @@ local define_preview = function(self, entry)
 	render:set_bufnr(self.state.bufnr):set_winid(self.state.winid):reset()
 	local contents = utils.decode_json_from_path(entry.file_path)
 	for _, messages in pairs(contents.messages) do
-		render:agent(messages.role):newline()
-		render:date(messages.time, "%m/%d/%Y %I:%M%p"):newline(2)
+		render:from(messages.role, messages.time, " "):newline(2)
 		render:lines(messages.message):newline(2)
-		--  TODO: 2023-10-08 - display token count
 	end
 end
 

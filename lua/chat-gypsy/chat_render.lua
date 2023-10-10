@@ -70,10 +70,30 @@ function ChatRender:init()
 			model_config.max_tokens,
 			symbols.right_arrow
 		)
-		local summary = symbols.horiz:rep(self._.win_width - #tokens_display + 4) .. tokens_display
+		local summary = string.format("%s%s", symbols.horiz:rep(self._.win_width - #tokens_display + 4), tokens_display)
 		local lines = { summary }
 		self.set_lines(lines)
 		self:newline()
+	end
+
+	self.agent = function(identity)
+		if not identity or not vim.tbl_contains({ "user", "assistant", "error" }, identity) then
+			return
+		end
+		local model_config = models.get_config(opts.openai_params.model)
+		local source = identity == "user" and "You"
+			or identity == "assistant" and model_config.model
+			or identity == "error" and "Error"
+		local lines = string.format("%s:", source)
+		return lines
+	end
+
+	self.date = function(time, format)
+		time = time or os.time()
+		format = format or "%I:%M %p"
+		local date = os.date(format, time)
+		local lines = date
+		return lines
 	end
 end
 
@@ -104,24 +124,12 @@ function ChatRender:set_bufnr(bufnr)
 	return self
 end
 
-function ChatRender:agent(identity)
-	if not identity or not vim.tbl_contains({ "user", "assistant", "error" }, identity) then
-		return
-	end
-	local model_config = models.get_config(opts.openai_params.model)
-	local source = identity == "user" and "You"
-		or identity == "assistant" and model_config.model
-		or identity == "error" and "Error"
-	local lines = string.format("%s:", source)
-	self.set_lines(lines)
-	return self
-end
-
-function ChatRender:date(time, format)
+function ChatRender:from(role, time, space)
+	space = space or " "
 	time = time or os.time()
-	format = format or "%I:%M %p"
-	local date = os.date(format, time)
-	local lines = date
+	local agent = self.agent(role)
+	local date = self.date(time, "%m/%d/%Y %I:%M%p")
+	local lines = string.format("%s%s%s", agent, space:rep(self._.win_width - #agent - #date), date)
 	self.set_lines(lines)
 	return self
 end
