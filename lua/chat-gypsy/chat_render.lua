@@ -104,18 +104,24 @@ function ChatRender:set_bufnr(bufnr)
 	return self
 end
 
-function ChatRender:agent(identity, override)
+function ChatRender:agent(identity)
 	if not identity or not vim.tbl_contains({ "user", "assistant", "error" }, identity) then
 		return
 	end
 	local model_config = models.get_config(opts.openai_params.model)
-	local source = override and override
-		or identity == "user" and "You"
+	local source = identity == "user" and "You"
 		or identity == "assistant" and model_config.model
 		or identity == "error" and "Error"
-	--  BUG: 2023-10-09 - os.date should only be used for chats, not for
-	--  replaying history
-	local lines = { string.format("%s (%s):", source, os.date("%H:%M")) }
+	local lines = string.format("%s:", source)
+	self.set_lines(lines)
+	return self
+end
+
+function ChatRender:date(time, format)
+	time = time or os.time()
+	format = format or "%I:%M %p"
+	local date = os.date(format, time)
+	local lines = date
 	self.set_lines(lines)
 	return self
 end
