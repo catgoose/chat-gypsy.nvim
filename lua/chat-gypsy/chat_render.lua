@@ -83,7 +83,7 @@ function ChatRender:init()
 		local source = identity == "user" and "You"
 			or identity == "assistant" and model_config.model
 			or identity == "error" and "Error"
-		return string.format("%s:", source)
+		return string.format("%s", source)
 	end
 
 	self.date = function(time, format)
@@ -121,13 +121,14 @@ function ChatRender:set_bufnr(bufnr)
 	return self
 end
 
-function ChatRender:from(role, time, space)
+function ChatRender:from_agent(role, time, space)
 	space = space or " "
 	time = time or os.time()
 	local agent = self.agent(role)
 	local date = self.date(time, "%m/%d/%Y %I:%M%p")
 	local lines = string.format("%s%s%s", agent, space:rep(self._.win_width - #agent - #date), date)
 	self.set_lines(lines)
+	vim.api.nvim_buf_add_highlight(self._.bufnr, -1, opts.ui.highlight.agent[role], self._.row - #{ lines }, 0, -1)
 	return self
 end
 
@@ -176,7 +177,7 @@ end
 function ChatRender:error(err)
 	local message = err and err.error and err.error.message or type(err) == "string" and err or "Unknown error"
 	self.set_lines(message)
-	vim.api.nvim_buf_add_highlight(self._.bufnr, -1, "ErrorMsg", self._.row - #{ message }, 0, -1)
+	vim.api.nvim_buf_add_highlight(self._.bufnr, -1, opts.ui.highlight.error_message, self._.row - #{ message }, 0, -1)
 	return self
 end
 

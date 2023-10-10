@@ -57,6 +57,15 @@ local _opts = {
 		},
 	},
 	ui = {
+		highlight = {
+			agent = {
+				error = "ErrorMsg",
+				system = "LineNr",
+				user = "Statement",
+				assistant = "Boolean",
+			},
+			error_message = "Exception",
+		},
 		layout_placement = "center",
 		prompt = {
 			start_insert = true,

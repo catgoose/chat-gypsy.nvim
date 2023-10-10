@@ -157,10 +157,10 @@ function Float:configure()
 		vim.api.nvim_buf_set_lines(self._.prompt.bufnr, 0, -1, false, {})
 
 		local on_stream_start = function()
-			self.render:from("user"):newline(2)
+			self.render:from_agent("user"):newline(2)
 			self.render:lines(lines):newline(2)
 			self.render:calculate_tokens("user", lines):newline()
-			self.render:from("assistant"):newline(2)
+			self.render:from_agent("assistant"):newline(2)
 		end
 
 		local on_chunk = function(chunk)
@@ -173,7 +173,7 @@ function Float:configure()
 		end
 
 		local on_chunk_error = function(err)
-			self.render:from("error"):newline()
+			self.render:from_agent("error"):newline(2)
 			self.render:error(err):newline()
 		end
 
