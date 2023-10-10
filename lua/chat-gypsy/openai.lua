@@ -5,6 +5,7 @@ local History = require("chat-gypsy").History
 local OpenAI = {}
 OpenAI.__index = OpenAI
 
+--  TODO: 2023-10-10 - Create picker for openai model
 function OpenAI:new()
 	setmetatable(self, OpenAI)
 	self.openai_params = opts.openai_params
