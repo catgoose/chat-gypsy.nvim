@@ -67,15 +67,15 @@ function History:reset()
 	self:init_current()
 end
 
-function History:add_message(message, role, tokens)
+function History:add_message(content, role, tokens)
 	if not role or not utils.check_roles(role) then
 		return
 	end
 	tokens = utils.deepcopy(tokens)
 	Log.trace(
 		string.format(
-			[[Adding to history: message "%s" of role "%s" with tokens %s]],
-			message,
+			[[Adding to history: content "%s" of role "%s" with tokens %s]],
+			content,
 			role,
 			vim.inspect(tokens)
 		)
@@ -85,7 +85,7 @@ function History:add_message(message, role, tokens)
 	end
 	table.insert(self.current.messages, {
 		role = role,
-		message = message,
+		content = content,
 		time = os.time(),
 		tokens = tokens,
 	})

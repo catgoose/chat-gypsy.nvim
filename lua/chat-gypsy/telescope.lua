@@ -43,7 +43,7 @@ local define_preview = function(self, entry)
 		if messages.role == "system" then
 			render:lines(messages.content):highlight(messages.role, messages.content):newlines()
 		else
-			render:lines(messages.message):newlines()
+			render:lines(messages.content):newlines()
 		end
 		render:token_summary(messages.tokens, messages.role):newlines()
 	end
