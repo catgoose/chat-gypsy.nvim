@@ -68,10 +68,7 @@ function History:reset()
 end
 
 function History:add_message(message, role, tokens)
-	if not role then
-		return
-	end
-	if not vim.tbl_contains({ "user", "assistant" }, role) then
+	if not role or not utils.check_roles(role) then
 		return
 	end
 	tokens = utils.deepcopy(tokens)

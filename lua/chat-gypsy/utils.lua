@@ -143,4 +143,11 @@ Utils.string_split = function(str, delimiter)
 	return t
 end
 
+Utils.check_roles = function(role, include_error)
+	if include_error then
+		return vim.tbl_contains({ "system", "user", "assistant", "error" }, role)
+	end
+	return vim.tbl_contains({ "system", "user", "assistant" }, role)
+end
+
 return Utils

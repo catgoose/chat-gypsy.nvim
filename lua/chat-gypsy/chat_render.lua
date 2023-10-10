@@ -75,8 +75,8 @@ function ChatRender:init()
 		self:newline()
 	end
 
-	self.format_role = function(identity)
-		if not identity or not vim.tbl_contains({ "system", "user", "assistant", "error" }, identity) then
+	self.format_role = function(role)
+		if not role or not utils.check_roles(role, true) then
 			return
 		end
 		local model_config = models.get_config(opts.openai_params.model)
@@ -122,8 +122,8 @@ function ChatRender:set_bufnr(bufnr)
 	return self
 end
 
-function ChatRender:from_role(role, time, space)
-	if not vim.tbl_contains({ "system", "user", "assistant", "error" }, role) then
+function ChatRender:from_role(role, time)
+	if not utils.check_roles(role, true) then
 		return
 	end
 	space = space or " "
@@ -149,7 +149,7 @@ end
 
 --  TODO: 2023-10-09 - add system token calculation
 function ChatRender:calculate_tokens(role, data)
-	if not vim.tbl_contains({ "system", "user", "assistant" }, role) then
+	if not utils.check_roles(role) then
 		return
 	end
 	local delimin_char = role == "user" and "\n" or role == "assistant" and "" or nil
