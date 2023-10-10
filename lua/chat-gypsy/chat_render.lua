@@ -115,7 +115,7 @@ end
 
 function ChatRender:from_role(role, time)
 	if not utils.check_roles(role, true) then
-		return
+		return self
 	end
 	time = time or os.time()
 	local role_display = self.format_role(role)
@@ -132,6 +132,9 @@ function ChatRender:highlight(role, lines)
 end
 
 function ChatRender:lines(lines)
+	if not lines then
+		return self
+	end
 	lines = #lines == 1 and lines or utils.string_split(lines, "\n")
 	self.set_lines(lines)
 	return self
@@ -139,7 +142,7 @@ end
 
 function ChatRender:calculate_tokens(role, data)
 	if not utils.check_roles(role) then
-		return
+		return self
 	end
 	--  TODO: 2023-10-10 - does data need to be split?  This should be generalized
 	--  somehow

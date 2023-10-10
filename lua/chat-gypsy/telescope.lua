@@ -41,6 +41,7 @@ local define_preview = function(self, entry)
 	local contents = utils.decode_json_from_path(entry.file_path)
 	for _, messages in pairs(contents.messages) do
 		render:from_role(messages.role, messages.time):newlines()
+		--  TODO: 2023-10-10 - add message highlighting for system role
 		render:lines(messages.message):newlines()
 		render:token_summary(messages.tokens, messages.role):newlines()
 	end
