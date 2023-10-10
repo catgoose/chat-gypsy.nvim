@@ -71,8 +71,7 @@ function ChatRender:init()
 			symbols.right_arrow
 		)
 		local summary = string.format("%s%s", symbols.horiz:rep(self._.win_width - #tokens_display + 4), tokens_display)
-		local lines = { summary }
-		self.set_lines(lines)
+		self.set_lines(summary)
 		self:newline()
 	end
 
@@ -84,16 +83,14 @@ function ChatRender:init()
 		local source = identity == "user" and "You"
 			or identity == "assistant" and model_config.model
 			or identity == "error" and "Error"
-		local lines = string.format("%s:", source)
-		return lines
+		return string.format("%s:", source)
 	end
 
 	self.date = function(time, format)
 		time = time or os.time()
 		format = format or "%I:%M %p"
 		local date = os.date(format, time)
-		local lines = date
-		return lines
+		return date
 	end
 end
 
@@ -178,9 +175,8 @@ end
 
 function ChatRender:error(err)
 	local message = err and err.error and err.error.message or type(err) == "string" and err or "Unknown error"
-	local message_lines = { message }
-	self.set_lines(message_lines)
-	vim.api.nvim_buf_add_highlight(self._.bufnr, -1, "ErrorMsg", self._.row - #message_lines, 0, -1)
+	self.set_lines(message)
+	vim.api.nvim_buf_add_highlight(self._.bufnr, -1, "ErrorMsg", self._.row - #{ message }, 0, -1)
 	return self
 end
 
