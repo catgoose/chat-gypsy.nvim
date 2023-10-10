@@ -40,8 +40,9 @@ local define_preview = function(self, entry)
 	render:set_bufnr(self.state.bufnr):set_winid(self.state.winid):reset()
 	local contents = utils.decode_json_from_path(entry.file_path)
 	for _, messages in pairs(contents.messages) do
-		render:from_role(messages.role, messages.time):newline(2)
-		render:lines(messages.message):newline(2)
+		render:from_role(messages.role, messages.time):newlines()
+		render:lines(messages.message):newlines()
+		render:token_summary(messages.tokens, messages.role):newlines()
 	end
 end
 

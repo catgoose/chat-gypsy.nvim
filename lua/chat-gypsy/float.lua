@@ -156,9 +156,9 @@ function Float:configure()
 		end
 
 		local system_render = function(messages)
-			self.render:from_role(messages.role):newline(2)
-			self.render:lines(messages.content):highlight(messages.role, messages.content):newline(2)
-			self.render:calculate_tokens(messages.role, messages.content):newline()
+			self.render:from_role(messages.role):newlines()
+			self.render:lines(messages.content):highlight(messages.role, messages.content):newlines()
+			self.render:calculate_tokens(messages.role, messages.content):newlines()
 		end
 
 		local before_request = function()
@@ -166,10 +166,10 @@ function Float:configure()
 		end
 
 		local on_stream_start = function()
-			self.render:from_role("user"):newline(2)
-			self.render:lines(lines):newline(2)
-			self.render:calculate_tokens("user", lines):newline()
-			self.render:from_role("assistant"):newline(2)
+			self.render:from_role("user"):newlines()
+			self.render:lines(lines):newlines()
+			self.render:calculate_tokens("user", lines):newlines()
+			self.render:from_role("assistant"):newlines()
 		end
 
 		local on_chunk = function(chunk)
@@ -177,12 +177,12 @@ function Float:configure()
 		end
 
 		local on_chunks_complete = function(chunks)
-			self.render:newline(2)
-			self.render:calculate_tokens("assistant", chunks):newline()
+			self.render:newlines()
+			self.render:calculate_tokens("assistant", chunks):newlines()
 		end
 
 		local on_chunk_error = function(err)
-			self.render:from_role("error"):newline(2)
+			self.render:from_role("error"):newlines()
 			self.render:error(err):newline()
 		end
 

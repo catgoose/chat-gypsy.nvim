@@ -61,21 +61,6 @@ function ChatRender:init()
 		end
 	end
 
-	self.token_summary = function(tokens)
-		local model_config = models.get_config(opts.openai_params.model)
-		local tokens_display = string.format(
-			" %s %s (%s/%s) %s",
-			symbols.left_arrow,
-			tokens,
-			self._.tokens.total,
-			model_config.max_tokens,
-			symbols.right_arrow
-		)
-		local summary = string.format("%s%s", symbols.horiz:rep(self._.win_width - #tokens_display + 4), tokens_display)
-		self.set_lines(summary)
-		self:newline()
-	end
-
 	self.format_role = function(role)
 		if not role or not utils.check_roles(role, true) then
 			return
@@ -109,6 +94,11 @@ function ChatRender:newline(new_lines)
 		self._.row = self._.row + 1
 		self.set_lines(self._.line)
 	end
+	return self
+end
+
+function ChatRender:newlines()
+	self:newline(2)
 	return self
 end
 
@@ -162,11 +152,26 @@ function ChatRender:calculate_tokens(role, data)
 		tokens = tokens or 0
 		self._.tokens[role] = tokens
 		self._.tokens.total = self._.tokens.total + self._.tokens[role]
-		self.token_summary(self._.tokens[role])
+		self:token_summary(self._.tokens, role)
 		History:add_message(message, role, self._.tokens)
 	end
 	utils.get_tokens(message, on_tokens)
 	vim.cmd("silent! undojoin")
+	return self
+end
+
+function ChatRender:token_summary(tokens, role)
+	local model_config = models.get_config(opts.openai_params.model)
+	local tokens_display = string.format(
+		" %s %s (%s/%s) %s",
+		symbols.left_arrow,
+		tokens[role],
+		tokens.total,
+		model_config.max_tokens,
+		symbols.right_arrow
+	)
+	local summary = string.format("%s%s", symbols.horiz:rep(self._.win_width - #tokens_display + 4), tokens_display)
+	self.set_lines(summary)
 	return self
 end
 
