@@ -140,6 +140,7 @@ function ChatRender:lines(lines)
 	return self
 end
 
+--  BUG: 2023-10-10 - Sending a prompt with double quotes returns 0 tokens
 function ChatRender:calculate_tokens(role, data)
 	if not utils.check_roles(role) then
 		return self
