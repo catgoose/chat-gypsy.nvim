@@ -135,22 +135,19 @@ function ChatRender:lines(lines)
 	if not lines then
 		return self
 	end
-	lines = #lines == 1 and lines or utils.string_split(lines, "\n")
+	if type(lines) == "string" then
+		lines = utils.string_split(lines, "\n")
+	end
 	self.set_lines(lines)
 	return self
 end
 
-function ChatRender:calculate_tokens(role, data)
+function ChatRender:calculate_tokens(message, role)
 	if not utils.check_roles(role) then
 		return self
 	end
-	--  TODO: 2023-10-10 - does data need to be split?  This should be generalized
-	--  somehow
-	if type(data) == "string" then
-		data = { data }
-	end
-	local delimin_char = role == "user" and "\n" or role == "assistant" and "" or role == "system" and "" or nil
-	local message = table.concat(data, delimin_char)
+	message = message or ""
+	message = type(message) == "table" and table.concat(message, "") or message
 	local on_tokens = function(tokens)
 		tokens = tokens or 0
 		self._.tokens[role] = tokens
