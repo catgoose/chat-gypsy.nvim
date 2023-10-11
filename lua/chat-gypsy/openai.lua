@@ -20,6 +20,11 @@ function OpenAI:new()
 	return self
 end
 
+function OpenAI:reset_openai()
+	self._.system_rendered = false
+	self.openai_params = opts.openai_params
+end
+
 function OpenAI:send(
 	lines,
 	before_request,

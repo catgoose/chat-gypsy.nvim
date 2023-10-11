@@ -125,6 +125,7 @@ function Request:init()
 
 	function Request:compose_entries(current_history, on_complete)
 		local openai_params = utils.deepcopy(current_history.openai_params)
+		self:reset_openai()
 		table.insert(openai_params.messages, {
 			role = "user",
 			content = "Return json object for this chat",
