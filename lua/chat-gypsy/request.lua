@@ -132,7 +132,7 @@ function Request:init()
 		openai_params.stream = false
 		openai_params.messages[1] = {
 			role = "system",
-			content = "Important: ONLY RETURN THE OBJECT.  You will be reducing a openai chat to a json object.  The object's schema is {name: string, description: string, keywords: string[]}. The description should be limited to 80 characters.  Break compound words in keywords into multiple terms in lowercase.  Only return the object.",
+			content = "Important: ONLY RETURN THE OBJECT.  You will be reducing a openai chat to a json object.  The object's schema is {name: string, description: string, keywords: string[]}. Break compound words in keywords into multiple terms in lowercase.  Only return the object.",
 		}
 		Log.trace(string.format("Setting entries from openai response using %s", vim.inspect(openai_params)))
 		local handler = curl.post({

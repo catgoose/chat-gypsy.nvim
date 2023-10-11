@@ -132,7 +132,7 @@ local get_entries_from_file = function(file_path, on_error)
 	end
 end
 
-function History:get_picker_entries(picker_cb)
+function History:get_picker_entries(picker_cb, opts)
 	local on_error = function(err)
 		if err then
 			Log.error(err)
@@ -157,7 +157,7 @@ function History:get_picker_entries(picker_cb)
 				})
 			end
 		end
-		picker_cb(picker_entries)
+		picker_cb(picker_entries, opts)
 	end
 
 	utils.find_files_in_directory(self.data_dir, on_files_found, on_error)

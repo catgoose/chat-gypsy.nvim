@@ -63,6 +63,7 @@ local get_picker_entries = function(entries, opts)
 				title = "Chat history",
 				define_preview = define_preview,
 			}),
+			wrap_results = true,
 		})
 		:find()
 end
