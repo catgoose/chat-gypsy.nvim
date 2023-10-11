@@ -43,8 +43,7 @@ function History:compose_entries(request)
 		self:save()
 		--  BUG: 2023-10-05 - Sending a history to compose entries while another
 		--  history composition is finishing will result in the history being reset
-		--  by the on_complete of the previous request which causes the history to
-		--  be reset prematurely
+		--  prematurely by the on_complete of the previous request
 		--  FIX: 2023-10-05 - Stop storing history as state, use sqlite instead
 		self:reset()
 	end
