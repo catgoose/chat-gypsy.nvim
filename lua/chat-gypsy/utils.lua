@@ -28,7 +28,8 @@ Utils.deepcopy = function(orig)
 	return copy
 end
 
-Utils.get_tokens = function(text, on_tokens)
+Utils.get_tokens = function(string, on_tokens)
+	local escaped_string = string.gsub(string, '"', '\\"')
 	local ok, result = pcall(
 		vim.api.nvim_exec2,
 		string.format(
@@ -40,7 +41,7 @@ encoded = encoder.encode("""%s""")
 print(len(encoded))
 EOF
 ]],
-			text
+			escaped_string
 		),
 		{ output = true }
 	)
