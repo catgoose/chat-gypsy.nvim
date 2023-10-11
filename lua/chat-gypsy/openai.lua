@@ -1,5 +1,5 @@
 local Log = require("chat-gypsy").Log
-local opts = require("chat-gypsy").Config.get("opts")
+local Config = require("chat-gypsy").Config
 local History = require("chat-gypsy").History
 
 local OpenAI = {}
@@ -8,21 +8,19 @@ OpenAI.__index = OpenAI
 --  TODO: 2023-10-10 - Create picker for openai model
 function OpenAI:new()
 	setmetatable(self, OpenAI)
-	self.openai_params = opts.openai_params
-	self.queue = require("chat-gypsy.queue"):new()
-	self._ = {
-		system_rendered = false,
-	}
+	self._ = {}
+	self._.queue = require("chat-gypsy.queue"):new()
 	self.save_history = function()
-		History:add_openai_params(self.openai_params)
+		History:add_openai_params(self._.openai_params)
 	end
-	self:init()
+	self:init_openai()
+	self:init_request()
 	return self
 end
 
-function OpenAI:reset_openai()
+function OpenAI:init_openai()
 	self._.system_rendered = false
-	self.openai_params = opts.openai_params
+	self._.openai_params = Config.get("opts").openai_params
 end
 
 function OpenAI:send(
@@ -36,8 +34,8 @@ function OpenAI:send(
 )
 	local message = table.concat(lines, "\n")
 	before_request()
-	if not self._.system_rendered and self.openai_params.messages[1].role == "system" then
-		system_render(self.openai_params.messages[1])
+	if not self._.system_rendered and self._.openai_params.messages[1].role == "system" then
+		system_render(self._.openai_params.messages[1])
 		self._.system_rendered = true
 		self.save_history()
 	end
@@ -62,11 +60,7 @@ function OpenAI:send(
 		self:query(message, _on_stream_start, on_chunk, on_complete, on_error)
 	end
 
-	self.queue:add(action)
-end
-
-function OpenAI:init()
-	Log.warn("OpenAI:layout_init: not implemented")
+	self._.queue:add(action)
 end
 
 function OpenAI:query(...)

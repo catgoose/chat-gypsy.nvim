@@ -12,7 +12,7 @@ setmetatable(Request, {
 })
 
 ---@diagnostic disable-next-line: duplicate-set-field
-function Request:init()
+function Request:init_request()
 	self.chunks = {}
 	self.error_chunks = {}
 	self.content = ""
@@ -24,7 +24,7 @@ function Request:init()
 		self.content = table.concat(self.chunks, "")
 		self.join_content()
 		Log.trace("on_assistant_response: " .. self.content)
-		table.insert(self.openai_params.messages, {
+		table.insert(self._.openai_params.messages, {
 			role = "assistant",
 			content = self.content,
 		})
@@ -32,7 +32,7 @@ function Request:init()
 	self.on_user_prompt = function(content)
 		self.content = content
 		Log.trace("on_user_prompt: " .. self.content)
-		table.insert(self.openai_params.messages, {
+		table.insert(self._.openai_params.messages, {
 			role = "user",
 			content = self.content,
 		})
@@ -83,7 +83,7 @@ function Request:init()
 					content_type = "application/json",
 					Authorization = "Bearer " .. opts.openai_key,
 				},
-				body = vim.json.encode(self.openai_params),
+				body = vim.json.encode(self._.openai_params),
 				stream = function(_, chunk)
 					if not stream_started then
 						vim.schedule(on_stream_start)
@@ -125,7 +125,7 @@ function Request:init()
 
 	function Request:compose_entries(current_history, on_complete)
 		local openai_params = utils.deepcopy(current_history.openai_params)
-		self:reset_openai()
+		self:init_openai()
 		table.insert(openai_params.messages, {
 			role = "user",
 			content = "Return json object for this chat",
@@ -201,7 +201,7 @@ function Request:query(message, on_stream_start, on_response_chunk, on_response_
 	local on_complete = function()
 		Log.trace("query: on_complete")
 		self.on_assistant_response()
-		Log.trace("query: openai_params: " .. vim.inspect(self.openai_params))
+		Log.trace("query: openai_params: " .. vim.inspect(self._.openai_params))
 		on_response_complete(self.chunks)
 	end
 
