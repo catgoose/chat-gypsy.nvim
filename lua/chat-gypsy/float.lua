@@ -165,7 +165,7 @@ function Float:configure()
 			vim.api.nvim_buf_set_lines(self._.prompt.bufnr, 0, -1, false, {})
 		end
 
-		local on_stream_start = function()
+		local on_chunk_stream_start = function()
 			self.writer:from_role("user"):newlines()
 			self.writer:lines(lines):newlines()
 			self.writer:calculate_tokens(lines, "user"):newlines()
@@ -190,7 +190,7 @@ function Float:configure()
 			lines,
 			before_request,
 			system_writer,
-			on_stream_start,
+			on_chunk_stream_start,
 			on_chunk,
 			on_chunks_complete,
 			on_chunk_error

@@ -27,7 +27,7 @@ function OpenAI:send(
 	lines,
 	before_request,
 	system_writer,
-	on_stream_start,
+	on_chunk_stream_start,
 	on_chunk,
 	on_chunks_complete,
 	on_chunk_error
@@ -41,8 +41,8 @@ function OpenAI:send(
 	end
 	Log.trace(string.format("adding request to queue: \nmessage: %s", message))
 	local action = function(queue_next)
-		local _on_stream_start = function()
-			on_stream_start()
+		local on_stream_start = function()
+			on_chunk_stream_start()
 			self.save_history()
 		end
 		local on_complete = function(complete_chunks)
@@ -57,7 +57,7 @@ function OpenAI:send(
 			queue_next()
 		end
 
-		self:query(message, _on_stream_start, on_chunk, on_complete, on_error)
+		self:query(message, on_stream_start, on_chunk, on_complete, on_error)
 	end
 
 	self._.queue:add(action)
