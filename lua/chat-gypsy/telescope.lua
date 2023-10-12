@@ -32,7 +32,6 @@ local attach_mappings = function(prompt_bufnr)
 	return true
 end
 
---  TODO: 2023-10-02 - show entry display at the top of preview
 local define_preview = function(self, entry)
 	vim.api.nvim_buf_set_option(self.state.bufnr, "filetype", "markdown")
 	vim.api.nvim_win_set_option(self.state.winid, "wrap", true)
