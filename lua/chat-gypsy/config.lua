@@ -65,6 +65,7 @@ local _opts = {
 				user = "Statement",
 				assistant = "Boolean",
 			},
+			tokens = "LineNr",
 			error_message = "Exception",
 			heading = "MoreMsg",
 		},

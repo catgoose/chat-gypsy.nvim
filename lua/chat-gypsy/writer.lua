@@ -140,6 +140,18 @@ function Writer:role_highlight(role)
 	return self
 end
 
+function Writer:token_highlight(tokens_display)
+	vim.api.nvim_buf_add_highlight(
+		self._.bufnr,
+		-1,
+		opts.ui.highlight.tokens,
+		self._.row - 1,
+		self._.win_width - #tokens_display,
+		-1
+	)
+	return self
+end
+
 function Writer:lines(lines)
 	if not lines then
 		return self
@@ -173,7 +185,7 @@ function Writer:token_summary(tokens, role)
 	local model_config = models.get_config(opts.openai_params.model)
 	local tokens_display = string.format(" %s (%s/%s) ", tokens[role], tokens.total, model_config.max_tokens)
 	local summary = string.format("%s%s", symbols.space:rep(self._.win_width - #tokens_display), tokens_display)
-	self.set_lines(summary):newline():horiz_line()
+	self.set_lines(summary):token_highlight(tokens_display):newline():horiz_line()
 	return self
 end
 
