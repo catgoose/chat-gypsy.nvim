@@ -4,12 +4,12 @@ local models = require("chat-gypsy.models")
 local opts, symbols = Config.get("opts"), Config.get("symbols")
 local utils = require("chat-gypsy.utils")
 
-local ChatRender = {}
-ChatRender.__index = ChatRender
+local Writer = {}
+Writer.__index = Writer
 
-function ChatRender:new(cfg)
+function Writer:new(cfg)
 	local instance = {}
-	setmetatable(instance, ChatRender)
+	setmetatable(instance, Writer)
 	cfg = cfg or {
 		winid = nil,
 		bufnr = nil,
@@ -33,13 +33,13 @@ function ChatRender:new(cfg)
 	return instance
 end
 
-function ChatRender:reset()
+function Writer:reset()
 	self._.line = ""
 	self._.row = 1
 	return self
 end
 
-function ChatRender:set_move_cursor(state)
+function Writer:set_move_cursor(state)
 	if state == true then
 		self.move_cursor = state
 	end
@@ -49,7 +49,7 @@ function ChatRender:set_move_cursor(state)
 	return self
 end
 
-function ChatRender:init()
+function Writer:init()
 	self.set_lines = function(lines)
 		if type(lines) == "string" then
 			lines = { lines }
@@ -91,29 +91,29 @@ function ChatRender:init()
 	end
 end
 
-function ChatRender:set_cursor()
+function Writer:set_cursor()
 	if self._.winid and vim.api.nvim_win_is_valid(self._.winid) and self.move_cursor then
 		vim.api.nvim_win_set_cursor(self._.winid, { self._.row, 0 })
 	end
 end
 
-function ChatRender:newlines()
+function Writer:newlines()
 	self.newline(2)
 	return self
 end
 
-function ChatRender:set_winid(winid)
+function Writer:set_winid(winid)
 	self._.winid = winid
 	self._.win_width = vim.api.nvim_win_get_width(winid)
 	return self
 end
 
-function ChatRender:set_bufnr(bufnr)
+function Writer:set_bufnr(bufnr)
 	self._.bufnr = bufnr
 	return self
 end
 
-function ChatRender:from_role(role, time)
+function Writer:from_role(role, time)
 	if not utils.check_roles(role, true) then
 		return self
 	end
@@ -126,12 +126,12 @@ function ChatRender:from_role(role, time)
 	return self
 end
 
-function ChatRender:highlight(role, lines)
+function Writer:highlight(role, lines)
 	vim.api.nvim_buf_add_highlight(self._.bufnr, -1, opts.ui.highlight.role[role], self._.row - #{ lines }, 0, -1)
 	return self
 end
 
-function ChatRender:lines(lines)
+function Writer:lines(lines)
 	if not lines then
 		return self
 	end
@@ -142,7 +142,7 @@ function ChatRender:lines(lines)
 	return self
 end
 
-function ChatRender:calculate_tokens(message, role)
+function Writer:calculate_tokens(message, role)
 	if not utils.check_roles(role) then
 		return self
 	end
@@ -160,7 +160,7 @@ function ChatRender:calculate_tokens(message, role)
 	return self
 end
 
-function ChatRender:token_summary(tokens, role)
+function Writer:token_summary(tokens, role)
 	local model_config = models.get_config(opts.openai_params.model)
 	local tokens_display = string.format(
 		" %s %s (%s/%s) %s",
@@ -175,7 +175,7 @@ function ChatRender:token_summary(tokens, role)
 	return self
 end
 
-function ChatRender:append_chunk(chunk)
+function Writer:append_chunk(chunk)
 	local append = function(_chunk)
 		self._.line = self._.line .. _chunk
 		self.set_lines(self._.line)
@@ -193,11 +193,11 @@ function ChatRender:append_chunk(chunk)
 	end
 end
 
-function ChatRender:error(err)
+function Writer:error(err)
 	local message = err and err.error and err.error.message or type(err) == "string" and err or "Unknown error"
 	self.set_lines(message)
 	self:highlight("error", message)
 	return self
 end
 
-return ChatRender
+return Writer

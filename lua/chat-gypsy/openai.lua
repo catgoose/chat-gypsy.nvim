@@ -19,14 +19,14 @@ function OpenAI:new()
 end
 
 function OpenAI:init_openai()
-	self._.system_rendered = false
+	self._.system_written = false
 	self._.openai_params = Config.get("opts").openai_params
 end
 
 function OpenAI:send(
 	lines,
 	before_request,
-	system_render,
+	system_writer,
 	on_stream_start,
 	on_chunk,
 	on_chunks_complete,
@@ -34,9 +34,9 @@ function OpenAI:send(
 )
 	local message = table.concat(lines, "\n")
 	before_request()
-	if not self._.system_rendered and self._.openai_params.messages[1].role == "system" then
-		system_render(self._.openai_params.messages[1])
-		self._.system_rendered = true
+	if not self._.system_written and self._.openai_params.messages[1].role == "system" then
+		system_writer(self._.openai_params.messages[1])
+		self._.system_written = true
 		self.save_history()
 	end
 	Log.trace(string.format("adding request to queue: \nmessage: %s", message))

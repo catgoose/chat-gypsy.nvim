@@ -6,7 +6,7 @@ local pickers = require("telescope.pickers")
 local actions = require("telescope.actions")
 local action_state = require("telescope.actions.state")
 local previewers = require("telescope.previewers")
-local render = require("chat-gypsy.chat_render"):new():set_move_cursor(false)
+local writer = require("chat-gypsy.writer"):new():set_move_cursor(false)
 local utils = require("chat-gypsy.utils")
 
 local Telescope = {}
@@ -36,16 +36,16 @@ end
 local define_preview = function(self, entry)
 	vim.api.nvim_buf_set_option(self.state.bufnr, "filetype", "markdown")
 	vim.api.nvim_win_set_option(self.state.winid, "wrap", true)
-	render:set_bufnr(self.state.bufnr):set_winid(self.state.winid):reset()
+	writer:set_bufnr(self.state.bufnr):set_winid(self.state.winid):reset()
 	local contents = utils.decode_json_from_path(entry.file_path)
 	for _, messages in pairs(contents.messages) do
-		render:from_role(messages.role, messages.time):newlines()
+		writer:from_role(messages.role, messages.time):newlines()
 		if messages.role == "system" then
-			render:lines(messages.content):highlight(messages.role, messages.content):newlines()
+			writer:lines(messages.content):highlight(messages.role, messages.content):newlines()
 		else
-			render:lines(messages.content):newlines()
+			writer:lines(messages.content):newlines()
 		end
-		render:token_summary(messages.tokens, messages.role):newlines()
+		writer:token_summary(messages.tokens, messages.role):newlines()
 	end
 end
 

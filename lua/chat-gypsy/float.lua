@@ -31,20 +31,20 @@ setmetatable(Float, {
 function Float:init()
 	self._ = {}
 	self.request = require("chat-gypsy.request"):new()
-	self.render = require("chat-gypsy.chat_render"):new()
+	self.writer = require("chat-gypsy.writer"):new()
 
 	self.init_state = function()
 		self._ = utils.deepcopy(state)
 		self._.chat.bufnr = self.layout._.box.box[1].component.bufnr
 		self._.prompt.bufnr = self.layout._.box.box[2].component.bufnr
-		self.render:set_bufnr(self._.chat.bufnr)
-		self.render:set_winid(self._.chat.winid)
+		self.writer:set_bufnr(self._.chat.bufnr)
+		self.writer:set_winid(self._.chat.winid)
 		self.set_winids()
 	end
 	self.set_winids = function()
 		self._.chat.winid = self.layout._.box.box[1].component.winid
 		self._.prompt_winid = self.layout._.box.box[2].component.winid
-		self.render:set_winid(self._.chat.winid)
+		self.writer:set_winid(self._.chat.winid)
 	end
 
 	self.focus_chat = function()
@@ -95,7 +95,7 @@ function Float:init()
 		self._.hidden = false
 		self.set_winids()
 		self.focus_last_win()
-		self.render:set_cursor()
+		self.writer:set_cursor()
 	end
 	self:actions()
 end
@@ -155,10 +155,10 @@ function Float:configure()
 			return
 		end
 
-		local system_render = function(messages)
-			self.render:from_role(messages.role):newlines()
-			self.render:lines(messages.content):highlight(messages.role, messages.content):newlines()
-			self.render:calculate_tokens(messages.content, messages.role):newlines()
+		local system_writer = function(messages)
+			self.writer:from_role(messages.role):newlines()
+			self.writer:lines(messages.content):highlight(messages.role, messages.content):newlines()
+			self.writer:calculate_tokens(messages.content, messages.role):newlines()
 		end
 
 		local before_request = function()
@@ -166,30 +166,30 @@ function Float:configure()
 		end
 
 		local on_stream_start = function()
-			self.render:from_role("user"):newlines()
-			self.render:lines(lines):newlines()
-			self.render:calculate_tokens(lines, "user"):newlines()
-			self.render:from_role("assistant"):newlines()
+			self.writer:from_role("user"):newlines()
+			self.writer:lines(lines):newlines()
+			self.writer:calculate_tokens(lines, "user"):newlines()
+			self.writer:from_role("assistant"):newlines()
 		end
 
 		local on_chunk = function(chunk)
-			self.render:append_chunk(chunk)
+			self.writer:append_chunk(chunk)
 		end
 
 		local on_chunks_complete = function(chunks)
-			self.render:newlines()
-			self.render:calculate_tokens(chunks, "assistant"):newlines()
+			self.writer:newlines()
+			self.writer:calculate_tokens(chunks, "assistant"):newlines()
 		end
 
 		local on_chunk_error = function(err)
-			self.render:from_role("error"):newlines()
-			self.render:error(err):newline()
+			self.writer:from_role("error"):newlines()
+			self.writer:error(err):newline()
 		end
 
 		self.request:send(
 			lines,
 			before_request,
-			system_render,
+			system_writer,
 			on_stream_start,
 			on_chunk,
 			on_chunks_complete,
