@@ -8,14 +8,43 @@ local action_state = require("telescope.actions.state")
 local previewers = require("telescope.previewers")
 local writer = require("chat-gypsy.writer"):new():set_move_cursor(false)
 local utils = require("chat-gypsy.utils")
+local symbols = require("chat-gypsy").Config.get("symbols")
 
 local Telescope = {}
 
+local function entry_ordinal(item)
+	local tags = vim.tbl_map(function(keyword)
+		return symbols.hash .. keyword
+	end, item.entries.keywords)
+	return table.concat(tags, symbols.space) .. symbols.space .. item.entries.name
+end
+
+local entry_display = function(item)
+	local win_width = vim.api.nvim_win_get_width(0)
+	local keywords_length = 0
+	for _, keyword in pairs(item.value.entries.keywords) do
+		keywords_length = keywords_length + #keyword + 2
+	end
+	local items =
+		{ item.value.entries.name, symbols.space:rep(win_width - keywords_length - #item.value.entries.name - 2) }
+	local highlights = {}
+	local start = #table.concat(items, "")
+	for _, keyword in pairs(item.value.entries.keywords) do
+		vim.list_extend(items, { symbols.hash, keyword, symbols.space })
+		vim.list_extend(highlights, {
+			{ { start, start + 1 }, "TelescopeResultsOperator" },
+			{ { start + 1, start + 1 + #keyword }, "TelescopeResultsIdentifier" },
+		})
+		start = start + 1 + #keyword + 1
+	end
+	return table.concat(items), highlights
+end
+
 local entry_maker = function(item)
 	return {
-		value = item.entries,
-		display = string.format("%s: %s", item.entries.name, item.entries.description),
-		ordinal = item.entries.name,
+		value = item,
+		display = entry_display,
+		ordinal = entry_ordinal(item),
 		file_path = item.entries.path.full,
 	}
 end

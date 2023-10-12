@@ -34,6 +34,7 @@ local _openai_models = {
 local _symbols = {
 	horiz = "━",
 	space = " ",
+	hash = "#",
 	left_arrow = "◀",
 	right_arrow = "▶",
 }
