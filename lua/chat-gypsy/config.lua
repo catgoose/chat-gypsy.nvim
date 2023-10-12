@@ -65,6 +65,7 @@ local _opts = {
 				assistant = "Boolean",
 			},
 			error_message = "Exception",
+			heading = "MoreMsg",
 		},
 		layout_placement = "center",
 		prompt = {

@@ -157,7 +157,7 @@ function Float:configure()
 
 		local system_writer = function(messages)
 			self.writer:from_role(messages.role):newlines()
-			self.writer:lines(messages.content):highlight(messages.role, messages.content):newlines()
+			self.writer:lines(messages.content):role_highlight(messages.role):newlines()
 			self.writer:calculate_tokens(messages.content, messages.role):newlines()
 		end
 

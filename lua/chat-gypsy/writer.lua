@@ -79,16 +79,6 @@ function Writer:init()
 		local date = os.date(format, time)
 		return date
 	end
-
-	self.newline = function(new_lines)
-		new_lines = new_lines or 1
-		for _ = 1, new_lines do
-			self._.line = ""
-			self._.row = self._.row + 1
-			self.set_lines(self._.line)
-		end
-		return self
-	end
 end
 
 function Writer:set_cursor()
@@ -97,8 +87,18 @@ function Writer:set_cursor()
 	end
 end
 
+function Writer:newline(new_lines)
+	new_lines = new_lines or 1
+	for _ = 1, new_lines do
+		self._.line = ""
+		self._.row = self._.row + 1
+		self.set_lines(self._.line)
+	end
+	return self
+end
+
 function Writer:newlines()
-	self.newline(2)
+	self:newline(2)
 	return self
 end
 
@@ -122,12 +122,21 @@ function Writer:from_role(role, time)
 	local date = self.date(time, "%m/%d/%Y %I:%M%p")
 	local line = string.format("%s%s%s", role_display, (" "):rep(self._.win_width - #role_display - #date), date)
 	self.set_lines(line)
-	self:highlight(role, line)
+	self:role_highlight(role)
 	return self
 end
 
-function Writer:highlight(role, lines)
-	vim.api.nvim_buf_add_highlight(self._.bufnr, -1, opts.ui.highlight.role[role], self._.row - #{ lines }, 0, -1)
+function Writer:heading(lines)
+	if not lines then
+		return self
+	end
+	self:lines(lines)
+	vim.api.nvim_buf_add_highlight(self._.bufnr, -1, opts.ui.highlight.heading, self._.row - 1, 0, -1)
+	return self
+end
+
+function Writer:role_highlight(role)
+	vim.api.nvim_buf_add_highlight(self._.bufnr, -1, opts.ui.highlight.role[role], self._.row - 1, 0, -1)
 	return self
 end
 
@@ -175,6 +184,11 @@ function Writer:token_summary(tokens, role)
 	return self
 end
 
+function Writer:line_break()
+	self.set_lines(symbols.horiz:rep(self._.win_width))
+	return self
+end
+
 function Writer:append_chunk(chunk)
 	local append = function(_chunk)
 		self._.line = self._.line .. _chunk
@@ -183,7 +197,7 @@ function Writer:append_chunk(chunk)
 	if string.match(chunk, "\n") then
 		for _chunk in chunk:gmatch(".") do
 			if string.match(_chunk, "\n") then
-				self.newline()
+				self:newline()
 			else
 				append(_chunk)
 			end
@@ -196,7 +210,7 @@ end
 function Writer:error(err)
 	local message = err and err.error and err.error.message or type(err) == "string" and err or "Unknown error"
 	self.set_lines(message)
-	self:highlight("error", message)
+	self:role_highlight("error")
 	return self
 end
 
