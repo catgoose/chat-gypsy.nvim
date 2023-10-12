@@ -33,6 +33,7 @@ local _openai_models = {
 
 local _symbols = {
 	horiz = "━",
+	space = " ",
 	left_arrow = "◀",
 	right_arrow = "▶",
 }

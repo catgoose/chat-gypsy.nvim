@@ -59,6 +59,7 @@ function Writer:init()
 			self._.row = self._.row + #lines - 1
 			self:set_cursor()
 		end
+		return self
 	end
 
 	self.format_role = function(role)
@@ -121,8 +122,7 @@ function Writer:from_role(role, time)
 	local role_display = self.format_role(role)
 	local date = self.date(time, "%m/%d/%Y %I:%M%p")
 	local line = string.format("%s%s%s", role_display, (" "):rep(self._.win_width - #role_display - #date), date)
-	self.set_lines(line)
-	self:role_highlight(role)
+	self.set_lines(line):role_highlight(role)
 	return self
 end
 
@@ -171,20 +171,13 @@ end
 
 function Writer:token_summary(tokens, role)
 	local model_config = models.get_config(opts.openai_params.model)
-	local tokens_display = string.format(
-		" %s %s (%s/%s) %s",
-		symbols.left_arrow,
-		tokens[role],
-		tokens.total,
-		model_config.max_tokens,
-		symbols.right_arrow
-	)
-	local summary = string.format("%s%s", symbols.horiz:rep(self._.win_width - #tokens_display + 4), tokens_display)
-	self.set_lines(summary)
+	local tokens_display = string.format(" %s (%s/%s) ", tokens[role], tokens.total, model_config.max_tokens)
+	local summary = string.format("%s%s", symbols.space:rep(self._.win_width - #tokens_display), tokens_display)
+	self.set_lines(summary):newline():horiz_line()
 	return self
 end
 
-function Writer:line_break()
+function Writer:horiz_line()
 	self.set_lines(symbols.horiz:rep(self._.win_width))
 	return self
 end
@@ -209,8 +202,7 @@ end
 
 function Writer:error(err)
 	local message = err and err.error and err.error.message or type(err) == "string" and err or "Unknown error"
-	self.set_lines(message)
-	self:role_highlight("error")
+	self.set_lines(message):role_highlight("error")
 	return self
 end
 

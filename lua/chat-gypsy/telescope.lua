@@ -37,7 +37,7 @@ local define_preview = function(self, entry)
 	vim.api.nvim_win_set_option(self.state.winid, "wrap", true)
 	writer:set_bufnr(self.state.bufnr):set_winid(self.state.winid):reset()
 	local contents = utils.decode_json_from_path(entry.file_path)
-	writer:newline():heading(contents.entries.description):newlines():line_break():newlines()
+	writer:newline():heading(contents.entries.description):newlines():horiz_line():newlines()
 	for _, messages in pairs(contents.messages) do
 		writer:from_role(messages.role, messages.time):newlines()
 		if messages.role == "system" then
