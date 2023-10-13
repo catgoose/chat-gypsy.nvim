@@ -23,6 +23,11 @@ function OpenAI:init_openai()
 	self._.openai_params = Config.get("opts").openai_params
 end
 
+function OpenAI:set_openai_params(params)
+	Log.debug(string.format("OpenAI:set_openai_params: params: %s", vim.inspect(params)))
+	self._.openai_params = params
+end
+
 function OpenAI:send(
 	lines,
 	before_request,

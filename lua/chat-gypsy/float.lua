@@ -105,7 +105,8 @@ function Float:actions()
 		self.mount()
 	end
 	if self.ui_opts.restore_history then
-		vim.print(string.format("Restoring history: %s", vim.inspect(self.ui_opts.current)))
+		Log.info(string.format("Restoring history: %s", vim.inspect(self.ui_opts.current)))
+		self.request:set_openai_params(self.ui_opts.current.openai_params)
 	end
 end
 
