@@ -96,7 +96,10 @@ function UI:new(ui_opts)
 		mount = false,
 		placement = opts.ui.layout_placement,
 		restore_history = false,
-		current = nil,
+		current = {
+			openai_params = {},
+			messages = {},
+		},
 	}
 	ui_opts = vim.tbl_deep_extend("force", default, ui_opts)
 	local ui = build_ui(ui_opts.layout_placement)
