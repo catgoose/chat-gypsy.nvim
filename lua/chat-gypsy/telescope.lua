@@ -7,7 +7,6 @@ local actions = require("telescope.actions")
 local action_state = require("telescope.actions.state")
 local previewers = require("telescope.previewers")
 local writer = require("chat-gypsy.writer"):new():set_move_cursor(false)
-local utils = require("chat-gypsy.utils")
 local symbols = require("chat-gypsy").Config.get("symbols")
 
 local Telescope = {}
@@ -45,7 +44,6 @@ local entry_maker = function(item)
 		value = item,
 		display = entry_display,
 		ordinal = entry_ordinal(item),
-		file_path = item.entries.path.full,
 	}
 end
 
@@ -54,23 +52,21 @@ local attach_mappings = function(prompt_bufnr)
 		actions.close(prompt_bufnr)
 		local selection = action_state.get_selected_entry()
 		Log.trace(string.format("history %s selected", vim.inspect(selection)))
-		History:load_from_file_path(selection.file_path)
-		local current = History:get_current()
-		require("chat-gypsy").Session:restore(current)
+		require("chat-gypsy").Session:restore(selection)
 	end)
 	return true
 end
 
-local define_preview = function(self, entry)
+local define_preview = function(self, item)
+	local entries = item.value.entries
 	vim.api.nvim_buf_set_option(self.state.bufnr, "filetype", "markdown")
 	vim.api.nvim_win_set_option(self.state.winid, "wrap", true)
 	writer:set_bufnr(self.state.bufnr):set_winid(self.state.winid):reset()
-	local contents = utils.decode_json_from_path(entry.file_path)
 	writer:newline()
-	writer:heading(contents.openai_params.model):newlines()
-	writer:heading(contents.entries.description):newlines()
+	writer:heading(entries.openai_params.model):newlines()
+	writer:heading(entries.description):newlines()
 	writer:horiz_line():newlines()
-	for _, messages in pairs(contents.messages) do
+	for _, messages in pairs(entries.messages) do
 		writer:from_role(messages.role, messages.time):newlines()
 		if messages.role == "system" then
 			writer:lines(messages.content):role_highlight(messages.role):newlines()

@@ -123,11 +123,15 @@ local get_entries_from_file = function(file_path, on_error)
 	local history_json = utils.decode_json_from_path(file_path, on_error)
 	if
 		history_json
+		and history_json.openai_params
+		and history_json.messages
 		and history_json.entries
 		and history_json.entries.name
 		and history_json.entries.description
 		and history_json.entries.keywords
 	then
+		history_json.entries.openai_params = history_json.openai_params or {}
+		history_json.entries.messages = history_json.messages or {}
 		return history_json.entries
 	else
 		return nil
@@ -151,10 +155,8 @@ function History:get_picker_entries(picker_cb, opts)
 						name = entries.name,
 						description = entries.description,
 						keywords = entries.keywords,
-						path = {
-							full = file_path,
-							base = vim.fn.fnamemodify(file_path, ":t"),
-						},
+						openai_params = entries.openai_params,
+						messages = entries.messages,
 					},
 				})
 			end
