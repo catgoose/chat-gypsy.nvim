@@ -35,11 +35,20 @@ end
 function History:init()
 	self:init_current()
 	Path:new(self.data_dir):mkdir()
+
+	self.sort_keywords = function()
+		local keywords = self.current.entries.keywords
+		table.sort(keywords, function(a, b)
+			return a < b
+		end)
+		self.current.entries.keywords = keywords
+	end
 end
 
 function History:compose_entries(request)
 	local on_complete = function()
 		Log.debug(string.format("Composed entries for History id %s", self.current.id))
+		self.sort_keywords()
 		self:save()
 		self:reset()
 	end
