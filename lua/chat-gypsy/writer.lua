@@ -80,6 +80,12 @@ function Writer:init()
 		local date = os.date(format, time)
 		return date
 	end
+
+	self.set_highlight = function(hlgroup, col_start)
+		col_start = col_start or 0
+		vim.api.nvim_buf_add_highlight(self._.bufnr, -1, hlgroup, self._.row - 1, col_start, -1)
+		return self
+	end
 end
 
 function Writer:set_cursor()
@@ -131,24 +137,17 @@ function Writer:heading(lines)
 		return self
 	end
 	self:lines(lines)
-	vim.api.nvim_buf_add_highlight(self._.bufnr, -1, opts.ui.highlight.heading, self._.row - 1, 0, -1)
+	self.set_highlight(opts.ui.highlight.heading)
 	return self
 end
 
 function Writer:role_highlight(role)
-	vim.api.nvim_buf_add_highlight(self._.bufnr, -1, opts.ui.highlight.role[role], self._.row - 1, 0, -1)
+	self.set_highlight(opts.ui.highlight.role[role])
 	return self
 end
 
 function Writer:token_highlight(tokens_display)
-	vim.api.nvim_buf_add_highlight(
-		self._.bufnr,
-		-1,
-		opts.ui.highlight.tokens,
-		self._.row - 1,
-		self._.win_width - #tokens_display,
-		-1
-	)
+	self.set_highlight(opts.ui.highlight.tokens, self._.win_width - #tokens_display)
 	return self
 end
 
