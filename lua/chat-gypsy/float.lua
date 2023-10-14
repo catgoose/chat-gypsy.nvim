@@ -87,6 +87,8 @@ function Float:init()
 		self._.instance = false
 		--  QUESTION: 2023-10-08 - How does this function if there was an
 		--  error?
+		--  BUG: 2023-10-14 - Closing the float for a continued chat session
+		--  removes that chat from telescope entries
 		if self._.should_compose_entries then
 			History:compose_entries(self.request)
 		end
