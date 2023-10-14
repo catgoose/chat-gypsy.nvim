@@ -135,7 +135,7 @@ Utils.decode_json_from_path = function(file_path, on_error)
 	end
 end
 
-Utils.string_to_lines = function(str)
+Utils.string_to_lines_tbl = function(str)
 	local t = {}
 	local pattern = "([^\n]*)"
 	for word in string.gmatch(str, pattern) do

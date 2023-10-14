@@ -132,6 +132,17 @@ function Writer:from_role(role, time)
 	return self
 end
 
+function Writer:lines(lines)
+	if not lines then
+		return self
+	end
+	if type(lines) == "string" then
+		lines = utils.string_to_lines_tbl(lines)
+	end
+	self.set_lines(lines)
+	return self
+end
+
 function Writer:heading(lines)
 	if not lines then
 		return self
