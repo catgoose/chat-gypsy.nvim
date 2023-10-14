@@ -135,9 +135,9 @@ Utils.decode_json_from_path = function(file_path, on_error)
 	end
 end
 
-Utils.string_split = function(str, delimiter)
+Utils.string_to_lines = function(str)
 	local t = {}
-	local pattern = "([^" .. delimiter .. "]+)"
+	local pattern = "([^\n]*)"
 	for word in string.gmatch(str, pattern) do
 		table.insert(t, word)
 	end

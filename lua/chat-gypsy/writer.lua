@@ -156,7 +156,7 @@ function Writer:lines(lines)
 		return self
 	end
 	if type(lines) == "string" then
-		lines = utils.string_split(lines, "\n")
+		lines = utils.string_to_lines(lines)
 	end
 	self.set_lines(lines)
 	return self
