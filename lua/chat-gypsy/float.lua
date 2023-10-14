@@ -37,6 +37,7 @@ function Float:init()
 		self._ = utils.deepcopy(state)
 		self._.chat.bufnr = self.layout._.box.box[1].component.bufnr
 		self._.prompt.bufnr = self.layout._.box.box[2].component.bufnr
+		self._.should_compose_entries = false
 		self.writer:set_bufnr(self._.chat.bufnr)
 		self.writer:set_winid(self._.chat.winid)
 		self.set_winids()
@@ -86,8 +87,7 @@ function Float:init()
 		self._.instance = false
 		--  QUESTION: 2023-10-08 - How does this function if there was an
 		--  error?
-		if not self.ui_opts.restore_history then
-			--  TODO: 2023-10-13 - this should compose entries if new request was made
+		if self._.should_compose_entries then
 			History:compose_entries(self.request)
 		end
 	end
@@ -105,17 +105,20 @@ function Float:init()
 
 	-- writing callbacks
 	self.system_writer = function(message)
+		self._.should_compose_entries = false
 		self.writer:from_role(message.role):newlines()
 		self.writer:lines(message.content):role_highlight(message.role):newlines()
 		self.writer:calculate_tokens(message.content, message.role):newlines()
 	end
 	self.before_request = function()
 		vim.api.nvim_buf_set_lines(self._.prompt.bufnr, 0, -1, false, {})
+		self._.should_compose_entries = true
 	end
 	self.on_chunk_stream_start = function(lines)
 		self.writer:from_role("user"):newlines()
 		self.writer:lines(lines):newlines()
 		self.writer:calculate_tokens(lines, "user"):newlines()
+		self._.should_compose_entries = false
 		self.writer:from_role("assistant"):newlines()
 	end
 	self.on_chunk = function(chunk)
@@ -124,10 +127,12 @@ function Float:init()
 	self.on_chunks_complete = function(chunks)
 		self.writer:newlines()
 		self.writer:calculate_tokens(chunks, "assistant"):newlines()
+		self._.should_compose_entries = true
 	end
 	self.on_chunk_error = function(err)
 		self.writer:from_role("error"):newlines()
 		self.writer:error(err):newline()
+		self._.should_compose_entries = false
 	end
 
 	self:actions()
