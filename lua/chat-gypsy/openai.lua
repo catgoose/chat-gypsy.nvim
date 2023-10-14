@@ -26,10 +26,11 @@ end
 function OpenAI:set_openai_params(params)
 	Log.debug(string.format("OpenAI:set_openai_params: params: %s", vim.inspect(params)))
 	self._.openai_params = params
+	self._.system_written = true
 end
 
 function OpenAI:send(
-	lines,
+	prompt_lines,
 	before_request,
 	system_writer,
 	on_chunk_stream_start,
@@ -37,17 +38,16 @@ function OpenAI:send(
 	on_chunks_complete,
 	on_chunk_error
 )
-	local message = table.concat(lines, "\n")
 	before_request()
 	if not self._.system_written and self._.openai_params.messages[1].role == "system" then
 		system_writer(self._.openai_params.messages[1])
 		self._.system_written = true
 		self.save_history()
 	end
-	Log.trace(string.format("adding request to queue: \nmessage: %s", message))
+	Log.trace(string.format("adding request to queue: \nmessage: %s", table.concat(prompt_lines, "\n")))
 	local action = function(queue_next)
-		local on_stream_start = function()
-			on_chunk_stream_start()
+		local on_stream_start = function(lines)
+			on_chunk_stream_start(lines)
 			self.save_history()
 		end
 		local on_complete = function(complete_chunks)
@@ -62,7 +62,7 @@ function OpenAI:send(
 			queue_next()
 		end
 
-		self:query(message, on_stream_start, on_chunk, on_complete, on_error)
+		self:query(prompt_lines, on_stream_start, on_chunk, on_complete, on_error)
 	end
 
 	self._.queue:add(action)

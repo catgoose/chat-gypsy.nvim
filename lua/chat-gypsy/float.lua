@@ -47,6 +47,7 @@ function Float:init()
 		self.writer:set_winid(self._.chat.winid)
 	end
 
+	-- focus
 	self.focus_chat = function()
 		vim.api.nvim_set_current_win(self._.chat.winid)
 		self._.focused_win = "chat"
@@ -67,6 +68,7 @@ function Float:init()
 		return vim.tbl_contains({ self._.prompt_winid, self._.chat.winid }, vim.api.nvim_get_current_win())
 	end
 
+	-- mounting
 	self.mount = function()
 		Log.trace("Mounting UI")
 		self.layout:mount()
@@ -84,7 +86,9 @@ function Float:init()
 		self._.instance = false
 		--  QUESTION: 2023-10-08 - How does this function if there was an
 		--  error?
-		History:compose_entries(self.request)
+		if not self.ui_opts.restore_history then
+			History:compose_entries(self.request)
+		end
 	end
 	self.hide = function()
 		self.layout:hide()
@@ -97,6 +101,34 @@ function Float:init()
 		self.focus_last_win()
 		self.writer:set_cursor()
 	end
+
+	-- writing callbacks
+	self.system_writer = function(message)
+		self.writer:from_role(message.role):newlines()
+		self.writer:lines(message.content):role_highlight(message.role):newlines()
+		self.writer:calculate_tokens(message.content, message.role):newlines()
+	end
+	self.before_request = function()
+		vim.api.nvim_buf_set_lines(self._.prompt.bufnr, 0, -1, false, {})
+	end
+	self.on_chunk_stream_start = function(lines)
+		self.writer:from_role("user"):newlines()
+		self.writer:lines(lines):newlines()
+		self.writer:calculate_tokens(lines, "user"):newlines()
+		self.writer:from_role("assistant"):newlines()
+	end
+	self.on_chunk = function(chunk)
+		self.writer:append_chunk(chunk)
+	end
+	self.on_chunks_complete = function(chunks)
+		self.writer:newlines()
+		self.writer:calculate_tokens(chunks, "assistant"):newlines()
+	end
+	self.on_chunk_error = function(err)
+		self.writer:from_role("error"):newlines()
+		self.writer:error(err):newline()
+	end
+
 	self:actions()
 end
 
@@ -107,6 +139,9 @@ function Float:actions()
 	if self.ui_opts.restore_history then
 		Log.info(string.format("Restoring history: %s", vim.inspect(self.ui_opts.current)))
 		self.request:set_openai_params(self.ui_opts.current.openai_params)
+		for _, message in ipairs(self.ui_opts.current.messages) do
+			self.system_writer(message)
+		end
 	end
 end
 
@@ -151,50 +186,19 @@ function Float:configure()
 		end
 	end)
 
-	local send_prompt = function(lines)
-		if lines[1] == "" and #lines == 1 then
+	local send_prompt = function(prompt_lines)
+		if prompt_lines[1] == "" and #prompt_lines == 1 then
 			return
 		end
 
-		local system_writer = function(messages)
-			self.writer:from_role(messages.role):newlines()
-			self.writer:lines(messages.content):role_highlight(messages.role):newlines()
-			self.writer:calculate_tokens(messages.content, messages.role):newlines()
-		end
-
-		local before_request = function()
-			vim.api.nvim_buf_set_lines(self._.prompt.bufnr, 0, -1, false, {})
-		end
-
-		local on_chunk_stream_start = function()
-			self.writer:from_role("user"):newlines()
-			self.writer:lines(lines):newlines()
-			self.writer:calculate_tokens(lines, "user"):newlines()
-			self.writer:from_role("assistant"):newlines()
-		end
-
-		local on_chunk = function(chunk)
-			self.writer:append_chunk(chunk)
-		end
-
-		local on_chunks_complete = function(chunks)
-			self.writer:newlines()
-			self.writer:calculate_tokens(chunks, "assistant"):newlines()
-		end
-
-		local on_chunk_error = function(err)
-			self.writer:from_role("error"):newlines()
-			self.writer:error(err):newline()
-		end
-
 		self.request:send(
-			lines,
-			before_request,
-			system_writer,
-			on_chunk_stream_start,
-			on_chunk,
-			on_chunks_complete,
-			on_chunk_error
+			prompt_lines,
+			self.before_request,
+			self.system_writer,
+			self.on_chunk_stream_start,
+			self.on_chunk,
+			self.on_chunks_complete,
+			self.on_chunk_error
 		)
 	end
 

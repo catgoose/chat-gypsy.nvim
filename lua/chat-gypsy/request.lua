@@ -29,8 +29,8 @@ function Request:init_request()
 			content = self.content,
 		})
 	end
-	self.on_user_prompt = function(content)
-		self.content = content
+	self.on_user_prompt = function(prompt_lines)
+		self.content = table.concat(prompt_lines, "\n")
 		Log.trace("on_user_prompt: " .. self.content)
 		table.insert(self._.openai_params.messages, {
 			role = "user",
@@ -69,7 +69,7 @@ function Request:init_request()
 		on_error(self.error_chunks)
 	end
 
-	self.completions = function(before_request, on_stream_start, on_chunk, on_complete, on_error)
+	self.completions = function(prompt_lines, before_request, on_stream_start, on_chunk, on_complete, on_error)
 		local strategy = nil
 		if opts.dev_opts.request.throw_error then
 			on_error(opts.dev_opts.request.error)
@@ -86,7 +86,9 @@ function Request:init_request()
 				body = vim.json.encode(self._.openai_params),
 				stream = function(_, chunk)
 					if not stream_started then
-						vim.schedule(on_stream_start)
+						vim.schedule(function()
+							on_stream_start(prompt_lines)
+						end)
 						stream_started = true
 					end
 					if chunk and chunk ~= "" then
@@ -189,12 +191,12 @@ function Request:shutdown_handlers()
 end
 
 ---@diagnostic disable-next-line: duplicate-set-field
-function Request:query(message, on_stream_start, on_response_chunk, on_response_complete, on_response_error)
-	self.on_user_prompt(message)
+function Request:query(prompt_lines, on_stream_start, on_response_chunk, on_response_complete, on_response_error)
+	self.on_user_prompt(prompt_lines)
 
 	local before_request = function()
 		Log.trace("query: on_start")
-		Events.pub("hook:request:start", message)
+		Events.pub("hook:request:start", prompt_lines)
 		self.reset()
 	end
 
@@ -224,7 +226,7 @@ function Request:query(message, on_stream_start, on_response_chunk, on_response_
 		end
 	end
 
-	self.completions(before_request, on_stream_start, on_chunk, on_complete, on_error)
+	self.completions(prompt_lines, before_request, on_stream_start, on_chunk, on_complete, on_error)
 end
 
 return Request
