@@ -81,9 +81,10 @@ function Writer:init()
 		return date
 	end
 
-	self.set_highlight = function(hlgroup, col_start)
+	self.set_highlight = function(hlgroup, col_start, n_lines)
+		n_lines = n_lines or 1
 		col_start = col_start or 0
-		vim.api.nvim_buf_add_highlight(self._.bufnr, -1, hlgroup, self._.row - 1, col_start, -1)
+		vim.api.nvim_buf_add_highlight(self._.bufnr, -1, hlgroup, self._.row - n_lines, col_start, -1)
 		return self
 	end
 end
@@ -147,8 +148,9 @@ function Writer:heading(lines)
 	if not lines then
 		return self
 	end
+	lines = utils.string_to_lines_tbl(lines)
 	self:lines(lines)
-	self.set_highlight(opts.ui.highlight.heading)
+	self.set_highlight(opts.ui.highlight.heading, 0, #lines)
 	return self
 end
 
@@ -159,17 +161,6 @@ end
 
 function Writer:token_highlight(tokens_display)
 	self.set_highlight(opts.ui.highlight.tokens, self._.win_width - #tokens_display)
-	return self
-end
-
-function Writer:lines(lines)
-	if not lines then
-		return self
-	end
-	if type(lines) == "string" then
-		lines = utils.string_to_lines(lines)
-	end
-	self.set_lines(lines)
 	return self
 end
 
