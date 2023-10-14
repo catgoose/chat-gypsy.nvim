@@ -80,13 +80,6 @@ function Writer:init()
 		local date = os.date(format, time)
 		return date
 	end
-
-	-- self.set_highlight = function(hlgroup, col_start, n_lines)
-	-- 	n_lines = n_lines or 1
-	-- 	col_start = col_start or 0
-	-- 	vim.api.nvim_buf_add_highlight(self._.bufnr, -1, hlgroup, self._.row - n_lines, col_start, -1)
-	-- 	return self
-	-- end
 end
 
 function Writer:set_cursor()
@@ -184,9 +177,9 @@ end
 
 function Writer:token_summary(tokens, role)
 	local model_config = models.get_config(opts.openai_params.model)
-	local tokens_display = string.format(" %s (%s/%s) ", tokens[role], tokens.total, model_config.max_tokens)
-	local summary = string.format("%s%s", symbols.space:rep(self._.win_width - #tokens_display), tokens_display)
-	self:lines(summary, { hlgroup = opts.ui.highlight.tokens, col_start = self._.win_width - #tokens_display })
+	local token_format = string.format(" %s (%s/%s) ", tokens[role], tokens.total, model_config.max_tokens)
+	local summary = string.format("%s%s", symbols.space:rep(self._.win_width - #token_format), token_format)
+	self:lines(summary, { hlgroup = opts.ui.highlight.tokens, col_start = self._.win_width - #token_format })
 		:horiz_line()
 	return self
 end
