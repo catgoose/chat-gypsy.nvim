@@ -103,6 +103,11 @@ function Float:init()
 		self.writer:set_cursor()
 	end
 
+	self.write_role_tokens = function(lines, role)
+		self.writer:from_role(role):newlines():lines(lines):newlines()
+		self.writer:calculate_tokens(lines, role):newlines()
+	end
+
 	-- writing callbacks
 	self.system_writer = function(message)
 		self._.should_compose_entries = false
@@ -115,18 +120,15 @@ function Float:init()
 		self._.should_compose_entries = true
 	end
 	self.on_chunk_stream_start = function(lines)
-		self.writer:from_role("user"):newlines()
-		self.writer:lines(lines):newlines()
-		self.writer:calculate_tokens(lines, "user"):newlines()
 		self._.should_compose_entries = false
+		self.write_role_tokens(lines, "user")
 		self.writer:from_role("assistant"):newlines()
 	end
 	self.on_chunk = function(chunk)
 		self.writer:append_chunk(chunk)
 	end
 	self.on_chunks_complete = function(chunks)
-		self.writer:newlines()
-		self.writer:calculate_tokens(chunks, "assistant"):newlines()
+		self.writer:newlines():calculate_tokens(chunks, "assistant"):newlines()
 		self._.should_compose_entries = true
 	end
 	self.on_chunk_error = function(err)
@@ -149,9 +151,7 @@ function Float:actions()
 			if message.role == "system" then
 				self.system_writer(message)
 			else
-				self.writer:from_role(message.role):newlines()
-				self.writer:lines(message.content):newlines()
-				self.writer:calculate_tokens(message.content, message.role):newlines()
+				self.write_role_tokens(message.content, message.role)
 			end
 		end
 	end
