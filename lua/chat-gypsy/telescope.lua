@@ -24,8 +24,11 @@ local entry_display = function(item)
 	for _, keyword in pairs(item.value.entries.keywords) do
 		keywords_length = keywords_length + #keyword + 2
 	end
-	local items =
-		{ item.value.entries.name, symbols.space:rep(win_width - keywords_length - #item.value.entries.name - 2) }
+	local items = {
+		item.value.entries.name,
+		symbols.space,
+		symbols.space:rep(win_width - keywords_length - #item.value.entries.name - 3),
+	}
 	local highlights = {}
 	local start = #table.concat(items, "")
 	for _, keyword in pairs(item.value.entries.keywords) do
