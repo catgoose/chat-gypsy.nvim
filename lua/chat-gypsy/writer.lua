@@ -119,9 +119,9 @@ function Writer:from_role(role, time)
 		return self
 	end
 	time = time or os.time()
-	local role_display = self.format_role(role)
+	local role_format = self.format_role(role)
 	local date = self.date(time, "%m/%d/%Y %I:%M%p")
-	local line = string.format("%s%s%s", role_display, (" "):rep(self._.win_width - #role_display - #date), date)
+	local line = string.format("%s%s%s", role_format, (" "):rep(self._.win_width - #role_format - #date), date)
 	self:lines(line, { hlgroup = opts.ui.highlight.role[role] })
 	return self
 end
