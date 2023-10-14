@@ -138,10 +138,16 @@ function Float:actions()
 		self.mount()
 	end
 	if self.ui_opts.restore_history then
-		Log.info(string.format("Restoring history: %s", vim.inspect(self.ui_opts.current)))
+		Log.trace(string.format("Restoring history: %s", vim.inspect(self.ui_opts.current)))
 		self.request:set_openai_params(self.ui_opts.current.openai_params)
 		for _, message in ipairs(self.ui_opts.current.messages) do
-			self.system_writer(message)
+			if message.role == "system" then
+				self.system_writer(message)
+			else
+				self.writer:from_role(message.role):newlines()
+				self.writer:lines(message.content):newlines()
+				self.writer:calculate_tokens(message.content, message.role):newlines()
+			end
 		end
 	end
 end
