@@ -64,6 +64,17 @@ local opts = {
   },
   log_level = "warn", -- trace, debug, info, warn, error, fatal
   ui = {
+    highlight = {
+     role = {
+      error = "ErrorMsg",
+      system = "LineNr",
+      user = "Statement",
+      assistant = "Boolean",
+     },
+     tokens = "LineNr",
+     error_message = "Exception",
+     heading = "MoreMsg",
+    },
     layout_placement = "center",
     prompt = {
       start_insert = true,
