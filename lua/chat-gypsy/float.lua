@@ -112,7 +112,7 @@ function Float:init()
 	self.system_writer = function(message)
 		self._.should_compose_entries = false
 		self.writer:from_role(message.role):newlines()
-		self.writer:lines(message.content):role_highlight(message.role):newlines()
+		self.writer:lines(message.content, opts.ui.highlight.role[message.role]):newlines()
 		self.writer:calculate_tokens(message.content, message.role):newlines()
 	end
 	self.before_request = function()

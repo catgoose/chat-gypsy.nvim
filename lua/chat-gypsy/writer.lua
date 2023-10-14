@@ -81,12 +81,12 @@ function Writer:init()
 		return date
 	end
 
-	self.set_highlight = function(hlgroup, col_start, n_lines)
-		n_lines = n_lines or 1
-		col_start = col_start or 0
-		vim.api.nvim_buf_add_highlight(self._.bufnr, -1, hlgroup, self._.row - n_lines, col_start, -1)
-		return self
-	end
+	-- self.set_highlight = function(hlgroup, col_start, n_lines)
+	-- 	n_lines = n_lines or 1
+	-- 	col_start = col_start or 0
+	-- 	vim.api.nvim_buf_add_highlight(self._.bufnr, -1, hlgroup, self._.row - n_lines, col_start, -1)
+	-- 	return self
+	-- end
 end
 
 function Writer:set_cursor()
@@ -129,11 +129,11 @@ function Writer:from_role(role, time)
 	local role_display = self.format_role(role)
 	local date = self.date(time, "%m/%d/%Y %I:%M%p")
 	local line = string.format("%s%s%s", role_display, (" "):rep(self._.win_width - #role_display - #date), date)
-	self.set_lines(line):role_highlight(role)
+	self:lines(line, { hlgroup = opts.ui.highlight.role[role] })
 	return self
 end
 
-function Writer:lines(lines)
+function Writer:lines(lines, highlight_cfg)
 	if not lines then
 		return self
 	end
@@ -141,6 +141,17 @@ function Writer:lines(lines)
 		lines = utils.string_to_lines_tbl(lines)
 	end
 	self.set_lines(lines)
+	if highlight_cfg and highlight_cfg.hlgroup then
+		highlight_cfg.col_start = highlight_cfg.col_start or 0
+		vim.api.nvim_buf_add_highlight(
+			self._.bufnr,
+			-1,
+			highlight_cfg.hlgroup,
+			self._.row - #lines,
+			highlight_cfg.col_start,
+			-1
+		)
+	end
 	return self
 end
 
@@ -149,18 +160,7 @@ function Writer:heading(lines)
 		return self
 	end
 	lines = utils.string_to_lines_tbl(lines)
-	self:lines(lines)
-	self.set_highlight(opts.ui.highlight.heading, 0, #lines)
-	return self
-end
-
-function Writer:role_highlight(role)
-	self.set_highlight(opts.ui.highlight.role[role])
-	return self
-end
-
-function Writer:token_highlight(tokens_display)
-	self.set_highlight(opts.ui.highlight.tokens, self._.win_width - #tokens_display)
+	self:lines(lines, { hlgroup = opts.ui.highlight.heading })
 	return self
 end
 
@@ -186,7 +186,8 @@ function Writer:token_summary(tokens, role)
 	local model_config = models.get_config(opts.openai_params.model)
 	local tokens_display = string.format(" %s (%s/%s) ", tokens[role], tokens.total, model_config.max_tokens)
 	local summary = string.format("%s%s", symbols.space:rep(self._.win_width - #tokens_display), tokens_display)
-	self.set_lines(summary):token_highlight(tokens_display):newline():horiz_line()
+	self:lines(summary, { hlgroup = opts.ui.highlight.tokens, col_start = self._.win_width - #tokens_display })
+		:horiz_line()
 	return self
 end
 
@@ -215,7 +216,7 @@ end
 
 function Writer:error(err)
 	local message = err and err.error and err.error.message or type(err) == "string" and err or "Unknown error"
-	self.set_lines(message):role_highlight("error")
+	self:lines(message, { hlgroup = opts.ui.highlight.role.error })
 	return self
 end
 

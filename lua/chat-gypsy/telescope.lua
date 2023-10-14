@@ -1,5 +1,6 @@
 local Log = require("chat-gypsy").Log
 local History = require("chat-gypsy").History
+local Config = require("chat-gypsy").Config
 local finders = require("telescope.finders")
 local conf = require("telescope.config").values
 local pickers = require("telescope.pickers")
@@ -7,7 +8,7 @@ local actions = require("telescope.actions")
 local action_state = require("telescope.actions.state")
 local previewers = require("telescope.previewers")
 local writer = require("chat-gypsy.writer"):new():set_move_cursor(false)
-local symbols = require("chat-gypsy").Config.get("symbols")
+local config_opts, symbols = Config.get("opts"), Config.get("symbols")
 
 local Telescope = {}
 
@@ -77,7 +78,7 @@ local define_preview = function(self, item)
 	for _, messages in pairs(entries.messages) do
 		writer:from_role(messages.role, messages.time):newlines()
 		if messages.role == "system" then
-			writer:lines(messages.content):role_highlight(messages.role):newlines()
+			writer:lines(messages.content, { hlgroup = config_opts.ui.highlight.role[messages.role] }):newlines()
 		else
 			writer:lines(messages.content):newlines()
 		end
