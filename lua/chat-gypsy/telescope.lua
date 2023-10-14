@@ -52,6 +52,7 @@ local attach_mappings = function(prompt_bufnr)
 		actions.close(prompt_bufnr)
 		local selection = action_state.get_selected_entry()
 		local current = {
+			id = selection.value.entries.id,
 			openai_params = selection.value.entries.openai_params,
 			messages = selection.value.entries.messages,
 		}

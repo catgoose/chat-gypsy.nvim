@@ -10,11 +10,15 @@ function History:new()
 	setmetatable(self, History)
 	self.data_dir = string.format("%s/%s", vim.fn.stdpath("data"), plugin_opts.name)
 	self.id_len = 16
-	self.history_id = utils.generate_random_id(self.id_len)
-	self.file = string.format("%s.json", self.history_id)
-	self.json_path = string.format("%s/%s", self.data_dir, self.file)
+	self:set_id(utils.generate_random_id(self.id_len))
 	self:init()
 	return self
+end
+
+function History:set_id(id)
+	self.history_id = id
+	self.file = string.format("%s.json", self.history_id)
+	self.json_path = string.format("%s/%s", self.data_dir, self.file)
 end
 
 function History:init_current()
@@ -123,6 +127,7 @@ local get_entries_from_file = function(file_path, on_error)
 	local history_json = utils.decode_json_from_path(file_path, on_error)
 	if
 		history_json
+		and history_json.id
 		and history_json.openai_params
 		and history_json.messages
 		and history_json.entries
@@ -130,8 +135,9 @@ local get_entries_from_file = function(file_path, on_error)
 		and history_json.entries.description
 		and history_json.entries.keywords
 	then
-		history_json.entries.openai_params = history_json.openai_params or {}
-		history_json.entries.messages = history_json.messages or {}
+		history_json.entries.id = history_json.id
+		history_json.entries.openai_params = history_json.openai_params
+		history_json.entries.messages = history_json.messages
 		return history_json.entries
 	else
 		return nil
@@ -152,6 +158,7 @@ function History:get_picker_entries(picker_cb, opts)
 			if entries then
 				table.insert(picker_entries, {
 					entries = {
+						id = entries.id,
 						name = entries.name,
 						description = entries.description,
 						keywords = entries.keywords,
