@@ -87,6 +87,7 @@ function Float:init()
 		--  QUESTION: 2023-10-08 - How does this function if there was an
 		--  error?
 		if not self.ui_opts.restore_history then
+			--  TODO: 2023-10-13 - this should compose entries if new request was made
 			History:compose_entries(self.request)
 		end
 	end
