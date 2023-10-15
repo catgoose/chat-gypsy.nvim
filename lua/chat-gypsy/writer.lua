@@ -20,13 +20,8 @@ function Writer:new(cfg)
 		winid = cfg.winid,
 		bufnr = cfg.bufnr,
 		win_width = cfg.winid and vim.api.nvim_win_get_width(cfg.winid) or 0,
-		tokens = {
-			system = 0,
-			user = 0,
-			assistant = 0,
-			total = 0,
-		},
 	}
+	instance.tokens = require("chat-gypsy.tokens"):new()
 	instance.move_cursor = true
 	instance:reset()
 	instance:init()
@@ -161,16 +156,12 @@ function Writer:calculate_tokens(message, role)
 	if not utils.check_roles(role) then
 		return self
 	end
-	message = message or ""
 	message = type(message) == "table" and table.concat(message, "") or message
 	local on_tokens = function(tokens)
-		tokens = tokens or 0
-		self._.tokens[role] = tokens
-		self._.tokens.total = self._.tokens.total + self._.tokens[role]
-		self:token_summary(self._.tokens, role)
-		History:add_message(message, role, self._.tokens)
+		self:token_summary(tokens, role)
+		History:add_message(message, role, tokens)
 	end
-	utils.get_tokens(message, on_tokens)
+	self.tokens:calculate(message, role, on_tokens)
 	vim.cmd("silent! undojoin")
 	return self
 end
