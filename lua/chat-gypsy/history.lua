@@ -88,9 +88,6 @@ function History:add_message(content, role, tokens)
 			vim.inspect(tokens)
 		)
 	)
-	-- if not self.current.id then
-	-- 	self:init_current()
-	-- end
 	table.insert(self.current.messages, {
 		role = role,
 		content = content,
