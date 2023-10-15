@@ -1,23 +1,23 @@
-local Tokens = {}
-Tokens.__index = Tokens
+local utils = require("chat-gypsy.utils")
 
-function Tokens:new()
+local Tokenizer = {}
+Tokenizer.__index = Tokenizer
+
+function Tokenizer:new()
 	local instance = {}
-	setmetatable(instance, Tokens)
-	instance._ = {
-		tokens = {
-			system = 0,
-			user = 0,
-			assistant = 0,
-			total = 0,
-		},
+	setmetatable(instance, Tokenizer)
+	instance.tokens = {
+		system = 0,
+		user = 0,
+		assistant = 0,
+		total = 0,
 	}
 	self:init()
 	return instance
 end
 
-function Tokens:init()
-	self.get_tokens = function(string, on_tokens_success)
+function Tokenizer:init()
+	self.perform_calculation = function(string, on_tokens_success)
 		local escaped_string = string.gsub(string, '"', '\\"')
 		local ok, result = pcall(
 			vim.api.nvim_exec2,
@@ -45,16 +45,20 @@ EOF
 	end
 end
 
-function Tokens:calculate(message, role, on_tokens)
+function Tokenizer:calculate(message, role, on_tokens)
 	local on_tokens_success = function(tokens)
 		tokens = tokens or 0
-		self._.tokens[role] = tokens
-		self._.tokens.total = self._.tokens.total + self._.tokens[role]
-		on_tokens(self._.tokens)
+		self.tokens[role] = tokens
+		self.tokens.total = self.tokens.total + self.tokens[role]
+		on_tokens(self.tokens)
 	end
-	self.get_tokens(message, on_tokens_success)
+	self.perform_calculation(message, on_tokens_success)
 	vim.cmd("silent! undojoin")
 	return self
 end
 
-return Tokens
+function Tokenizer:set(tokens)
+	self.tokens = tokens
+end
+
+return Tokenizer
