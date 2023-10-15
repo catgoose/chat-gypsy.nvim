@@ -70,14 +70,14 @@ local define_preview = function(self, item)
 	writer:newline():heading(entries.openai_params.model):newlines()
 	writer:heading(entries.description):newlines()
 	writer:horiz_line():newlines()
-	for _, messages in pairs(entries.messages) do
-		writer:from_role(messages.role, messages.time):newlines()
-		if messages.role == "system" then
-			writer:lines(messages.content, { hlgroup = config_opts.ui.highlight.role[messages.role] }):newlines()
+	for _, message in pairs(entries.messages) do
+		writer:message_from(message):newlines()
+		if message.role == "system" then
+			writer:lines(message.content, { hlgroup = config_opts.ui.highlight.role[message.role] }):newlines()
 		else
-			writer:lines(messages.content):newlines()
+			writer:lines(message.content):newlines()
 		end
-		writer:token_summary(messages.tokens, messages.role):newlines()
+		writer:token_summary(message):newlines()
 	end
 end
 

@@ -109,15 +109,15 @@ function Writer:set_bufnr(bufnr)
 	return self
 end
 
-function Writer:from_role(role, time)
-	if not utils.check_roles(role, true) then
+function Writer:message_from(message)
+	if not utils.check_roles(message.role, true) then
 		return self
 	end
-	time = time or os.time()
-	local role_format = self.format_role(role)
-	local date = self.date(time, "%m/%d/%Y %I:%M%p")
+	message.time = message.time or os.time()
+	local role_format = self.format_role(message.role)
+	local date = self.date(message.time, "%m/%d/%Y %I:%M%p")
 	local line = string.format("%s%s%s", role_format, (" "):rep(self._.win_width - #role_format - #date), date)
-	self:lines(line, { hlgroup = opts.ui.highlight.role[role] })
+	self:lines(line, { hlgroup = opts.ui.highlight.role[message.role] })
 	return self
 end
 
@@ -152,30 +152,33 @@ function Writer:heading(lines)
 	return self
 end
 
-function Writer:calculate_tokens(message, role)
-	if not utils.check_roles(role) then
+function Writer:calculate_tokens(message)
+	if not utils.check_roles(message.role) then
 		return self
 	end
-	message = type(message) == "table" and table.concat(message, "") or message
+	---@diagnostic disable-next-line: param-type-mismatch
+	message.content = type(message.content) == "table" and table.concat(message.content, "") or message.content
 	local on_tokens = function(tokens)
-		self:token_summary(tokens, role)
-		History:add_message(message, role, tokens)
+		message.tokens = tokens
+		self:token_summary(message)
+		History:add_message(message.content, message.role, tokens)
 	end
-	self.tokenizer:calculate(message, role, on_tokens)
+	self.tokenizer:calculate(message, on_tokens)
 	vim.cmd("silent! undojoin")
 	return self
 end
 
-function Writer:replay_tokens(tokens, role)
-	self.tokenizer:set(tokens)
-	self:token_summary(tokens, role)
+function Writer:replay_tokens(message)
+	self.tokenizer:set(message.tokens)
+	self:token_summary(message)
 	vim.cmd("silent! undojoin")
 	return self
 end
 
-function Writer:token_summary(tokens, role)
+function Writer:token_summary(message)
 	local model_config = models.get_config(opts.openai_params.model)
-	local token_format = string.format(" %s (%s/%s) ", tokens[role], tokens.total, model_config.max_tokens)
+	local token_format =
+		string.format(" %s (%s/%s) ", message.tokens[message.role], message.tokens.total, model_config.max_tokens)
 	local summary = string.format("%s%s", symbols.space:rep(self._.win_width - #token_format), token_format)
 	self:lines(summary, { hlgroup = opts.ui.highlight.tokens, col_start = self._.win_width - #token_format })
 		:horiz_line()
