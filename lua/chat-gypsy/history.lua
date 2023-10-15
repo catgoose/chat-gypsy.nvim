@@ -29,8 +29,6 @@ function History:init_current()
 		messages = {},
 		openai_params = {},
 		entries = {
-			name = nil,
-			description = nil,
 			keywords = {},
 		},
 	}
