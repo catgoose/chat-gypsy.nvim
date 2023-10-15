@@ -152,21 +152,22 @@ function Writer:heading(lines)
 	return self
 end
 
-function Writer:calculate_tokens(message, role)
+function Writer:calculate_tokens(content, role)
 	if not utils.check_roles(role) then
 		return self
 	end
-	message = type(message) == "table" and table.concat(message, "") or message
+	content = type(content) == "table" and table.concat(content, "") or content
 	local on_tokens = function(tokens)
 		self:token_summary(tokens, role)
-		History:add_message(message, role, tokens)
+		History:add_message(content, role, tokens)
 	end
-	self.tokenizer:calculate(message, role, on_tokens)
+	self.tokenizer:calculate(content, role, on_tokens)
 	vim.cmd("silent! undojoin")
 	return self
 end
 
 function Writer:replay_tokens(tokens, role)
+	tokens = utils.deepcopy(tokens)
 	self.tokenizer:set(tokens)
 	self:token_summary(tokens, role)
 	vim.cmd("silent! undojoin")
