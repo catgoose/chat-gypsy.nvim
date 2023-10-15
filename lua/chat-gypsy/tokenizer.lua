@@ -1,5 +1,3 @@
-local utils = require("chat-gypsy.utils")
-
 local Tokenizer = {}
 Tokenizer.__index = Tokenizer
 
@@ -62,3 +60,4 @@ function Tokenizer:set(tokens)
 end
 
 return Tokenizer
+
