@@ -154,6 +154,7 @@ function Float:actions()
 				self.writer:from_role(message.role):newlines():lines(message.content):newlines()
 			end
 			self.writer:replay_tokens(message.tokens, message.role):newlines()
+			History:replay(message)
 		end
 	end
 end

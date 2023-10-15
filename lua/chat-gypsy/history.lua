@@ -71,6 +71,10 @@ function History:reset()
 	self:init_current()
 end
 
+function History:replay(message)
+	table.insert(self.current.messages, message)
+end
+
 function History:add_message(content, role, tokens)
 	if not role or not utils.check_roles(role) then
 		return
@@ -84,9 +88,9 @@ function History:add_message(content, role, tokens)
 			vim.inspect(tokens)
 		)
 	)
-	if not self.current.id then
-		self:init_current()
-	end
+	-- if not self.current.id then
+	-- 	self:init_current()
+	-- end
 	table.insert(self.current.messages, {
 		role = role,
 		content = content,
