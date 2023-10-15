@@ -28,33 +28,6 @@ Utils.deepcopy = function(orig)
 	return copy
 end
 
-Utils.get_tokens = function(string, on_tokens)
-	local escaped_string = string.gsub(string, '"', '\\"')
-	local ok, result = pcall(
-		vim.api.nvim_exec2,
-		string.format(
-			[[
-python3 << EOF
-import tiktoken
-encoder = tiktoken.get_encoding("cl100k_base")
-encoded = encoder.encode("""%s""")
-print(len(encoded))
-EOF
-]],
-			escaped_string
-		),
-		{ output = true }
-	)
-	local output = 0
-	if ok then
-		output = result.output
-	end
-	if on_tokens then
-		local tokens = tonumber(output)
-		on_tokens(tokens)
-	end
-end
-
 Utils.tbl_to_json_string = function(table, indent_level)
 	if type(table) == "table" then
 		indent_level = indent_level or 1
