@@ -88,7 +88,7 @@ function Float:init()
 		--  QUESTION: 2023-10-08 - How does this function if there was an
 		--  error?
 		--  BUG: 2023-10-14 - Closing the float for a continued chat session
-		--  removes that chat from telescope entries
+		--  resets history for chat
 		if self._.should_compose_entries then
 			History:compose_entries(self.request)
 		end
@@ -105,17 +105,12 @@ function Float:init()
 		self.writer:set_cursor()
 	end
 
-	self.write_role_tokens = function(lines, role)
-		self.writer:from_role(role):newlines():lines(lines):newlines()
-		self.writer:calculate_tokens(lines, role):newlines()
-	end
-
 	-- writing callbacks
-	self.system_writer = function(message)
+	self.system_writer = function(history)
 		self._.should_compose_entries = false
-		self.writer:from_role(message.role):newlines()
-		self.writer:lines(message.content, { hlgroup = opts.ui.highlight.role[message.role] }):newlines()
-		self.writer:calculate_tokens(message.content, message.role):newlines()
+		self.writer:from_role(history.role):newlines()
+		self.writer:lines(history.content, { hlgroup = opts.ui.highlight.role[history.role] }):newlines()
+		self.writer:calculate_tokens(history.content, history.role):newlines()
 	end
 	self.before_request = function()
 		vim.api.nvim_buf_set_lines(self._.prompt.bufnr, 0, -1, false, {})
@@ -123,7 +118,8 @@ function Float:init()
 	end
 	self.on_chunk_stream_start = function(lines)
 		self._.should_compose_entries = false
-		self.write_role_tokens(lines, "user")
+		self.writer:from_role("user"):newlines():lines(lines):newlines()
+		self.writer:calculate_tokens(lines, "user"):newlines()
 		self.writer:from_role("assistant"):newlines()
 	end
 	self.on_chunk = function(chunk)
@@ -152,10 +148,12 @@ function Float:actions()
 		History:set_id(self.ui_opts.current.id)
 		for _, message in ipairs(self.ui_opts.current.messages) do
 			if message.role == "system" then
-				self.system_writer(message)
+				self.writer:from_role(message.role):newlines()
+				self.writer:lines(message.content, { hlgroup = opts.ui.highlight.role[message.role] }):newlines()
 			else
-				self.write_role_tokens(message.content, message.role)
+				self.writer:from_role(message.role):newlines():lines(message.content):newlines()
 			end
+			self.writer:replay_tokens(message.tokens, message.role):newlines()
 		end
 	end
 end

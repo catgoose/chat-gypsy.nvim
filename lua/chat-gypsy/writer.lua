@@ -21,7 +21,7 @@ function Writer:new(cfg)
 		bufnr = cfg.bufnr,
 		win_width = cfg.winid and vim.api.nvim_win_get_width(cfg.winid) or 0,
 	}
-	instance.tokens = require("chat-gypsy.tokens"):new()
+	instance.tokenizer = require("chat-gypsy.tokenizer"):new()
 	instance.move_cursor = true
 	instance:reset()
 	instance:init()
@@ -161,7 +161,14 @@ function Writer:calculate_tokens(message, role)
 		self:token_summary(tokens, role)
 		History:add_message(message, role, tokens)
 	end
-	self.tokens:calculate(message, role, on_tokens)
+	self.tokenizer:calculate(message, role, on_tokens)
+	vim.cmd("silent! undojoin")
+	return self
+end
+
+function Writer:replay_tokens(tokens, role)
+	self.tokenizer:set(tokens)
+	self:token_summary(tokens, role)
 	vim.cmd("silent! undojoin")
 	return self
 end
