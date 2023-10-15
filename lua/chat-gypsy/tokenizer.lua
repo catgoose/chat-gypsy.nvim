@@ -1,3 +1,5 @@
+local utils = require("chat-gypsy.utils")
+
 local Tokenizer = {}
 Tokenizer.__index = Tokenizer
 
@@ -43,14 +45,14 @@ EOF
 	end
 end
 
-function Tokenizer:calculate(message, on_tokens)
+function Tokenizer:calculate(message, role, on_tokens)
 	local on_tokens_success = function(tokens)
 		tokens = tokens or 0
-		self.tokens[message.role] = tokens
-		self.tokens.total = self.tokens.total + self.tokens[message.role]
+		self.tokens[role] = tokens
+		self.tokens.total = self.tokens.total + self.tokens[role]
 		on_tokens(self.tokens)
 	end
-	self.perform_calculation(message.content, on_tokens_success)
+	self.perform_calculation(message, on_tokens_success)
 	vim.cmd("silent! undojoin")
 	return self
 end

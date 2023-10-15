@@ -106,12 +106,11 @@ function Float:init()
 	end
 
 	-- writing callbacks
-	self.system_writer = function(message)
-		message = utils.deepcopy(message)
+	self.system_writer = function(history)
 		self._.should_compose_entries = false
-		self.writer:message_from(message):newlines()
-		self.writer:lines(message.content, { hlgroup = opts.ui.highlight.role[message.role] }):newlines()
-		self.writer:calculate_tokens(message):newlines()
+		self.writer:from_role(history.role):newlines()
+		self.writer:lines(history.content, { hlgroup = opts.ui.highlight.role[history.role] }):newlines()
+		self.writer:calculate_tokens(history.content, history.role):newlines()
 	end
 	self.before_request = function()
 		vim.api.nvim_buf_set_lines(self._.prompt.bufnr, 0, -1, false, {})
@@ -119,19 +118,19 @@ function Float:init()
 	end
 	self.on_chunk_stream_start = function(lines)
 		self._.should_compose_entries = false
-		self.writer:message_from({ role = "user" }):newlines():lines(lines):newlines()
-		self.writer:calculate_tokens({ content = lines, role = "user" }):newlines()
-		self.writer:message_from({ role = "assistant" }):newlines()
+		self.writer:from_role("user"):newlines():lines(lines):newlines()
+		self.writer:calculate_tokens(lines, "user"):newlines()
+		self.writer:from_role("assistant"):newlines()
 	end
 	self.on_chunk = function(chunk)
 		self.writer:append_chunk(chunk)
 	end
 	self.on_chunks_complete = function(chunks)
-		self.writer:newlines():calculate_tokens({ content = chunks, role = "assistant" }):newlines()
+		self.writer:newlines():calculate_tokens(chunks, "assistant"):newlines()
 		self._.should_compose_entries = true
 	end
 	self.on_chunk_error = function(err)
-		self.writer:message_from({ role = "error" }):newlines()
+		self.writer:from_role("error"):newlines()
 		self.writer:error(err):newline()
 		self._.should_compose_entries = false
 	end
@@ -149,12 +148,12 @@ function Float:actions()
 		History:set_id(self.ui_opts.current.id)
 		for _, message in ipairs(self.ui_opts.current.messages) do
 			if message.role == "system" then
-				self.writer:message_from(message):newlines()
+				self.writer:from_role(message.role):newlines()
 				self.writer:lines(message.content, { hlgroup = opts.ui.highlight.role[message.role] }):newlines()
 			else
-				self.writer:message_from(message):newlines():lines(message.content):newlines()
+				self.writer:from_role(message.role):newlines():lines(message.content):newlines()
 			end
-			self.writer:replay_tokens(message):newlines()
+			self.writer:replay_tokens(message.tokens, message.role):newlines()
 			History:replay(message)
 		end
 	end
