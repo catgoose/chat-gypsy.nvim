@@ -8,6 +8,7 @@ OpenAI.__index = OpenAI
 --  TODO: 2023-10-10 - Create picker for openai model
 function OpenAI:new()
 	setmetatable(self, OpenAI)
+	self.sql = require("chat-gypsy.sql"):new()
 	self._ = {}
 	self._.queue = require("chat-gypsy.queue"):new()
 	self.save_history = function()
@@ -21,6 +22,7 @@ end
 function OpenAI:init_openai()
 	self._.system_written = false
 	self._.openai_params = Config.get("opts").openai_params
+	self.sql:new_session(self._.openai_params)
 end
 
 function OpenAI:set_openai_params(params)
