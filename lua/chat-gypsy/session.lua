@@ -1,4 +1,3 @@
-local sql = require("chat-gypsy.sql"):new()
 local Session = {}
 Session.__index = Session
 
@@ -16,29 +15,27 @@ function Session:init()
 end
 
 function Session:toggle()
-	-- sql:check_tables()
-	-- sql:drop()
-	-- if not self.chat._.instance then
-	-- 	self:open()
-	-- 	return
-	-- end
-	-- if self.chat._.mounted then
-	-- 	if not self.chat._.hidden and not self.chat.is_focused() then
-	-- 		self.chat.focus_last_win()
-	-- 		return
-	-- 	end
-	-- 	if self.chat._.hidden and not self.chat.is_focused() then
-	-- 		self.chat.show()
-	-- 		return
-	-- 	end
-	-- 	if not self.chat._.hidden and self.chat.is_focused() then
-	-- 		self.chat.hide()
-	-- 		return
-	-- 	end
-	-- else
-	-- 	self.chat.mount()
-	-- 	return
-	-- end
+	if not self.chat._.instance then
+		self:open()
+		return
+	end
+	if self.chat._.mounted then
+		if not self.chat._.hidden and not self.chat.is_focused() then
+			self.chat.focus_last_win()
+			return
+		end
+		if self.chat._.hidden and not self.chat.is_focused() then
+			self.chat.show()
+			return
+		end
+		if not self.chat._.hidden and self.chat.is_focused() then
+			self.chat.hide()
+			return
+		end
+	else
+		self.chat.mount()
+		return
+	end
 end
 
 function Session:open()
