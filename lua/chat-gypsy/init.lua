@@ -1,94 +1,49 @@
-local Gypsy = {}
+Gypsy = {}
 
 Gypsy.Log = {}
-Gypsy.Events = require("chat-gypsy.events").new()
+Gypsy.History = {}
+Gypsy.Events = require("chat-gypsy.events")
+Gypsy.Config = {}
+Gypsy.Session = {}
 
 Gypsy.setup = function(opts)
-	local config = require("chat-gypsy.config")
-	config.init(opts)
+	Gypsy.Config = require("chat-gypsy.config")
+	Gypsy.Config.init(opts)
 
 	Gypsy.Log = require("chat-gypsy.logger").init()
+	Gypsy.History = require("chat-gypsy.history"):new()
+	Gypsy.Session = require("chat-gypsy.session"):new()
+
 	require("chat-gypsy.usercmd").init()
 	require("chat-gypsy.models").init()
 
-	if config.plugin_cfg.dev then
+	if Gypsy.Config.get("plugin_opts").dev then
 		Gypsy.Log.info("Gypsy:setup: dev mode enabled")
 	end
 end
 
-local chat = {}
-local chats = {}
-
-Gypsy.Events:sub("layout:unmount", function()
-	Gypsy.Log.trace("Events: layout:unmount")
-	chat = {}
-	chats = {}
-end)
-
 Gypsy.toggle = function()
-	if #chats == 0 then
-		Gypsy.open()
-		return
-	end
-	if #chats == 1 then
-		chat = chats[1]
-		local layout = chat.layout
-		if layout._.mounted then
-			if not layout._.hidden and not layout.is_focused() then
-				layout.focus_last_win()
-				return
-			end
-			if layout._.hidden and not layout.is_focused() then
-				layout.show()
-				return
-			end
-			if not layout._.hidden and layout.is_focused() then
-				layout.hide()
-				return
-			end
-		else
-			layout.mount()
-			return
-		end
-	end
+	Gypsy.Session:toggle()
 end
 
 Gypsy.open = function()
-	if #chats == 0 then
-		chat = require("chat-gypsy.ui").new()
-		if not chat.layout._.mounted then
-			table.insert(chats, chat)
-			chat.layout.mount()
-		end
-	end
+	Gypsy.Session:open()
 end
 
 Gypsy.hide = function()
-	if #chats == 1 then
-		chat = chats[1]
-		local layout = chat.layout
-		if layout._.mounted and not layout._.hidden then
-			layout.hide()
-		end
-	end
+	Gypsy.Session:hide()
 end
 
 Gypsy.show = function()
-	if #chats == 1 then
-		chat = chats[1]
-		chat = table.remove(chats, 1)
-		local layout = chat.layout
-		if layout._.mounted and layout._.hidden then
-			layout.show()
-		end
-	end
+	Gypsy.Session:show()
 end
 
 Gypsy.close = function()
-	chat = table.remove(chats, 1)
-	if chat.layout._.mounted then
-		chat.layout.unmount()
-	end
+	Gypsy.Session:close()
+end
+
+Gypsy.history = function()
+	require("chat-gypsy.telescope").history()
 end
 
 return Gypsy

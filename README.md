@@ -1,5 +1,14 @@
 # Gypsy
 
+<!--toc:start-->
+
+- [Gypsy](#gypsy)
+  - [Usage](#usage)
+    - [Calling with `:lua require('chat-gypsy)...`](#calling-with-lua-requirechat-gypsy)
+    - [Calling with vim user commands](#calling-with-vim-user-commands)
+  - [Installation](#installation) - [Lazy.nvim](#lazynvim) - [Event hooks](#event-hooks)
+  <!--toc:end-->
+
 ## Usage
 
 ### Calling with `:lua require('chat-gypsy)...`
@@ -55,6 +64,18 @@ local opts = {
   },
   log_level = "warn", -- trace, debug, info, warn, error, fatal
   ui = {
+    highlight = {
+     role = {
+      error = "ErrorMsg",
+      system = "LineNr",
+      user = "Statement",
+      assistant = "Boolean",
+     },
+     tokens = "LineNr",
+     error_message = "Exception",
+     heading = "MoreMsg",
+    },
+    layout_placement = "center",
     prompt = {
       start_insert = true,
     },
@@ -76,6 +97,7 @@ local opts = {
         winblend = 0,
         winhighlight = "Normal:Normal,FloatBorder:FloatBorder",
         wrap = true,
+        fillchars = "lastline: ",
       },
     },
     layout = {
@@ -101,7 +123,7 @@ local opts = {
           col = "100%",
         },
       },
-      float = {
+      center = {
         prompt_height = 5,
         prompt_max_lines = 6,
         position = {
@@ -122,6 +144,10 @@ local opts = {
       complete = function(response) end,
       error = function(source, error_tbl) end,
     },
+    models = {
+      get = function(models) end,
+      error = function(source, error_tbl) end
+    }
   },
 }
 
@@ -145,7 +171,7 @@ return {
     "GypsyOpen",
     "GypsyClose",
     "GypsyOpen",
-    "GypsyCLose"
+    "GypsyClose"
   }
 }
 ```
@@ -181,3 +207,18 @@ Several event hooks are provided for customization:
 | request.chunk    | chunk             | Chunk is received from request stream |
 | request.complete | response          | Response is received from openai      |
 | request.error    | source, error_tbl | An error has occurred in a request    |
+| models.get       | models            | Models retrieved from OpenAI          |
+| models.error     | source, error_tbl | Error occurred retrieving models      |
+| entries.start    | response          | Start response composing entries      |
+| entries.complete | response          | Complete response composing entries   |
+
+## TODO
+
+- [ ] Create model picker
+- [ ] Create templating for system prompts
+- [ ] When destroying layout, last window focused should be refocused
+- [ ] Check tokens before sending to model.
+- [ ] Add to configuration the option to select which model to use for entry
+      composition
+- [ ] When requests are queued, show indicator in ui
+- [ ] In history picker allow for selecting chats to mark as "Inactive"

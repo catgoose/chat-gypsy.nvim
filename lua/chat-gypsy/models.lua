@@ -1,9 +1,9 @@
-local config = require("chat-gypsy.config")
-local openai_models = config.openai_models
-local opts = config.opts
+local Config = require("chat-gypsy").Config
+local Events = require("chat-gypsy").Events
+local openai_models = Config.get("openai_models")
+local opts = Config.get("opts")
 local Log = require("chat-gypsy").Log
 local curl = require("plenary.curl")
-local Events = require("chat-gypsy").Events
 
 Models = {}
 
@@ -21,14 +21,13 @@ local get_models = function()
 					if err.error then
 						err.error.http_status = response.status
 					end
-					Events:pub("hook:request:error", "get_models", err)
+					Events.pub("hook:models:error", "get_models", err)
 					if type(err) == "table" then
 						err = vim.inspect(err)
 					end
 					Log.error(string.format("get_models: error: %s", err))
 					error(err)
 				end
-				Models.success = false
 			else
 				local body = vim.json.decode(response.body)
 				if body.data then
@@ -46,10 +45,10 @@ local get_models = function()
 					table.sort(models, function(a, b)
 						return model_priority[a] < model_priority[b]
 					end)
-					Log.debug("getModels: success: " .. vim.inspect(models))
+					Log.trace("getModels: success: " .. vim.inspect(models))
+					Events.pub("hook:models:get", models)
 					if #models > 0 then
 						M.names = models
-						M.success = true
 					end
 				end
 			end
@@ -62,6 +61,19 @@ M.init = function()
 end
 
 M.names = {}
-M.success = false
+
+M.get_config = function(model)
+	local found_model = vim.tbl_filter(function(m)
+		return m.model == model
+	end, openai_models)
+	if not vim.tbl_contains(M.names, model) or not model or not found_model then
+		return {
+			model = "no_model_found",
+			max_tokens = 0,
+			priority = 1,
+		}
+	end
+	return found_model[1]
+end
 
 return M

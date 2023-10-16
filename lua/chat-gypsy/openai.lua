@@ -1,33 +1,75 @@
 local Log = require("chat-gypsy").Log
+local Config = require("chat-gypsy").Config
+local History = require("chat-gypsy").History
 
 local OpenAI = {}
 OpenAI.__index = OpenAI
 
-function OpenAI.new(events)
-	local self = setmetatable({}, OpenAI)
-	self.queue = require("chat-gypsy.queue").new()
-	self.request = require("chat-gypsy.request").new(events)
+--  TODO: 2023-10-10 - Create picker for openai model
+function OpenAI:new()
+	setmetatable(self, OpenAI)
+	self._ = {}
+	self._.queue = require("chat-gypsy.queue"):new()
+	self.save_history = function()
+		History:add_openai_params(self._.openai_params)
+	end
+	self:init_openai()
+	self:init_request()
 	return self
 end
 
---  TODO: 2023-09-20 - check if message is greater than max token count for
---  model
-function OpenAI:send_prompt(message, on_start, on_chunk, on_chunks_complete)
-	if not message then
-		Log.warn("send_prompt: no message provided")
-		return
-	end
+function OpenAI:init_openai()
+	self._.system_written = false
+	self._.openai_params = Config.get("opts").openai_params
+end
 
-	Log.trace(string.format("adding request to queue: \nmessage: %s", message))
-	self.queue:add(function(on_request_complete)
+function OpenAI:set_openai_params(params)
+	Log.trace(string.format("OpenAI:set_openai_params: params: %s", vim.inspect(params)))
+	self._.openai_params = params
+	self._.system_written = true
+end
+
+function OpenAI:send(
+	prompt_lines,
+	before_request,
+	system_writer,
+	on_chunk_stream_start,
+	on_chunk,
+	on_chunks_complete,
+	on_chunk_error
+)
+	before_request()
+	if not self._.system_written and self._.openai_params.messages[1].role == "system" then
+		system_writer(self._.openai_params.messages[1])
+		self._.system_written = true
+		self.save_history()
+	end
+	Log.trace(string.format("adding request to queue: \nmessage: %s", table.concat(prompt_lines, "\n")))
+	local action = function(queue_next)
+		local on_stream_start = function(lines)
+			on_chunk_stream_start(lines)
+			self.save_history()
+		end
 		local on_complete = function(complete_chunks)
 			Log.trace("request completed")
 			on_chunks_complete(complete_chunks)
-			on_request_complete()
+			self.save_history()
+			queue_next()
 		end
 
-		self.request:query(message, on_start, on_chunk, on_complete)
-	end)
+		local on_error = function(chunk_error)
+			on_chunk_error(chunk_error)
+			queue_next()
+		end
+
+		self:query(prompt_lines, on_stream_start, on_chunk, on_complete, on_error)
+	end
+
+	self._.queue:add(action)
+end
+
+function OpenAI:query(...)
+	Log.warn(string.format("OpenAI:query: not implemented: %s"), vim.inspect({ ... }))
 end
 
 return OpenAI

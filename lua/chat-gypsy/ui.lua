@@ -1,32 +1,19 @@
-local nui_pu, nui_lo = require("nui.popup"), require("nui.layout")
-local config = require("chat-gypsy.config")
-local opts = config.opts
 local Log = require("chat-gypsy").Log
+local opts = require("chat-gypsy").Config.get("opts")
+local nui_pu, nui_lo = require("nui.popup"), require("nui.layout")
 
-local UI = {}
-UI.__index = UI
+local placements = { "center", "left", "right" }
 
-local layout_configs = { "float", "left", "right" }
-
-local function build_ui(layout_config)
-	layout_config = layout_config or {
-		layout = "float",
-	}
-	if not vim.tbl_contains(layout_configs, layout_config.layout) then
-		layout_config.layout = "float"
+local function build_ui(placement)
+	placement = placement or "center"
+	if not vim.tbl_contains(placements, placement) then
+		placement = "center"
 	end
 
-	local popup_base = vim.tbl_deep_extend("force", opts.ui.config, {
-		zindex = 50,
-	})
+	local popup_base = opts.ui.config
 	local prompt_config = vim.tbl_deep_extend("force", popup_base, {
 		buf_options = {
 			filetype = "prompt",
-		},
-		border = {
-			text = {
-				top = "Prompt",
-			},
 		},
 		enter = true,
 	})
@@ -34,22 +21,16 @@ local function build_ui(layout_config)
 		buf_options = {
 			filetype = "markdown",
 		},
-		border = {
-			text = {
-				top = opts.openai_params.model,
-				top_align = "left",
-			},
-		},
 	})
 
 	local prompt = nui_pu(prompt_config)
 	local chat = nui_pu(chat_config)
 
-	local layout_strategy = function(_layout_config)
+	local placement_strategy = function(_placement)
 		local float = nui_lo(
 			{
-				position = opts.ui.layout.float.position,
-				size = opts.ui.layout.float.size,
+				position = opts.ui.layout.center.position,
+				size = opts.ui.layout.center.size,
 				relative = "editor",
 			},
 			nui_lo.Box({
@@ -58,7 +39,7 @@ local function build_ui(layout_config)
 				}),
 				nui_lo.Box(prompt, {
 					size = {
-						height = opts.ui.layout.float.prompt_height,
+						height = opts.ui.layout.center.prompt_height,
 					},
 				}),
 			}, { dir = "col" })
@@ -68,7 +49,7 @@ local function build_ui(layout_config)
 			if side ~= "left" and side ~= "right" then
 				side = "left"
 			end
-			local side_config = opts.ui[side]
+			local side_config = opts.ui.layout[side]
 			local side_layout = nui_lo(
 				vim.tbl_deep_extend("force", {
 					relative = "editor",
@@ -89,33 +70,49 @@ local function build_ui(layout_config)
 			return side_layout
 		end
 
-		if _layout_config.layout == "float" then
+		if _placement == "center" then
 			return float
 		end
-		if _layout_config.layout == "right" then
-			return create_side_layout(_layout_config.layout)
+		if _placement == "right" then
+			return create_side_layout(_placement)
 		end
-		if _layout_config.layout == "left" then
-			return create_side_layout(_layout_config.layout)
+		if _placement == "left" then
+			return create_side_layout(_placement)
 		end
 	end
-	local layout = layout_strategy(layout_config)
+	local layout = placement_strategy(placement)
 	return {
 		layout = layout,
-		layout_config = layout_config,
 		boxes = { chat = chat, prompt = prompt },
 	}
 end
 
-function UI.new()
-	local self = setmetatable({}, UI)
-	local layout_config = {
-		layout = "float",
+local UI = {}
+UI.__index = UI
+
+function UI:new(ui_opts)
+	setmetatable(self, UI)
+	local default = {
+		mount = false,
+		placement = opts.ui.layout_placement,
+		restore_history = false,
+		current = {
+			openai_params = {},
+			messages = {},
+		},
 	}
-	local ui = build_ui(layout_config)
-	Log.trace(string.format("Building new ui with layout config: \n%s", vim.inspect(layout_config)))
-	self.layout = require("chat-gypsy.layout").new(ui)
+	ui_opts = vim.tbl_deep_extend("force", default, ui_opts)
+	local ui = build_ui(ui_opts.layout_placement)
+	Log.trace(string.format("Building new ui with layout config: \n%s", vim.inspect(ui_opts.layout)))
+	self.layout = ui.layout
+	self.boxes = ui.boxes
+	self.ui_opts = ui_opts
+	self:init()
 	return self
+end
+
+function UI:init()
+	Log.warn("UI:layout_init: not implemented")
 end
 
 return UI

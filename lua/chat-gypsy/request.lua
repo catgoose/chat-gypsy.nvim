@@ -1,54 +1,46 @@
----@diagnostic disable: undefined-field
-local config = require("chat-gypsy.config")
-local opts = config.opts
 local Log = require("chat-gypsy").Log
-local utils = require("chat-gypsy.utils")
 local Events = require("chat-gypsy").Events
+local OpenAI = require("chat-gypsy.openai")
+local opts = require("chat-gypsy").Config.get("opts")
 local curl = require("plenary.curl")
+local utils = require("chat-gypsy.utils")
 
-local Request = {}
+Request = setmetatable({}, OpenAI)
 Request.__index = Request
+setmetatable(Request, {
+	__index = OpenAI,
+})
 
-function Request.new(events)
-	local self = setmetatable({}, Request)
-	self.events = events
+---@diagnostic disable-next-line: duplicate-set-field
+function Request:init_request()
 	self.chunks = {}
 	self.error_chunks = {}
 	self.content = ""
-	self.handler = nil
-	self.openai_params = utils.deepcopy(opts.openai_params)
+	self.handlers = {}
 	self.join_content = function()
 		self.content = table.concat(self.chunks, "")
 	end
 	self.on_assistant_response = function()
 		self.content = table.concat(self.chunks, "")
 		self.join_content()
-		Log.trace("on_user_prompt: " .. self.content)
-		--  TODO: 2023-09-17 - create chat module to handle chat history,
-		--  saving chats to disk, and providing an interface for telescope
-		--  picker to choose from previous chats
-		table.insert(self.openai_params.messages, {
+		Log.trace("on_assistant_response: " .. self.content)
+		table.insert(self._.openai_params.messages, {
 			role = "assistant",
 			content = self.content,
 		})
 	end
-	self.on_user_prompt = function(content)
-		self.content = content
+	self.on_user_prompt = function(prompt_lines)
+		self.content = table.concat(prompt_lines, "\n")
 		Log.trace("on_user_prompt: " .. self.content)
-		table.insert(self.openai_params.messages, {
+		table.insert(self._.openai_params.messages, {
 			role = "user",
 			content = self.content,
 		})
 	end
-	self.query_reset = function()
+	self.reset = function()
 		self.chunks = {}
 		self.error_chunks = {}
 		self.content = ""
-		if self.handler ~= nil then
-			Log.trace("shutting down plenary.curl handler")
-			self.handler:shutdown()
-			self.handler = nil
-		end
 	end
 
 	self.extract_data = function(chunk, on_chunk)
@@ -58,112 +50,170 @@ function Request.new(events)
 		for line in chunk:gmatch("[^\n]+") do
 			local data = string.gsub(line, "%s*data:%s*", "")
 			local ok, json = pcall(vim.json.decode, data)
-			if not ok then
-				return
+			if ok and json and json.choices and json.choices[1] then
+				if json.choices[1].finish_reason == "stop" then
+					return
+				end
+				if json.choices[1].delta and json.choices[1].delta.content then
+					local content = json.choices[1].delta.content
+					on_chunk(content)
+					Events.pub("hook:request:chunk", content)
+					table.insert(self.chunks, content)
+				end
 			end
-			local path = json.choices
-			if not path then
-				return
-			end
-			path = path[1]
-			if not path then
-				return
-			end
-			path = path.delta
-			if not path then
-				return
-			end
-			path = path.content
-			if not path then
-				return
-			end
-			if #self.chunks == 0 and path == "" then
-				return
-			end
-			on_chunk(path)
-			Events:pub("hook:request:chunk", path)
-			table.insert(self.chunks, path)
 		end
 	end
 
-	self.extract_error = function(chunk)
+	self.extract_error = function(chunk, on_error)
 		table.insert(self.error_chunks, chunk .. "\n")
+		on_error(self.error_chunks)
 	end
 
-	self.completions = function(on_start, on_chunk, on_complete, on_error)
-		on_start()
+	self.completions = function(prompt_lines, before_request, on_stream_start, on_chunk, on_complete, on_error)
 		local strategy = nil
-		self.handler = curl.post({
+		if opts.dev_opts.request.throw_error then
+			on_error(opts.dev_opts.request.error)
+		else
+			before_request()
+			local stream_started = false
+			local handler = curl.post({
+				url = "https://api.openai.com/v1/chat/completions",
+				raw = { "--no-buffer" },
+				headers = {
+					content_type = "application/json",
+					Authorization = "Bearer " .. opts.openai_key,
+				},
+				body = vim.json.encode(self._.openai_params),
+				stream = function(_, chunk)
+					if not stream_started then
+						vim.schedule(function()
+							on_stream_start(prompt_lines)
+						end)
+						stream_started = true
+					end
+					if chunk and chunk ~= "" then
+						vim.schedule(function()
+							if not strategy then
+								if string.match(chunk, "data:") then
+									strategy = "data"
+								else
+									strategy = "error"
+								end
+							end
+							on_chunk(chunk, strategy)
+						end)
+					end
+				end,
+				on_error = on_error,
+			})
+			handler:after_success(function()
+				if #self.error_chunks > 0 then
+					local error = table.concat(self.error_chunks, "")
+					local ok, json = pcall(vim.json.decode, error)
+					if ok then
+						on_error(json)
+					else
+						on_error(self.error_chunks)
+					end
+				else
+					vim.schedule(function()
+						on_complete()
+					end)
+				end
+			end)
+			table.insert(self.handlers, handler)
+		end
+	end
+
+	function Request:compose_entries(current_history, on_complete)
+		local openai_params = utils.deepcopy(current_history.openai_params)
+		self:init_openai()
+		table.insert(openai_params.messages, {
+			role = "user",
+			content = "Return json object for this chat",
+		})
+		openai_params.stream = false
+		openai_params.messages[1] = {
+			role = "system",
+			content = "Important: ONLY RETURN THE OBJECT.  You will be reducing a openai chat to a json object.  The object's schema is {name: string, description: string, keywords: string[]}. Break compound words in keywords into multiple terms in lowercase.  Limit to 6 keywords.  Only return the object.",
+		}
+		Log.trace(string.format("Setting entries from openai response using %s", vim.inspect(openai_params)))
+		local handler = curl.post({
 			url = "https://api.openai.com/v1/chat/completions",
-			raw = { "--no-buffer" },
 			headers = {
 				content_type = "application/json",
 				Authorization = "Bearer " .. opts.openai_key,
 			},
-			body = vim.json.encode(self.openai_params),
-			stream = function(_, chunk)
-				if chunk ~= "" then
-					vim.schedule(function()
-						if not strategy then
-							if string.match(chunk, "data:") then
-								strategy = "data"
-							else
-								strategy = "error"
-							end
+			body = vim.json.encode(openai_params),
+			callback = vim.schedule_wrap(function(response)
+				if response.status == 200 then
+					Events.pub("hook:entries:start", response.body)
+					local response_json_ok, response_json = pcall(vim.json.decode, response.body)
+					if response_json_ok and response_json then
+						local content = response_json.choices[1].message.content
+						local content_ok, content_json = pcall(vim.json.decode, content)
+						if
+							content_ok
+							and content_json
+							and content_json.name
+							and content_json.description
+							and content_json.keywords
+							and #content_json.keywords > 0
+						then
+							current_history.entries = content_json
 						end
-						on_chunk(chunk, strategy)
-					end)
-				end
-			end,
-			on_error = on_error,
-		})
-		self.handler:after_success(function()
-			if #self.error_chunks > 0 then
-				local error = table.concat(self.error_chunks, "")
-				local ok, json = pcall(vim.json.decode, error)
-				if ok then
-					on_error(json)
+					end
 				else
-					on_error(self.error_chunks)
+					current_history.entries = {
+						name = "Unknown Chat",
+						description = "",
+						keywords = { "unknown" },
+					}
 				end
-			else
-				vim.schedule(function()
-					on_complete()
-				end)
-			end
-		end)
+				Events.pub("hook:entries:complete", response.body)
+				on_complete()
+			end),
+		})
+		table.insert(self.handlers, handler)
 	end
-
-	self.events:sub("layout:unmount", function()
-		self:query_reset()
-	end)
 
 	return self
 end
 
-function Request:query(content, on_response_start, on_response_chunk, on_response_complete)
-	self.on_user_prompt(content)
+function Request:shutdown_handlers()
+	while #self.handlers > 0 do
+		local handler = table.remove(self.handlers, 1)
+		if handler and not handler.is_shutdown then
+			Log.debug(string.format("shutting down plenary.curl handler: %s", handler))
+			handler:shutdown()
+		end
+	end
+end
 
-	local on_start = function()
+---@diagnostic disable-next-line: duplicate-set-field
+function Request:query(prompt_lines, on_stream_start, on_response_chunk, on_response_complete, on_response_error)
+	self.on_user_prompt(prompt_lines)
+
+	local before_request = function()
 		Log.trace("query: on_start")
-		Events:pub("hook:request:start", content)
-		on_response_start()
+		Events.pub("hook:request:start", prompt_lines)
+		self.reset()
 	end
 
 	local on_complete = function()
 		Log.trace("query: on_complete")
 		self.on_assistant_response()
-		Log.trace("query: openai_params: " .. vim.inspect(self.openai_params))
+		Log.trace("query: openai_params: " .. vim.inspect(self._.openai_params))
 		on_response_complete(self.chunks)
 	end
 
 	local on_error = function(err)
-		Events:pub("hook:request:error", "completions", err)
-		Events:pub("request:error", err)
+		Events.pub("hook:request:error", "completions", err)
 		if type(err) == "table" then
 			err = vim.inspect(err)
 		end
 		Log.error(string.format("query: on_error: %s", err))
+		on_response_error(err)
 	end
 
 	local on_chunk = function(chunk, strategy)
@@ -176,8 +226,7 @@ function Request:query(content, on_response_start, on_response_chunk, on_respons
 		end
 	end
 
-	self.query_reset()
-	self.completions(on_start, on_chunk, on_complete, on_error)
+	self.completions(prompt_lines, before_request, on_stream_start, on_chunk, on_complete, on_error)
 end
 
 return Request
