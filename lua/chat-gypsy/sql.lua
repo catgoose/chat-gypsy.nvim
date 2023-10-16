@@ -26,7 +26,7 @@ function Sql:initialize()
 		keywords = { type = "string", default = "'default,untitled'" },
 		temperature = { type = "number", required = true },
 		model = { type = "string", required = true },
-		active = { type = "boolean", default = true },
+		active = { type = "integer", default = true },
 		ensure = true,
 	})
 	self.db:create("messages", {
