@@ -85,10 +85,6 @@ function Float:init()
 		self.layout:unmount()
 		self.request:shutdown_handlers()
 		self._.instance = false
-		--  QUESTION: 2023-10-08 - How does this function if there was an
-		--  error?
-		--  BUG: 2023-10-15 - After continuing a chat, then closing float and
-		--  opening a new chat, the same history id is used as the continued chat
 		if self._.should_compose_entries then
 			History:compose_entries(self.request)
 		end
