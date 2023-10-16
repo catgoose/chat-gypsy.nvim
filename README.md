@@ -50,9 +50,19 @@ it will not clear the prompt buffer until the previous request is completed.
 
 [tiktoken](https://github.com/openai/tiktoken)
 
+```bash
+pip install tiktoken
+```
+
 ### sqlite.lua
 
 [sqlite.lua](https://github.com/kkharji/sqlite.lua)
+
+```bash
+sudo pacman -S sqlite # Arch
+sudo apt-get install sqlite3 libsqlite3-dev # Ubuntu
+sudo dnf install sqlite sqlite-devel # Fedora
+```
 
 ## Installation
 
@@ -166,6 +176,7 @@ return {
   dependencies = {
     "nvim-lua/plenary.nvim",
     "MunifTanjim/nui.nvim",
+    "kkharji/sqlite.lua"
   },
   keys = {
     {
