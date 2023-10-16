@@ -50,7 +50,15 @@ function Sql:new_session(openai_params)
 		temperature = openai_params.temperature,
 		model = openai_params.model,
 	}
-	self.db:insert("sessions", session)
+	local id = self.db:eval(
+		[[
+    INSERT INTO sessions (temperature, model)
+    VALUES (:temperature, :model)
+    returning id;
+  ]],
+		session
+	)
+	return id
 end
 
 function Sql:get_sessions()

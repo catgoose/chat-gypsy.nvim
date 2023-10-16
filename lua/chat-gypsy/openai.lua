@@ -22,7 +22,6 @@ end
 function OpenAI:init_openai()
 	self._.system_written = false
 	self._.openai_params = Config.get("opts").openai_params
-	self.sql:new_session(self._.openai_params)
 end
 
 function OpenAI:set_openai_params(params)
@@ -50,6 +49,7 @@ function OpenAI:send(
 	local action = function(queue_next)
 		local on_stream_start = function(lines)
 			on_chunk_stream_start(lines)
+			local id = self.sql:new_session(self._.openai_params)
 			self.save_history()
 		end
 		local on_complete = function(complete_chunks)
