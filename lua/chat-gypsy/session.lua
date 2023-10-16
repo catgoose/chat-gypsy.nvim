@@ -16,8 +16,8 @@ function Session:init()
 end
 
 function Session:toggle()
-	sql:check_tables()
-	sql:drop()
+	-- sql:check_tables()
+	-- sql:drop()
 	-- if not self.chat._.instance then
 	-- 	self:open()
 	-- 	return

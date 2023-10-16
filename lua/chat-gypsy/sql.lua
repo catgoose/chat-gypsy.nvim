@@ -6,50 +6,43 @@ Sql.__index = Sql
 
 function Sql:new()
 	setmetatable(self, Sql)
+	local uri = string.format("%s/%s", vim.fn.stdpath("data"), plugin_opts.name)
 	self.sqlite = require("sqlite.db")
+	self.db = self.sqlite:open(uri .. "/chat-gypsy.db", { open_mode = "rwc" })
 	self.tbl = require("sqlite.tbl")
-	self.uri = string.format("%s/%s", vim.fn.stdpath("data"), plugin_opts.name)
-	self.db = self.sqlite:open(self.uri .. "/chat-gypsy.db", { open_mode = "rwc" })
-	Log.debug(string.format("Opened database %s", self.uri))
-	self:check_tables()
+	Log.debug(string.format("Opened database %s", uri))
+	self:initialize()
 	return self
 end
 
-function Sql:check_tables()
+function Sql:initialize()
+	local strftime = self.sqlite.lib.strftime
 	self.db:create("sessions", {
 		id = true,
-		updatedAt = { type = "integer" },
-		createdAt = { type = "integer" },
+		updatedAt = { type = "date", default = strftime("%s", "now") },
+		createdAt = { type = "date", default = strftime("%s", "now") },
+		name = { type = "string", default = "'Untitled chat'" },
+		description = { type = "string", default = "'No description'" },
+		keywords = { type = "string", default = "'default,untitled'" },
+		temperature = { type = "number", required = true },
+		model = { type = "string", required = true },
+		active = { type = "boolean", default = true },
 		ensure = true,
 	})
 	self.db:create("messages", {
 		id = true,
-		updatedAt = { type = "integer" },
-		createdAt = { type = "integer" },
+		role = { type = "string", required = true },
+		tokens = { type = "integer", default = 0 },
+		timestamp = { type = "date", default = strftime("%s", "now") },
+		content = { type = "string", required = true },
 		session = {
 			type = "integer",
-			foreign_key = {
-				table = "sessions",
-				key = "id",
-				on_delete = "cascade",
-				on_update = "cascade",
-			},
+			reference = "sessions.id",
+			on_delete = "cascade",
+			on_update = "cascade",
 		},
 		ensure = true,
 	})
-
-	self.db:insert("sessions", {
-		updatedAt = os.time(),
-		createdAt = os.time(),
-	})
-
-	local sessions = self.db:select("sessions")
-	vim.print(sessions)
-end
-
-function Sql:drop()
-	self.db:drop("sessions")
-	self.db:drop("messages")
 end
 
 return Sql
