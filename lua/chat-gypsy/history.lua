@@ -71,7 +71,7 @@ function History:save()
 end
 
 function History:reset()
-	Log.debug("Resetting history")
+	Log.trace("Resetting history")
 	self.history_id = utils.generate_random_id(self.id_len)
 	self.file = string.format("%s.json", self.history_id)
 	self.json_path = string.format("%s/%s", self.data_dir, self.file)

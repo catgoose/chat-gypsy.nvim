@@ -58,6 +58,7 @@ function Sql:new_session(openai_params)
 		session
 	)
 	if #create > 0 then
+		self:insert_message(openai_params.messages[1])
 		return create[1].id
 	else
 		return nil
