@@ -58,6 +58,9 @@ function History:compose_entries(request)
 	local on_complete = function()
 		Log.debug(string.format("Composed entries for History id %s", self.current.id))
 		self.sort_keywords()
+		if self.session_id > 0 then
+			self.sql:session_summary(self.session_id, self.current.entries)
+		end
 		self:save()
 		self:reset()
 	end

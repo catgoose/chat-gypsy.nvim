@@ -84,4 +84,17 @@ function Sql:touch_session(id)
 	})
 end
 
+function Sql:session_summary(id, summary)
+	local keywords = table.concat(summary.keywords, ",")
+	self.db:update("sessions", {
+		where = { id = id },
+		set = {
+			name = summary.name,
+			description = summary.description,
+			keywords = keywords,
+		},
+	})
+	self:touch_session(id)
+end
+
 return Sql
