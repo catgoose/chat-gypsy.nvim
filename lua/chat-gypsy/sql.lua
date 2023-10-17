@@ -66,11 +66,43 @@ function Sql:new_session(openai_params)
 end
 
 function Sql:get_sessions()
-	local sessions = self.db:select("sessions", {
-		where = { active = 1 },
-		order_by = { updatedAt = "desc" },
-	})
+	-- local sessions = self.db:select("sessions", {
+	-- 	join = { messages = { "sessions.id = messages.session" } },
+	-- 	where = { active = 0 },
+	-- 	order_by = { desc = "updatedAt" },
+	-- })
+	local sessions = self.db:eval([[
+  SELECT
+    s.id
+    , s.temperature
+    , s.model
+    , s.name
+    , s.description
+    , s.keywords
+  FROM sessions s
+  WHERE active = 0
+  ORDER BY updatedAt DESC
+  ]])
 	return sessions
+end
+
+function Sql:get_messages_for_session(id)
+	local messages = self.db:eval(
+		[[
+  SELECT
+    m.role
+    , m.tokens
+    , m.time
+    , m.content
+  FROM messages m
+  LEFT JOIN sessions s ON s.id = m.session
+  WHERE active = 0
+  AND session = :id
+  ORDER BY m.time ASC
+	 ]],
+		{ id = id }
+	)
+	return messages
 end
 
 function Sql:insert_message(message)

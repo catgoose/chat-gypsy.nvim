@@ -5,6 +5,7 @@ function Session:new()
 	setmetatable(self, Session)
 	self.chat = nil
 	self:init()
+	self.sql = require("chat-gypsy.sql"):new()
 	return self
 end
 

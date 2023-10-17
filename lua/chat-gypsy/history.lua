@@ -163,7 +163,50 @@ local get_entries_from_file = function(file_path, on_error)
 	end
 end
 
+function History:get_sql_entries()
+	local sessions = self.sql:get_sessions()
+	local entries = {}
+	for _, session in ipairs(sessions) do
+		local sql_messages = self.sql:get_messages_for_session(session.id)
+		local messages = {}
+		local openai_params = {}
+		local tokens = {
+			system = 0,
+			user = 0,
+			assistant = 0,
+			total = 0,
+		}
+		for _, message in ipairs(sql_messages) do
+			tokens[message.role] = tokens[message.role] + message.tokens
+			tokens.total = tokens.total + message.tokens
+			local _tokens = utils.deepcopy(tokens)
+			table.insert(messages, {
+				role = message.role,
+				tokens = _tokens,
+				time = message.time,
+				content = message.content,
+			})
+			table.insert(openai_params, {
+				role = message.role,
+				content = message.content,
+			})
+		end
+		table.insert(entries, {
+			entries = {
+				id = session.id,
+				name = session.name,
+				description = session.description,
+				keywords = utils.split_string(session.keywords, ","),
+				messages = messages,
+				openai_params = openai_params,
+			},
+		})
+	end
+	return entries
+end
+
 function History:get_picker_entries(picker_cb, opts)
+	local sql_entries = self:get_sql_entries()
 	local on_error = function(err)
 		if err then
 			Log.error(err)
@@ -187,10 +230,12 @@ function History:get_picker_entries(picker_cb, opts)
 				})
 			end
 		end
-		picker_cb(picker_entries, opts)
+		-- picker_cb(picker_entries, opts)
 	end
 
-	utils.find_files_in_directory(self.data_dir, on_files_found, on_error)
+	picker_cb(sql_entries, opts)
+
+	-- utils.find_files_in_directory(self.data_dir, on_files_found, on_error)
 end
 
 return History

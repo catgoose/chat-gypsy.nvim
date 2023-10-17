@@ -117,6 +117,15 @@ Utils.string_to_lines_tbl = function(str)
 	return t
 end
 
+Utils.split_string = function(str, sep)
+	local t = {}
+	local pattern = string.format("([^%s]*)", sep)
+	for word in string.gmatch(str, pattern) do
+		table.insert(t, word)
+	end
+	return t
+end
+
 Utils.check_roles = function(role, include_error)
 	if include_error then
 		return vim.tbl_contains({ "system", "user", "assistant", "error" }, role)
