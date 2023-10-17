@@ -192,6 +192,7 @@ function History:get_sql_entries()
 			})
 		end
 		table.insert(entries, {
+			--  TODO: 2023-10-17 - Remove entries key
 			entries = {
 				id = session.id,
 				name = session.name,
