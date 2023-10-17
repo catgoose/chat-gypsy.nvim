@@ -50,6 +50,10 @@ function OpenAI:send(
 		local on_stream_start = function(lines)
 			on_chunk_stream_start(lines)
 			local id = self.sql:new_session(self._.openai_params)
+			if not id then
+				Log.error("OpenAI:send: on_stream_start: id is nil")
+			end
+			History:set_session_id(id)
 			self.save_history()
 		end
 		local on_complete = function(complete_chunks)

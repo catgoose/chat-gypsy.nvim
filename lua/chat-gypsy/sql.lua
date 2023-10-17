@@ -1,4 +1,3 @@
-local plugin_opts = require("chat-gypsy").Config.get("plugin_opts")
 local Log = require("chat-gypsy").Log
 
 local Sql = {}
@@ -33,7 +32,7 @@ function Sql:initialize()
 		id = true,
 		role = { type = "string", required = true },
 		tokens = { type = "integer", default = 0 },
-		timestamp = { type = "date", default = strftime("%s", "now") },
+		time = { type = "date", default = strftime("%s", "now") },
 		content = { type = "string", required = true },
 		session = {
 			type = "integer",
@@ -50,7 +49,7 @@ function Sql:new_session(openai_params)
 		temperature = openai_params.temperature,
 		model = openai_params.model,
 	}
-	local id = self.db:eval(
+	local create = self.db:eval(
 		[[
     INSERT INTO sessions (temperature, model)
     VALUES (:temperature, :model)
@@ -58,12 +57,30 @@ function Sql:new_session(openai_params)
   ]],
 		session
 	)
-	return id
+	if #create > 0 then
+		return create[1].id
+	else
+		return nil
+	end
 end
 
 function Sql:get_sessions()
-	local sessions = self.db:select("sessions")
+	local sessions = self.db:select("sessions", {
+		where = { active = 1 },
+		order_by = { updatedAt = "desc" },
+	})
 	return sessions
+end
+
+function Sql:insert_message(message)
+	self.db:insert("messages", message)
+end
+
+function Sql:touch_session(id)
+	self.db:update("sessions", {
+		where = { id = id },
+		set = { updatedAt = os.time() },
+	})
 end
 
 return Sql

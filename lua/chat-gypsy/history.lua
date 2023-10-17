@@ -10,9 +10,15 @@ function History:new()
 	setmetatable(self, History)
 	self.data_dir = string.format("%s/%s", vim.fn.stdpath("data"), plugin_opts.name)
 	self.id_len = 16
+	self.session_id = -1
+	self.sql = require("chat-gypsy.sql"):new()
 	self:set_id(utils.generate_random_id(self.id_len))
 	self:init()
 	return self
+end
+
+function History:set_session_id(id)
+	self.session_id = id
 end
 
 function History:set_id(id)
@@ -22,6 +28,7 @@ function History:set_id(id)
 end
 
 function History:init_current()
+	self.session_id = -1
 	self.current = {
 		id = self.history_id,
 		createdAt = os.time(),
@@ -100,6 +107,16 @@ function History:add_message(content, role, tokens)
 			vim.inspect(self.current.messages[#self.current.messages])
 		)
 	)
+	if self.session_id > 0 then
+		local message = {
+			role = role,
+			content = content,
+			time = os.time(),
+			tokens = tokens[role],
+			session = self.session_id,
+		}
+		self.sql:insert_message(message)
+	end
 	self.current.updatedAt = os.time()
 	self:save()
 end
