@@ -114,7 +114,7 @@ local function collect_entries()
 			id = session.id,
 			name = session.name,
 			description = session.description,
-			keywords = utils.split_string(session.keywords, ","),
+			keywords = utils.split_string(session.keywords, ",", false),
 			messages = messages,
 			openai_params = openai_params,
 		})

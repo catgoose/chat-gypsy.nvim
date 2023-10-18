@@ -33,11 +33,13 @@ Utils.string_to_lines_tbl = function(str)
 	return t
 end
 
-Utils.split_string = function(str, sep)
+Utils.split_string = function(str, sep, include_empty)
 	local t = {}
 	local pattern = string.format("([^%s]*)", sep)
 	for word in string.gmatch(str, pattern) do
-		table.insert(t, word)
+		if include_empty or word ~= "" then
+			table.insert(t, word)
+		end
 	end
 	return t
 end
