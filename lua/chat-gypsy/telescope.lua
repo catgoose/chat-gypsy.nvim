@@ -1,5 +1,4 @@
 local Log = require("chat-gypsy").Log
-local History = require("chat-gypsy").History
 local Config = require("chat-gypsy").Config
 local finders = require("telescope.finders")
 local conf = require("telescope.config").values
@@ -9,6 +8,8 @@ local action_state = require("telescope.actions.state")
 local previewers = require("telescope.previewers")
 local writer = require("chat-gypsy.writer"):new():set_move_cursor(false)
 local config_opts, symbols = Config.get("opts"), Config.get("symbols")
+local sql = require("chat-gypsy.sql"):new()
+local utils = require("chat-gypsy.utils")
 
 local Telescope = {}
 
@@ -81,7 +82,47 @@ local define_preview = function(self, item)
 	end
 end
 
-local get_picker_entries = function(entries, opts)
+local function collect_entries()
+	local sessions = sql:get_sessions()
+	local entries = {}
+	for _, session in ipairs(sessions) do
+		local sql_messages = sql:get_messages_for_session(session.id)
+		local messages = {}
+		local openai_params = {}
+		local tokens = {
+			system = 0,
+			user = 0,
+			assistant = 0,
+			total = 0,
+		}
+		for _, message in ipairs(sql_messages) do
+			tokens[message.role] = tokens[message.role] + message.tokens
+			tokens.total = tokens.total + message.tokens
+			local _tokens = utils.deepcopy(tokens)
+			table.insert(messages, {
+				role = message.role,
+				tokens = _tokens,
+				time = message.time,
+				content = message.content,
+			})
+			table.insert(openai_params, {
+				role = message.role,
+				content = message.content,
+			})
+		end
+		table.insert(entries, {
+			id = session.id,
+			name = session.name,
+			description = session.description,
+			keywords = utils.split_string(session.keywords, ","),
+			messages = messages,
+			openai_params = openai_params,
+		})
+	end
+	return entries
+end
+
+local picker = function(entries, opts)
 	pickers
 		.new(opts, {
 			prompt_title = "History",
@@ -100,13 +141,10 @@ local get_picker_entries = function(entries, opts)
 		:find()
 end
 
-local function history_picker(opts)
-	History:get_picker_entries(get_picker_entries, opts)
-end
-
 function Telescope.history(opts)
 	opts = opts or {}
-	history_picker(opts)
+	local entries = collect_entries()
+	picker(entries, opts)
 end
 
 return Telescope
