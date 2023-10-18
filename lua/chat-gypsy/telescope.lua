@@ -12,27 +12,27 @@ local config_opts, symbols = Config.get("opts"), Config.get("symbols")
 
 local Telescope = {}
 
-local function entry_ordinal(item)
+local function entry_ordinal(entry)
 	local tags = vim.tbl_map(function(keyword)
 		return symbols.hash .. keyword
-	end, item.entries.keywords)
-	return table.concat(tags, symbols.space) .. symbols.space .. item.entries.name
+	end, entry.keywords)
+	return table.concat(tags, symbols.space) .. symbols.space .. entry.name
 end
 
 local entry_display = function(item)
 	local win_width = vim.api.nvim_win_get_width(0)
 	local keywords_length = 0
-	for _, keyword in pairs(item.value.entries.keywords) do
+	for _, keyword in pairs(item.value.keywords) do
 		keywords_length = keywords_length + #keyword + 2
 	end
 	local items = {
-		item.value.entries.name,
+		item.value.name,
 		symbols.space,
-		symbols.space:rep(win_width - keywords_length - #item.value.entries.name - 3),
+		symbols.space:rep(win_width - keywords_length - #item.value.name - 3),
 	}
 	local highlights = {}
 	local start = #table.concat(items, "")
-	for _, keyword in pairs(item.value.entries.keywords) do
+	for _, keyword in pairs(item.value.keywords) do
 		vim.list_extend(items, { symbols.hash, keyword, symbols.space })
 		vim.list_extend(highlights, {
 			{ { start, start + 1 }, "TelescopeResultsOperator" },
@@ -55,7 +55,7 @@ local attach_mappings = function(prompt_bufnr)
 	actions.select_default:replace(function()
 		actions.close(prompt_bufnr)
 		local selection = action_state.get_selected_entry()
-		local current = selection.value.entries
+		local current = selection.value
 		Log.trace(string.format("history %s selected", vim.inspect(current)))
 		require("chat-gypsy").Session:restore(current)
 	end)
@@ -63,7 +63,7 @@ local attach_mappings = function(prompt_bufnr)
 end
 
 local define_preview = function(self, item)
-	local entries = item.value.entries
+	local entries = item.value
 	vim.api.nvim_buf_set_option(self.state.bufnr, "filetype", "markdown")
 	vim.api.nvim_win_set_option(self.state.winid, "wrap", true)
 	writer:set_bufnr(self.state.bufnr):set_winid(self.state.winid):reset()

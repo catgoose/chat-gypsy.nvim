@@ -142,28 +142,7 @@ function History:load_from_file_path(file_path)
 	return false
 end
 
-local get_entries_from_file = function(file_path, on_error)
-	local history_json = utils.decode_json_from_path(file_path, on_error)
-	if
-		history_json
-		and history_json.id
-		and history_json.openai_params
-		and history_json.messages
-		and history_json.entries
-		and history_json.entries.name
-		and history_json.entries.description
-		and history_json.entries.keywords
-	then
-		history_json.entries.id = history_json.id
-		history_json.entries.openai_params = history_json.openai_params
-		history_json.entries.messages = history_json.messages
-		return history_json.entries
-	else
-		return nil
-	end
-end
-
-function History:get_sql_entries()
+function History:get_picker_entries(picker_cb, opts)
 	local sessions = self.sql:get_sessions()
 	local entries = {}
 	for _, session in ipairs(sessions) do
@@ -192,51 +171,16 @@ function History:get_sql_entries()
 			})
 		end
 		table.insert(entries, {
-			--  TODO: 2023-10-17 - Remove entries key
-			entries = {
-				id = session.id,
-				name = session.name,
-				description = session.description,
-				keywords = utils.split_string(session.keywords, ","),
-				messages = messages,
-				openai_params = openai_params,
-			},
+			id = session.id,
+			name = session.name,
+			description = session.description,
+			keywords = utils.split_string(session.keywords, ","),
+			messages = messages,
+			openai_params = openai_params,
 		})
 	end
-	return entries
-end
 
-function History:get_picker_entries(picker_cb, opts)
-	local sql_entries = self:get_sql_entries()
-	local on_error = function(err)
-		if err then
-			Log.error(err)
-			error(err)
-		end
-	end
-	local on_files_found = function(file_paths)
-		local picker_entries = {}
-		for _, file_path in ipairs(file_paths) do
-			local entries = get_entries_from_file(file_path, on_error)
-			if entries then
-				table.insert(picker_entries, {
-					entries = {
-						id = entries.id,
-						name = entries.name,
-						description = entries.description,
-						keywords = entries.keywords,
-						openai_params = entries.openai_params,
-						messages = entries.messages,
-					},
-				})
-			end
-		end
-		-- picker_cb(picker_entries, opts)
-	end
-
-	picker_cb(sql_entries, opts)
-
-	-- utils.find_files_in_directory(self.data_dir, on_files_found, on_error)
+	picker_cb(entries, opts)
 end
 
 return History
