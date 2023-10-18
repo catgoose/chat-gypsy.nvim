@@ -11,9 +11,6 @@ function OpenAI:new()
 	self.sql = require("chat-gypsy.sql"):new()
 	self._ = {}
 	self._.queue = require("chat-gypsy.queue"):new()
-	self.save_history = function()
-		History:add_openai_params(self._.openai_params)
-	end
 	self:init_openai()
 	self:init_request()
 	return self
@@ -43,7 +40,6 @@ function OpenAI:send(
 	if not self._.system_written and self._.openai_params.messages[1].role == "system" then
 		system_writer(self._.openai_params.messages[1])
 		self._.system_written = true
-		self.save_history()
 		local id = self.sql:new_session(self._.openai_params)
 		if not id then
 			Log.error("OpenAI:send: on_stream_start: id is nil")
@@ -54,12 +50,10 @@ function OpenAI:send(
 	local action = function(queue_next)
 		local on_stream_start = function(lines)
 			on_chunk_stream_start(lines)
-			self.save_history()
 		end
 		local on_complete = function(complete_chunks)
 			Log.trace("request completed")
 			on_chunks_complete(complete_chunks)
-			self.save_history()
 			queue_next()
 		end
 
