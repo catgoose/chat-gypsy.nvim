@@ -1,5 +1,4 @@
 local Log = require("chat-gypsy").Log
-local History = require("chat-gypsy").History
 local Config = require("chat-gypsy").Config
 local UI = require("chat-gypsy.ui")
 local plugin_opts, dev, opts = Config.get("plugin_opts"), Config.get("dev"), Config.get("opts")
@@ -86,7 +85,7 @@ function Float:init()
 		self.request:shutdown_handlers()
 		self._.instance = false
 		if self._.should_compose_entries then
-			History:compose_entries(self.request)
+			self.request:summarize_chat(self.request)
 		end
 	end
 	self.hide = function()
@@ -141,7 +140,6 @@ function Float:actions()
 	if self.ui_opts.restore_history then
 		Log.trace(string.format("Restoring history: %s", vim.inspect(self.ui_opts.current)))
 		self.request:set_openai_params(self.ui_opts.current.openai_params)
-		-- History:set_id(self.ui_opts.current.id)
 		for _, message in ipairs(self.ui_opts.current.messages) do
 			if message.role == "system" then
 				self.writer:from_role(message.role):newlines()
@@ -150,7 +148,6 @@ function Float:actions()
 				self.writer:from_role(message.role):newlines():lines(message.content):newlines()
 			end
 			self.writer:replay_tokens(message.tokens, message.role):newlines()
-			-- History:replay(message)
 		end
 	end
 end

@@ -125,9 +125,9 @@ function Request:init_request()
 		end
 	end
 
-	function Request:compose_entries(current_history, on_complete)
-		local openai_params = utils.deepcopy(current_history.openai_params)
-		self:init_openai()
+	function Request:compose_entries(on_complete)
+		local openai_params = utils.deepcopy(self._.openai_params)
+		-- self:init_openai()
 		table.insert(openai_params.messages, {
 			role = "user",
 			content = "Return json object for this chat",
@@ -160,18 +160,17 @@ function Request:init_request()
 							and content_json.keywords
 							and #content_json.keywords > 0
 						then
-							current_history.entries = content_json
+							on_complete(content_json)
 						end
 					end
 				else
-					current_history.entries = {
-						name = "Unknown Chat",
-						description = "",
-						keywords = { "unknown" },
-					}
+					on_complete({
+						name = "Untitled chat",
+						description = "No description",
+						keywords = { "default", "untitled" },
+					})
 				end
 				Events.pub("hook:entries:complete", response.body)
-				on_complete()
 			end),
 		})
 		table.insert(self.handlers, handler)

@@ -22,6 +22,7 @@ function Sql:initialize()
 		model = { type = "string", required = true },
 		updatedAt = { type = "date", default = strftime("%s", "now") },
 		createdAt = { type = "date", default = strftime("%s", "now") },
+		--  TODO: 2023-10-18 - this is duplicated in request
 		name = { type = "string", default = "'Untitled chat'" },
 		description = { type = "string", default = "'No description'" },
 		keywords = { type = "string", default = "'default,untitled'" },
@@ -45,6 +46,7 @@ function Sql:initialize()
 end
 
 function Sql:new_session(openai_params)
+	-- vim.print(openai_params)
 	local session = {
 		temperature = openai_params.temperature,
 		model = openai_params.model,
@@ -105,8 +107,9 @@ function Sql:get_messages_for_session(id)
 	return messages
 end
 
-function Sql:insert_message(message)
-	self.db:insert("messages", message)
+function Sql:insert_message(message, session_id)
+	-- message.session = session_id
+	-- self.db:insert("messages", message)
 end
 
 function Sql:touch_session(id)
