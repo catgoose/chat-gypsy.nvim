@@ -17,6 +17,8 @@ end
 --  TODO: 2023-10-18 - check if database is locked
 function Sql:initialize()
 	local strftime = self.sqlite.lib.strftime
+	self.db:drop("sessions")
+	self.db:drop("messages")
 	self.db:create("sessions", {
 		id = true,
 		temperature = { type = "number", required = true },
@@ -47,33 +49,22 @@ function Sql:initialize()
 end
 
 function Sql:new_session(openai_params)
-	-- vim.print(openai_params)
-	local session = {
-		temperature = openai_params.temperature,
-		model = openai_params.model,
-	}
-	local create = self.db:eval(
+	local created = self.db:eval(
 		[[
     INSERT INTO sessions (temperature, model)
     VALUES (:temperature, :model)
     returning id;
   ]],
-		session
+		{ temperature = openai_params.temperature, model = openai_params.model }
 	)
-	if #create > 0 then
-		self:insert_message(openai_params.messages[1])
-		return create[1].id
+	if #created > 0 then
+		return created[1].id
 	else
 		return nil
 	end
 end
 
 function Sql:get_sessions()
-	-- local sessions = self.db:select("sessions", {
-	-- 	join = { messages = { "sessions.id = messages.session" } },
-	-- 	where = { active = 0 },
-	-- 	order_by = { desc = "updatedAt" },
-	-- })
 	local sessions = self.db:eval([[
   SELECT
     s.id
@@ -108,9 +99,8 @@ function Sql:get_messages_for_session(id)
 	return messages
 end
 
-function Sql:insert_message(message, session_id)
-	-- message.session = session_id
-	-- self.db:insert("messages", message)
+function Sql:insert_message(message)
+	self.db:insert("messages", message)
 end
 
 function Sql:touch_session(id)
