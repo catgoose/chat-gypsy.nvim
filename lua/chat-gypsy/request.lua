@@ -183,7 +183,7 @@ function Request:shutdown_handlers()
 	while #self.handlers > 0 do
 		local handler = table.remove(self.handlers, 1)
 		if handler and not handler.is_shutdown then
-			Log.debug(string.format("shutting down plenary.curl handler: %s", handler))
+			Log.trace(string.format("shutting down plenary.curl handler: %s", handler))
 			handler:shutdown()
 		end
 	end

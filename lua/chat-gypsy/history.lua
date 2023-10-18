@@ -19,7 +19,7 @@ function History:add_message(content, role, tokens)
 		return
 	end
 	tokens = utils.deepcopy(tokens)
-	Log.debug(
+	Log.trace(
 		string.format(
 			[[Adding to history: content "%s" of role "%s" with tokens %s]],
 			content,
@@ -33,7 +33,7 @@ function History:add_message(content, role, tokens)
 		time = os.time(),
 		tokens = tokens,
 	})
-	Log.debug(string.format("Inserting new message into history: %s", vim.inspect(self.messages[#self.messages])))
+	Log.trace(string.format("Inserting new message into history: %s", vim.inspect(self.messages[#self.messages])))
 end
 
 function History:get()

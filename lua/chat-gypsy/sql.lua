@@ -9,7 +9,7 @@ function Sql:new()
 	self.sqlite = require("sqlite.db")
 	self.db = self.sqlite:open(uri .. "/chat-gypsy.db", { open_mode = "rwc" })
 	self.tbl = require("sqlite.tbl")
-	Log.debug(string.format("Opened database %s", uri))
+	Log.trace(string.format("Opened database %s", uri))
 	self:initialize()
 	return self
 end
