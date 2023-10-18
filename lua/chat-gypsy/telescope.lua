@@ -99,15 +99,17 @@ local function collect_entries()
 			tokens[message.role] = tokens[message.role] + message.tokens
 			tokens.total = tokens.total + message.tokens
 			local _tokens = utils.deepcopy(tokens)
+			local role = message.role
+			local content = message.content
 			table.insert(messages, {
-				role = message.role,
+				role = role,
 				tokens = _tokens,
 				time = message.time,
-				content = message.content,
+				content = content,
 			})
 			table.insert(openai_params, {
-				role = message.role,
-				content = message.content,
+				role = role,
+				content = content,
 			})
 		end
 		table.insert(entries, {
