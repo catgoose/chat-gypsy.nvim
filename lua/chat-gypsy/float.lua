@@ -138,6 +138,7 @@ function Float:actions()
 	end
 	if self.ui_opts.restore_history then
 		self.Log.trace(string.format("Restoring history: %s", vim.inspect(self.ui_opts.history)))
+		self.request:restore(self.ui_opts.history)
 		for _, message in ipairs(self.ui_opts.history.messages) do
 			if message.role == "system" then
 				self.writer:from_role(message.role):newlines()

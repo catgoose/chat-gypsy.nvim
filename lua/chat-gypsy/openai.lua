@@ -24,8 +24,9 @@ function OpenAI:init_openai()
 	self._.session_id = -1
 end
 
-function OpenAI:restore_params(selection)
-	self.Log.trace(string.format("OpenAI:restore_params: current: %s", vim.inspect(selection)))
+function OpenAI:restore(selection)
+	selection = self.utils.deep_copy(selection)
+	self.Log.trace(string.format("OpenAI:restore: current: %s", vim.inspect(selection)))
 	self._.openai_params = selection.openai_params
 	self._.system_written = true
 	self._.session_id = selection.id
@@ -34,7 +35,6 @@ end
 function OpenAI:summarize_chat(request)
 	local action = function(queue_next)
 		local on_start = function()
-			self:init_session()
 			local messages = History:get()
 			for _, message in ipairs(messages) do
 				message.tokens = message.tokens[message.role]

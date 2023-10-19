@@ -88,7 +88,11 @@ local function collect_entries()
 	for _, session in ipairs(sessions) do
 		local sql_messages = sql:get_messages_for_session(session.id)
 		local messages = {}
-		local openai_params = {}
+		local openai_params = {
+			model = session.model,
+			temperature = session.temperature,
+			messages = {},
+		}
 		local tokens = {
 			system = 0,
 			user = 0,
@@ -100,14 +104,14 @@ local function collect_entries()
 			tokens.total = tokens.total + message.tokens
 			local _tokens = utils.deep_copy(tokens)
 			local role = message.role
-			local content = message.content
+			local content = tostring(message.content)
 			table.insert(messages, {
 				role = role,
+				content = content,
 				tokens = _tokens,
 				time = message.time,
-				content = content,
 			})
-			table.insert(openai_params, {
+			table.insert(openai_params.messages, {
 				role = role,
 				content = content,
 			})

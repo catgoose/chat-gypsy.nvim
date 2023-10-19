@@ -30,6 +30,8 @@ function Sql:initialize()
 		name = { type = "string", default = "'Untitled chat'" },
 		description = { type = "string", default = "'No description'" },
 		keywords = { type = "string", default = "'default,untitled'" },
+		--  TODO: 2023-10-18 - do something with active.  It should be set once
+		--  messages are inserted
 		active = { type = "integer", default = 0 },
 		ensure = true,
 	})
@@ -104,13 +106,6 @@ function Sql:insert_message(message)
 	self.db:insert("messages", message)
 end
 
-function Sql:touch_session(id)
-	self.db:update("sessions", {
-		where = { id = id },
-		set = { updatedAt = os.time() },
-	})
-end
-
 function Sql:session_summary(id, summary)
 	local keywords = table.concat(summary.keywords, ",")
 	self.db:update("sessions", {
@@ -119,9 +114,9 @@ function Sql:session_summary(id, summary)
 			name = summary.name,
 			description = summary.description,
 			keywords = keywords,
+			updatedAt = os.time(),
 		},
 	})
-	self:touch_session(id)
 end
 
 return Sql
