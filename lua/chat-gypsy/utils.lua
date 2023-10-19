@@ -10,13 +10,13 @@ Utils.generate_random_id = function(len)
 	return result
 end
 
-Utils.deepcopy = function(orig)
+Utils.deep_copy = function(orig)
 	local t = type(orig)
 	local copy
 	if t == "table" then
 		copy = {}
 		for k, v in pairs(orig) do
-			copy[k] = Utils.deepcopy(v)
+			copy[k] = Utils.deep_copy(v)
 		end
 	else
 		copy = orig

@@ -98,7 +98,7 @@ local function collect_entries()
 		for _, message in ipairs(sql_messages) do
 			tokens[message.role] = tokens[message.role] + message.tokens
 			tokens.total = tokens.total + message.tokens
-			local _tokens = utils.deepcopy(tokens)
+			local _tokens = utils.deep_copy(tokens)
 			local role = message.role
 			local content = message.content
 			table.insert(messages, {

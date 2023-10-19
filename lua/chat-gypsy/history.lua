@@ -18,7 +18,7 @@ function History:add_message(content, role, tokens)
 	if not role or not utils.check_roles(role) then
 		return
 	end
-	tokens = utils.deepcopy(tokens)
+	tokens = utils.deep_copy(tokens)
 	Log.trace(
 		string.format(
 			[[Adding to history: content "%s" of role "%s" with tokens %s]],
@@ -37,7 +37,7 @@ function History:add_message(content, role, tokens)
 end
 
 function History:get()
-	return utils.deepcopy(self.messages)
+	return utils.deep_copy(self.messages)
 end
 
 return History

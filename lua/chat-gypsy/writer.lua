@@ -167,7 +167,7 @@ function Writer:calculate_tokens(content, role)
 end
 
 function Writer:replay_tokens(tokens, role)
-	tokens = utils.deepcopy(tokens)
+	tokens = utils.deep_copy(tokens)
 	self.tokenizer:set(tokens)
 	self:token_summary(tokens, role)
 	vim.cmd("silent! undojoin")

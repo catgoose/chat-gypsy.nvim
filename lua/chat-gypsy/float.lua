@@ -1,4 +1,3 @@
-local Log = require("chat-gypsy").Log
 local Config = require("chat-gypsy").Config
 local UI = require("chat-gypsy.ui")
 local plugin_opts, dev, opts = Config.get("plugin_opts"), Config.get("dev"), Config.get("opts")
@@ -33,7 +32,7 @@ function Float:init()
 	self.writer = require("chat-gypsy.writer"):new()
 
 	self.init_state = function()
-		self._ = utils.deepcopy(state)
+		self._ = utils.deep_copy(state)
 		self._.chat.bufnr = self.layout._.box.box[1].component.bufnr
 		self._.prompt.bufnr = self.layout._.box.box[2].component.bufnr
 		self._.should_compose_entries = false
@@ -70,11 +69,11 @@ function Float:init()
 
 	-- mounting
 	self.mount = function()
-		Log.trace("Mounting UI")
+		self.Log.trace("Mounting UI")
 		self.layout:mount()
 		self.init_state()
 		self._.mounted = true
-		Log.trace("Configuring boxes")
+		self.Log.trace("Configuring boxes")
 		self:configure()
 		if opts.ui.behavior.prompt.start_insert then
 			vim.cmd.startinsert()
@@ -138,7 +137,7 @@ function Float:actions()
 		self.mount()
 	end
 	if self.ui_opts.restore_history then
-		Log.trace(string.format("Restoring history: %s", vim.inspect(self.ui_opts.current)))
+		self.Log.trace(string.format("Restoring history: %s", vim.inspect(self.ui_opts.current)))
 		self.request:set_openai_params(self.ui_opts.current.openai_params)
 		for _, message in ipairs(self.ui_opts.current.messages) do
 			if message.role == "system" then

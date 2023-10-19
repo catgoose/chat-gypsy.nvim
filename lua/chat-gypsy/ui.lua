@@ -1,4 +1,3 @@
-local Log = require("chat-gypsy").Log
 local opts = require("chat-gypsy").Config.get("opts")
 local nui_pu, nui_lo = require("nui.popup"), require("nui.layout")
 
@@ -92,6 +91,7 @@ UI.__index = UI
 
 function UI:new(ui_opts)
 	setmetatable(self, UI)
+	self.Log = require("chat-gypsy").Log
 	local default = {
 		mount = false,
 		placement = opts.ui.layout_placement,
@@ -103,7 +103,7 @@ function UI:new(ui_opts)
 	}
 	ui_opts = vim.tbl_deep_extend("force", default, ui_opts)
 	local ui = build_ui(ui_opts.layout_placement)
-	Log.trace(string.format("Building new ui with layout config: \n%s", vim.inspect(ui_opts.layout)))
+	self.Log.trace(string.format("Building new ui with layout config: \n%s", vim.inspect(ui_opts.layout)))
 	self.layout = ui.layout
 	self.boxes = ui.boxes
 	self.ui_opts = ui_opts
@@ -112,7 +112,7 @@ function UI:new(ui_opts)
 end
 
 function UI:init()
-	Log.warn("UI:layout_init: not implemented")
+	self.Log.warn("UI:layout_init: not implemented")
 end
 
 return UI
