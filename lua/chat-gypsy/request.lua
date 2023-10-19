@@ -73,6 +73,7 @@ function Request:init_request()
 		else
 			before_request()
 			local stream_started = false
+			self._.openai_params.stream = true
 			local handler = curl.post({
 				url = "https://api.openai.com/v1/chat/completions",
 				raw = { "--no-buffer" },
