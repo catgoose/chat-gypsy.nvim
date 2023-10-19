@@ -21,7 +21,7 @@ end
 function OpenAI:init_openai()
 	self._.system_written = false
 	self._.openai_params = Config.get("opts").openai_params
-	self._.session_id = -1
+	self._.session_id = nil
 end
 
 function OpenAI:restore(selection)
@@ -32,46 +32,56 @@ function OpenAI:restore(selection)
 	self._.session_id = selection.id
 end
 
-function OpenAI:summarize_chat(request)
-	local action = function(queue_next)
-		local on_start = function()
-			local messages = History:get()
-			for _, message in ipairs(messages) do
-				message.tokens = message.tokens[message.role]
-				message.session = self._.session_id
-				self.sql:insert_message(message)
-			end
-			History:reset()
-		end
-		local on_complete = function(entries)
-			self:init_session()
-			self.sql:session_summary(self._.session_id, entries)
-			self.Log.debug(string.format("Composed entries for session: %s", self._.session_id))
-			self:init_openai()
-			queue_next()
-		end
-		local on_error = function(err)
-			self.Events.pub("hook:request:error", "summarize", err)
-			if type(err) == "table" then
-				err = vim.inspect(err)
-			end
-			self.Log.error(string.format("query: on_error: %s", err))
-			queue_next()
-		end
-		local openai_params = self.utils.deep_copy(self._.openai_params)
-		request:compose_entries(openai_params, on_start, on_complete, on_error)
-	end
-	self.queue:add(action)
-end
-
 function OpenAI:init_session()
-	if self._.session_id < 0 then
-		self._.session_id = self.sql:new_session(self._.openai_params) or -1
-		if not self._.session_id == -1 then
+	if not self._.session_id then
+		local status = self.sql:new_session(self._.openai_params)
+		if status.success then
+			self._.session_id = status.data
+		else
 			local err = "OpenAI:send: on_stream_start: Session could not be set"
 			self.Log.error(err)
 			error(err)
 		end
+	end
+end
+
+function OpenAI:summarize_chat(request)
+	local on_error = function(err)
+		self.Events.pub("hook:request:error", "summarize", err)
+		if type(err) == "table" then
+			err = vim.inspect(err)
+		end
+		self.Log.error(string.format("query: on_error: %s", err))
+	end
+	local on_complete = function(entries)
+		local status = self.sql:session_summary(self._.session_id, entries)
+		if status.success then
+			self.Log.debug(string.format("Composed entries for session: %s", self._.session_id))
+			self:init_openai()
+		else
+			on_error(status.err)
+		end
+	end
+
+	self:init_session()
+	local do_compose = false
+	local messages = History:get()
+	for _, message in ipairs(messages) do
+		message.tokens = message.tokens[message.role]
+		message.session = self._.session_id
+		local status = self.sql:insert_message(message)
+		if not status.success then
+			on_error(string.format("Could not insert message: %s\n\n error: %s", vim.inspect(message), status.err))
+			do_compose = false
+			break
+		end
+		do_compose = true
+	end
+
+	if do_compose then
+		History:reset()
+		local openai_params = self.utils.deep_copy(self._.openai_params)
+		request:compose_entries(openai_params, on_complete, on_error)
 	end
 end
 
@@ -113,6 +123,10 @@ end
 
 function OpenAI:query(...)
 	self.Log.warn(string.format("OpenAI:query: not implemented: %s"), vim.inspect({ ... }))
+end
+
+function OpenAI:init_request(...)
+	self.Log.warn(string.format("OpenAI:init_request: not implemented: %s"), vim.inspect({ ... }))
 end
 
 return OpenAI

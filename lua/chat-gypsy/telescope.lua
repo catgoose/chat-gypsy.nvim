@@ -83,10 +83,18 @@ local define_preview = function(self, item)
 end
 
 local function collect_entries()
-	local sessions = sql:get_sessions()
+	local session_status = sql:get_sessions()
+	if not session_status.success then
+		return {}
+	end
+	local sessions = session_status.data
 	local entries = {}
 	for _, session in ipairs(sessions) do
-		local sql_messages = sql:get_messages_for_session(session.id)
+		local message_status = sql:get_messages_for_session(session.id)
+		if not message_status.success then
+			goto continue
+		end
+		local sql_messages = message_status.data
 		local messages = {}
 		local openai_params = {
 			model = session.model,
@@ -118,12 +126,13 @@ local function collect_entries()
 		end
 		table.insert(entries, {
 			id = session.id,
-			name = session.name,
-			description = session.description,
+			name = tostring(session.name),
+			description = tostring(session.description),
 			keywords = utils.split_string(session.keywords, ",", false),
 			messages = messages,
 			openai_params = openai_params,
 		})
+		::continue::
 	end
 	return entries
 end

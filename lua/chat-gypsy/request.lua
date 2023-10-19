@@ -123,8 +123,7 @@ function Request:init_request()
 		end
 	end
 
-	function Request:compose_entries(openai_params, on_start, on_complete)
-		on_start()
+	function Request:compose_entries(openai_params, on_complete, on_error)
 		table.insert(openai_params.messages, {
 			role = "user",
 			content = "Return json object for this chat",
@@ -161,6 +160,8 @@ function Request:init_request()
 							self.Events.pub("hook:entries:complete", response.body)
 						end
 					end
+				else
+					on_error(response.body)
 				end
 			end),
 		})
