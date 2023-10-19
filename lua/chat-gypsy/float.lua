@@ -137,9 +137,8 @@ function Float:actions()
 		self.mount()
 	end
 	if self.ui_opts.restore_history then
-		self.Log.trace(string.format("Restoring history: %s", vim.inspect(self.ui_opts.current)))
-		self.request:set_openai_params(self.ui_opts.current.openai_params)
-		for _, message in ipairs(self.ui_opts.current.messages) do
+		self.Log.trace(string.format("Restoring history: %s", vim.inspect(self.ui_opts.history)))
+		for _, message in ipairs(self.ui_opts.history.messages) do
 			if message.role == "system" then
 				self.writer:from_role(message.role):newlines()
 				self.writer:lines(message.content, { hlgroup = opts.ui.highlight.role[message.role] }):newlines()

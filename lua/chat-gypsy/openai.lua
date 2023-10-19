@@ -24,10 +24,11 @@ function OpenAI:init_openai()
 	self._.session_id = -1
 end
 
-function OpenAI:set_openai_params(params)
-	self.Log.trace(string.format("OpenAI:set_openai_params: params: %s", vim.inspect(params)))
-	self._.openai_params = params
+function OpenAI:restore_params(selection)
+	self.Log.trace(string.format("OpenAI:restore_params: current: %s", vim.inspect(selection)))
+	self._.openai_params = selection.openai_params
 	self._.system_written = true
+	self._.session_id = selection.id
 end
 
 function OpenAI:summarize_chat(request)

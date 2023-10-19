@@ -56,9 +56,9 @@ local attach_mappings = function(prompt_bufnr)
 	actions.select_default:replace(function()
 		actions.close(prompt_bufnr)
 		local selection = action_state.get_selected_entry()
-		local current = selection.value
-		Log.trace(string.format("history %s selected", vim.inspect(current)))
-		require("chat-gypsy").Session:restore(current)
+		local history = selection.value
+		Log.trace(string.format("history %s selected", vim.inspect(history)))
+		require("chat-gypsy").Session:restore(history)
 	end)
 	return true
 end
