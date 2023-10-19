@@ -15,11 +15,8 @@ function Sql:new()
 	return self
 end
 
---  TODO: 2023-10-18 - check if database is locked
 function Sql:initialize()
 	local strftime = self.sqlite.lib.strftime
-	-- self.db:drop("sessions")
-	-- self.db:drop("messages")
 	self.db:create("sessions", {
 		id = true,
 		temperature = { type = "number", required = true },
