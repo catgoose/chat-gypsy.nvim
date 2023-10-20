@@ -45,11 +45,14 @@ function Writer:set_move_cursor(state)
 end
 
 function Writer:init()
+	self.is_buf = function()
+		return self._.bufnr and vim.api.nvim_buf_is_valid(self._.bufnr)
+	end
 	self.set_lines = function(lines)
 		if type(lines) ~= "table" then
 			lines = { tostring(lines) }
 		end
-		if self._.bufnr and vim.api.nvim_buf_is_valid(self._.bufnr) then
+		if self.is_buf() then
 			vim.api.nvim_buf_set_lines(self._.bufnr, self._.row - 1, -1, false, lines)
 			self._.row = self._.row + #lines - 1
 			self:set_cursor()
@@ -129,7 +132,7 @@ function Writer:lines(lines, highlight_cfg)
 		lines = utils.string_to_lines_tbl(lines)
 	end
 	self.set_lines(lines)
-	if highlight_cfg and highlight_cfg.hlgroup then
+	if highlight_cfg and highlight_cfg.hlgroup and self.is_buf() then
 		highlight_cfg.col_start = highlight_cfg.col_start or 0
 		vim.api.nvim_buf_add_highlight(
 			self._.bufnr,
