@@ -50,7 +50,6 @@ local _opts = {
 	openai_params = {
 		model = "gpt-3.5-turbo",
 		temperature = 0.7,
-		stream = true,
 		messages = {
 			{
 				role = "system",
@@ -164,15 +163,15 @@ local _dev = _opts.dev_opts
 
 Config.get = function(cfg)
 	if cfg == "openai_models" then
-		return utils.deepcopy(_openai_models)
+		return utils.deep_copy(_openai_models)
 	elseif cfg == "symbols" then
-		return utils.deepcopy(_symbols)
+		return utils.deep_copy(_symbols)
 	elseif cfg == "plugin_opts" then
-		return utils.deepcopy(_plugin_opts)
+		return utils.deep_copy(_plugin_opts)
 	elseif cfg == "opts" then
-		return utils.deepcopy(_opts)
+		return utils.deep_copy(_opts)
 	elseif cfg == "dev" then
-		return utils.deepcopy(_dev)
+		return utils.deep_copy(_dev)
 	end
 end
 

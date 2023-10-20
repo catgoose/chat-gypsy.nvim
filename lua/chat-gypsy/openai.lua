@@ -1,4 +1,3 @@
-local Log = require("chat-gypsy").Log
 local Config = require("chat-gypsy").Config
 local History = require("chat-gypsy").History
 
@@ -8,11 +7,12 @@ OpenAI.__index = OpenAI
 --  TODO: 2023-10-10 - Create picker for openai model
 function OpenAI:new()
 	setmetatable(self, OpenAI)
+	self.sql = require("chat-gypsy.sql"):new()
+	self.utils = require("chat-gypsy.utils")
+	self.Events = require("chat-gypsy").Events
+	self.Log = require("chat-gypsy").Log
 	self._ = {}
-	self._.queue = require("chat-gypsy.queue"):new()
-	self.save_history = function()
-		History:add_openai_params(self._.openai_params)
-	end
+	self.queue = require("chat-gypsy.queue"):new()
 	self:init_openai()
 	self:init_request()
 	return self
@@ -21,12 +21,68 @@ end
 function OpenAI:init_openai()
 	self._.system_written = false
 	self._.openai_params = Config.get("opts").openai_params
+	self._.session_id = nil
 end
 
-function OpenAI:set_openai_params(params)
-	Log.trace(string.format("OpenAI:set_openai_params: params: %s", vim.inspect(params)))
-	self._.openai_params = params
+function OpenAI:restore(selection)
+	selection = self.utils.deep_copy(selection)
+	self.Log.trace(string.format("OpenAI:restore: current: %s", vim.inspect(selection)))
+	self._.openai_params = selection.openai_params
 	self._.system_written = true
+	self._.session_id = selection.id
+end
+
+function OpenAI:init_session()
+	if not self._.session_id then
+		local status = self.sql:new_session(self._.openai_params)
+		if status.success then
+			self._.session_id = status.data
+		else
+			local err = "OpenAI:send: on_stream_start: Session could not be set"
+			self.Log.error(err)
+			error(err)
+		end
+	end
+end
+
+function OpenAI:summarize_chat(request)
+	local on_error = function(err)
+		self.Events.pub("hook:request:error", "summarize", err)
+		if type(err) == "table" then
+			err = vim.inspect(err)
+		end
+		self.Log.error(string.format("query: on_error: %s", err))
+	end
+	local on_complete = function(entries)
+		local status = self.sql:session_summary(self._.session_id, entries)
+		if status.success then
+			self.Log.debug(string.format("Composed entries for session: %s", self._.session_id))
+			self:init_openai()
+		else
+			on_error(status.err)
+		end
+	end
+
+	self:init_session()
+	local do_compose = false
+	local messages = History:get()
+	for _, message in ipairs(messages) do
+		message.tokens = message.tokens[message.role]
+		message.session = self._.session_id
+		local status = self.sql:insert_message(message)
+		if not status.success then
+			on_error(string.format("Could not insert message: %s\n\n error: %s", vim.inspect(message), status.err))
+			do_compose = false
+			break
+		end
+		do_compose = true
+	end
+
+	if do_compose then
+		History:reset()
+		local openai_params = self.utils.deep_copy(self._.openai_params)
+		request:compose_entries(openai_params, on_complete, on_error)
+	end
 end
 
 function OpenAI:send(
@@ -42,18 +98,15 @@ function OpenAI:send(
 	if not self._.system_written and self._.openai_params.messages[1].role == "system" then
 		system_writer(self._.openai_params.messages[1])
 		self._.system_written = true
-		self.save_history()
 	end
-	Log.trace(string.format("adding request to queue: \nmessage: %s", table.concat(prompt_lines, "\n")))
+	self.Log.trace(string.format("adding request to queue: \nmessage: %s", table.concat(prompt_lines, "\n")))
 	local action = function(queue_next)
 		local on_stream_start = function(lines)
 			on_chunk_stream_start(lines)
-			self.save_history()
 		end
 		local on_complete = function(complete_chunks)
-			Log.trace("request completed")
+			self.Log.trace("request completed")
 			on_chunks_complete(complete_chunks)
-			self.save_history()
 			queue_next()
 		end
 
@@ -65,11 +118,15 @@ function OpenAI:send(
 		self:query(prompt_lines, on_stream_start, on_chunk, on_complete, on_error)
 	end
 
-	self._.queue:add(action)
+	self.queue:add(action)
 end
 
 function OpenAI:query(...)
-	Log.warn(string.format("OpenAI:query: not implemented: %s"), vim.inspect({ ... }))
+	self.Log.warn(string.format("OpenAI:query: not implemented: %s"), vim.inspect({ ... }))
+end
+
+function OpenAI:init_request(...)
+	self.Log.warn(string.format("OpenAI:init_request: not implemented: %s"), vim.inspect({ ... }))
 end
 
 return OpenAI

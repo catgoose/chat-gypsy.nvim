@@ -1,5 +1,3 @@
-local Log = require("chat-gypsy").Log
-local History = require("chat-gypsy").History
 local Config = require("chat-gypsy").Config
 local UI = require("chat-gypsy.ui")
 local plugin_opts, dev, opts = Config.get("plugin_opts"), Config.get("dev"), Config.get("opts")
@@ -34,7 +32,7 @@ function Float:init()
 	self.writer = require("chat-gypsy.writer"):new()
 
 	self.init_state = function()
-		self._ = utils.deepcopy(state)
+		self._ = utils.deep_copy(state)
 		self._.chat.bufnr = self.layout._.box.box[1].component.bufnr
 		self._.prompt.bufnr = self.layout._.box.box[2].component.bufnr
 		self._.should_compose_entries = false
@@ -71,11 +69,11 @@ function Float:init()
 
 	-- mounting
 	self.mount = function()
-		Log.trace("Mounting UI")
+		self.Log.trace("Mounting UI")
 		self.layout:mount()
 		self.init_state()
 		self._.mounted = true
-		Log.trace("Configuring boxes")
+		self.Log.trace("Configuring boxes")
 		self:configure()
 		if opts.ui.behavior.prompt.start_insert then
 			vim.cmd.startinsert()
@@ -85,12 +83,8 @@ function Float:init()
 		self.layout:unmount()
 		self.request:shutdown_handlers()
 		self._.instance = false
-		--  QUESTION: 2023-10-08 - How does this function if there was an
-		--  error?
-		--  BUG: 2023-10-15 - After continuing a chat, then closing float and
-		--  opening a new chat, the same history id is used as the continued chat
 		if self._.should_compose_entries then
-			History:compose_entries(self.request)
+			self.request:summarize_chat(self.request)
 		end
 	end
 	self.hide = function()
@@ -106,11 +100,11 @@ function Float:init()
 	end
 
 	-- writing callbacks
-	self.system_writer = function(history)
+	self.system_writer = function(message)
 		self._.should_compose_entries = false
-		self.writer:from_role(history.role):newlines()
-		self.writer:lines(history.content, { hlgroup = opts.ui.highlight.role[history.role] }):newlines()
-		self.writer:calculate_tokens(history.content, history.role):newlines()
+		self.writer:from_role(message.role):newlines()
+		self.writer:lines(message.content, { hlgroup = opts.ui.highlight.role[message.role] }):newlines()
+		self.writer:calculate_tokens(message.content, message.role):newlines()
 	end
 	self.before_request = function()
 		vim.api.nvim_buf_set_lines(self._.prompt.bufnr, 0, -1, false, {})
@@ -143,10 +137,9 @@ function Float:actions()
 		self.mount()
 	end
 	if self.ui_opts.restore_history then
-		Log.trace(string.format("Restoring history: %s", vim.inspect(self.ui_opts.current)))
-		self.request:set_openai_params(self.ui_opts.current.openai_params)
-		History:set_id(self.ui_opts.current.id)
-		for _, message in ipairs(self.ui_opts.current.messages) do
+		self.Log.trace(string.format("Restoring history: %s", vim.inspect(self.ui_opts.history)))
+		self.request:restore(self.ui_opts.history)
+		for _, message in ipairs(self.ui_opts.history.messages) do
 			if message.role == "system" then
 				self.writer:from_role(message.role):newlines()
 				self.writer:lines(message.content, { hlgroup = opts.ui.highlight.role[message.role] }):newlines()
@@ -154,7 +147,6 @@ function Float:actions()
 				self.writer:from_role(message.role):newlines():lines(message.content):newlines()
 			end
 			self.writer:replay_tokens(message.tokens, message.role):newlines()
-			History:replay(message)
 		end
 	end
 end

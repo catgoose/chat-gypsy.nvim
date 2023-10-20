@@ -1,5 +1,4 @@
 local Log = require("chat-gypsy").Log
-local History = require("chat-gypsy").History
 local Config = require("chat-gypsy").Config
 local finders = require("telescope.finders")
 local conf = require("telescope.config").values
@@ -9,30 +8,32 @@ local action_state = require("telescope.actions.state")
 local previewers = require("telescope.previewers")
 local writer = require("chat-gypsy.writer"):new():set_move_cursor(false)
 local config_opts, symbols = Config.get("opts"), Config.get("symbols")
+local sql = require("chat-gypsy.sql"):new()
+local utils = require("chat-gypsy.utils")
 
 local Telescope = {}
 
-local function entry_ordinal(item)
+local function entry_ordinal(entry)
 	local tags = vim.tbl_map(function(keyword)
 		return symbols.hash .. keyword
-	end, item.entries.keywords)
-	return table.concat(tags, symbols.space) .. symbols.space .. item.entries.name
+	end, entry.keywords)
+	return table.concat(tags, symbols.space) .. symbols.space .. entry.name
 end
 
 local entry_display = function(item)
 	local win_width = vim.api.nvim_win_get_width(0)
 	local keywords_length = 0
-	for _, keyword in pairs(item.value.entries.keywords) do
+	for _, keyword in pairs(item.value.keywords) do
 		keywords_length = keywords_length + #keyword + 2
 	end
 	local items = {
-		item.value.entries.name,
+		item.value.name,
 		symbols.space,
-		symbols.space:rep(win_width - keywords_length - #item.value.entries.name - 3),
+		symbols.space:rep(win_width - keywords_length - #item.value.name - 3),
 	}
 	local highlights = {}
 	local start = #table.concat(items, "")
-	for _, keyword in pairs(item.value.entries.keywords) do
+	for _, keyword in pairs(item.value.keywords) do
 		vim.list_extend(items, { symbols.hash, keyword, symbols.space })
 		vim.list_extend(highlights, {
 			{ { start, start + 1 }, "TelescopeResultsOperator" },
@@ -55,15 +56,15 @@ local attach_mappings = function(prompt_bufnr)
 	actions.select_default:replace(function()
 		actions.close(prompt_bufnr)
 		local selection = action_state.get_selected_entry()
-		local current = selection.value.entries
-		Log.trace(string.format("history %s selected", vim.inspect(current)))
-		require("chat-gypsy").Session:restore(current)
+		local history = selection.value
+		Log.trace(string.format("history %s selected", vim.inspect(history)))
+		require("chat-gypsy").Session:restore(history)
 	end)
 	return true
 end
 
 local define_preview = function(self, item)
-	local entries = item.value.entries
+	local entries = item.value
 	vim.api.nvim_buf_set_option(self.state.bufnr, "filetype", "markdown")
 	vim.api.nvim_win_set_option(self.state.winid, "wrap", true)
 	writer:set_bufnr(self.state.bufnr):set_winid(self.state.winid):reset()
@@ -81,7 +82,62 @@ local define_preview = function(self, item)
 	end
 end
 
-local get_picker_entries = function(entries, opts)
+local function collect_entries()
+	local session_status = sql:get_sessions()
+	if not session_status.success then
+		return {}
+	end
+	local sessions = session_status.data
+	local entries = {}
+	for _, session in ipairs(sessions) do
+		local message_status = sql:get_messages_for_session(session.id)
+		if not message_status.success then
+			goto continue
+		end
+		local sql_messages = message_status.data
+		local messages = {}
+		local openai_params = {
+			model = session.model,
+			temperature = session.temperature,
+			messages = {},
+		}
+		local tokens = {
+			system = 0,
+			user = 0,
+			assistant = 0,
+			total = 0,
+		}
+		for _, message in ipairs(sql_messages) do
+			tokens[message.role] = tokens[message.role] + message.tokens
+			tokens.total = tokens.total + message.tokens
+			local _tokens = utils.deep_copy(tokens)
+			local role = message.role
+			local content = tostring(message.content)
+			table.insert(messages, {
+				role = role,
+				content = content,
+				tokens = _tokens,
+				time = message.time,
+			})
+			table.insert(openai_params.messages, {
+				role = role,
+				content = content,
+			})
+		end
+		table.insert(entries, {
+			id = session.id,
+			name = tostring(session.name),
+			description = tostring(session.description),
+			keywords = utils.split_string(session.keywords, ",", false),
+			messages = messages,
+			openai_params = openai_params,
+		})
+		::continue::
+	end
+	return entries
+end
+
+local picker = function(entries, opts)
 	pickers
 		.new(opts, {
 			prompt_title = "History",
@@ -100,13 +156,10 @@ local get_picker_entries = function(entries, opts)
 		:find()
 end
 
-local function history_picker(opts)
-	History:get_picker_entries(get_picker_entries, opts)
-end
-
 function Telescope.history(opts)
 	opts = opts or {}
-	history_picker(opts)
+	local entries = collect_entries()
+	picker(entries, opts)
 end
 
 return Telescope

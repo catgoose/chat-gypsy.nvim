@@ -46,8 +46,8 @@ end
 
 function Writer:init()
 	self.set_lines = function(lines)
-		if type(lines) == "string" then
-			lines = { lines }
+		if type(lines) ~= "table" then
+			lines = { tostring(lines) }
 		end
 		if self._.bufnr and vim.api.nvim_buf_is_valid(self._.bufnr) then
 			vim.api.nvim_buf_set_lines(self._.bufnr, self._.row - 1, -1, false, lines)
@@ -167,7 +167,7 @@ function Writer:calculate_tokens(content, role)
 end
 
 function Writer:replay_tokens(tokens, role)
-	tokens = utils.deepcopy(tokens)
+	tokens = utils.deep_copy(tokens)
 	self.tokenizer:set(tokens)
 	self:token_summary(tokens, role)
 	vim.cmd("silent! undojoin")

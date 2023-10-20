@@ -44,6 +44,26 @@ sent until the previous request is completed.
 Likewise, if a response is being generated the next prompt can be sent, but
 it will not clear the prompt buffer until the previous request is completed.
 
+## Requirements
+
+### tiktoken
+
+[tiktoken](https://github.com/openai/tiktoken)
+
+```bash
+pip install tiktoken
+```
+
+### sqlite.lua
+
+[sqlite.lua](https://github.com/kkharji/sqlite.lua)
+
+```bash
+sudo pacman -S sqlite # Arch
+sudo apt-get install sqlite3 libsqlite3-dev # Ubuntu
+sudo dnf install sqlite sqlite-devel # Fedora
+```
+
 ## Installation
 
 ### Lazy.nvim
@@ -156,6 +176,7 @@ return {
   dependencies = {
     "nvim-lua/plenary.nvim",
     "MunifTanjim/nui.nvim",
+    "kkharji/sqlite.lua"
   },
   keys = {
     {
