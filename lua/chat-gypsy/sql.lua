@@ -32,12 +32,9 @@ function Sql:initialize()
 		model = { type = "string", required = true },
 		updatedAt = { type = "date", default = strftime("%s", "now") },
 		createdAt = { type = "date", default = strftime("%s", "now") },
-		--  TODO: 2023-10-18 - this is duplicated in request
 		name = { type = "string", default = "'Untitled chat'" },
 		description = { type = "string", default = "'No description'" },
 		keywords = { type = "string", default = "'default,untitled'" },
-		--  TODO: 2023-10-18 - do something with active.  It should be set once
-		--  messages are inserted
 		active = { type = "integer", default = 0 },
 		initialized = { type = "integer", default = 0 },
 		ensure = true,
