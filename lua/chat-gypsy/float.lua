@@ -17,6 +17,7 @@ local state = {
 		bufnr = 0,
 		winid = 0,
 	},
+	returning_winid = nil,
 }
 
 Float = setmetatable({}, UI)
@@ -70,8 +71,10 @@ function Float:init()
 	-- mounting
 	self.mount = function()
 		self.Log.trace("Mounting UI")
+		local returning_winid = vim.api.nvim_get_current_win()
 		self.layout:mount()
 		self.init_state()
+		self._.returning_winid = returning_winid
 		self._.mounted = true
 		self.Log.trace("Configuring boxes")
 		self:configure()
@@ -85,6 +88,9 @@ function Float:init()
 		self._.instance = false
 		if self._.should_compose_entries then
 			self.request:summarize_chat(self.request)
+		end
+		if vim.api.nvim_win_is_valid(self._.returning_winid) then
+			vim.api.nvim_set_current_win(self._.returning_winid)
 		end
 	end
 	self.hide = function()
