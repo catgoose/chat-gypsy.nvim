@@ -67,7 +67,7 @@ function Request:init_request()
 	end
 
 	self.completions = function(prompt_lines, before_request, on_stream_start, on_chunk, on_complete, on_error)
-		local strategy = nil
+		local response_type
 		if opts.dev_opts.request.throw_error then
 			on_error(opts.dev_opts.request.error)
 		else
@@ -91,14 +91,14 @@ function Request:init_request()
 					end
 					if chunk and chunk ~= "" then
 						vim.schedule(function()
-							if not strategy then
+							if not response_type then
 								if string.match(chunk, "data:") then
-									strategy = "data"
+									response_type = "data"
 								else
-									strategy = "error"
+									response_type = "error"
 								end
 							end
-							on_chunk(chunk, strategy)
+							on_chunk(chunk, response_type)
 						end)
 					end
 				end,
@@ -207,12 +207,12 @@ function Request:query(prompt_lines, on_stream_start, on_response_chunk, on_resp
 		on_response_error(err)
 	end
 
-	local on_chunk = function(chunk, strategy)
-		if not strategy then
+	local on_chunk = function(chunk, response_type)
+		if not response_type then
 			return
-		elseif strategy == "data" then
+		elseif response_type == "data" then
 			self.extract_data(chunk, on_response_chunk)
-		elseif strategy == "error" then
+		elseif response_type == "error" then
 			self.extract_error(chunk, on_error)
 		end
 	end
