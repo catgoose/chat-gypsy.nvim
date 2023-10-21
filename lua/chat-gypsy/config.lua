@@ -188,6 +188,7 @@ local init_event_hooks = function()
 end
 
 Config.init = function(opts)
+	local opts_schema = Config.get("opts")
 	opts = opts or {}
 	opts = vim.tbl_deep_extend("force", _opts, opts)
 	_plugin_opts.log_level = vim.tbl_contains(log_levels, opts.log_level) and opts.log_level or default_log_level
@@ -202,9 +203,9 @@ Config.init = function(opts)
 		end
 	end
 
-	init_event_hooks()
+	validate.opts(opts, opts_schema)
 
-	validate.opts(opts)
+	init_event_hooks()
 end
 
 return Config
