@@ -1,5 +1,6 @@
 local Config = require("chat-gypsy").Config
 local History = require("chat-gypsy").History
+local validate = require("chat-gypsy.validate")
 
 local OpenAI = {}
 OpenAI.__index = OpenAI
@@ -15,12 +16,15 @@ function OpenAI:new()
 	self.queue = require("chat-gypsy.queue"):new()
 	self:init_openai()
 	self:init_request()
+	self.validate = function()
+		return validate.openai_key(true)
+	end
 	return self
 end
 
 function OpenAI:init_openai()
 	self._.system_written = false
-	self._.openai_params = Config.get("opts").openai_params
+	self._.openai_params = Config.get("opts").openai.openai_params
 	self._.session_id = nil
 end
 
@@ -46,6 +50,9 @@ function OpenAI:init_session()
 end
 
 function OpenAI:summarize_chat(request)
+	if not self.validate() then
+		return
+	end
 	local on_error = function(err)
 		self.Events.pub("hook:request:error", "summarize", err)
 		if type(err) == "table" then
@@ -94,6 +101,9 @@ function OpenAI:send(
 	on_chunks_complete,
 	on_chunk_error
 )
+	if not self.validate() then
+		return
+	end
 	before_request()
 	if not self._.system_written and self._.openai_params.messages[1].role == "system" then
 		system_writer(self._.openai_params.messages[1])

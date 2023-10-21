@@ -1,5 +1,3 @@
-local validate = require("chat-gypsy.validate")
-
 local Session = {}
 Session.__index = Session
 
@@ -7,11 +5,6 @@ function Session:new()
 	setmetatable(self, Session)
 	self.chat = nil
 	self:init()
-	self.validate = function()
-		if not validate.openai_key(true) then
-			return
-		end
-	end
 	return self
 end
 
@@ -22,9 +15,6 @@ function Session:init()
 end
 
 function Session:toggle()
-	if not self.validate() then
-		return
-	end
 	if not self.chat._.instance then
 		self:open()
 		return
@@ -49,9 +39,6 @@ function Session:toggle()
 end
 
 function Session:open()
-	if not self.validate() then
-		return
-	end
 	if not self.chat._.instance then
 		self.chat = require("chat-gypsy.float"):new({
 			mount = true,
@@ -64,9 +51,6 @@ function Session:open()
 end
 
 function Session:restore(history)
-	if not self.validate() then
-		return
-	end
 	if not self.chat._.instance then
 		self.chat = require("chat-gypsy.float"):new({
 			mount = true,
@@ -78,27 +62,18 @@ function Session:restore(history)
 end
 
 function Session:hide()
-	if not self.validate() then
-		return
-	end
 	if self.chat._.mounted and not self.chat._.hidden then
 		self.chat.hide()
 	end
 end
 
 function Session:show()
-	if not self.validate() then
-		return
-	end
 	if self.chat._.mounted and self.chat._.hidden then
 		self.chat.show()
 	end
 end
 
 function Session:close()
-	if not self.validate() then
-		return
-	end
 	if self.chat._.mounted then
 		self.chat.unmount()
 		self:init()
