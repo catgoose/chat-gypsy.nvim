@@ -46,14 +46,16 @@ local _plugin_opts = {
 }
 
 local _opts = {
-	openai_key = os.getenv("OPENAI_API_KEY"),
-	openai_params = {
-		model = "gpt-3.5-turbo",
-		temperature = 0.7,
-		messages = {
-			{
-				role = "system",
-				content = "You are gypsy, a chatbot that can talk to anyone.",
+	openai = {
+		openai_key = os.getenv("OPENAI_API_KEY") or "",
+		openai_params = {
+			model = "gpt-3.5-turbo",
+			temperature = 0.7,
+			messages = {
+				{
+					role = "system",
+					content = "You are gypsy, a chatbot that can talk to anyone.",
+				},
 			},
 		},
 	},
@@ -187,10 +189,6 @@ end
 Config.init = function(opts)
 	opts = opts or {}
 	opts = vim.tbl_deep_extend("force", _opts, opts)
-	if not opts.openai_key then
-		local err_msg = string.format("opts:new: invalid opts: missing openai_key\nopts: %s", vim.inspect(_opts))
-		error(err_msg)
-	end
 	_plugin_opts.log_level = vim.tbl_contains(log_levels, opts.log_level) and opts.log_level or default_log_level
 	_opts = opts
 
