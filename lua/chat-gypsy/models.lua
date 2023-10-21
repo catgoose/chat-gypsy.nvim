@@ -58,7 +58,7 @@ local get_models = function()
 end
 
 M.init = function()
-	if not validate.openai_key() then
+	if not validate.openai_key(opts.openai.openai_key) then
 		return
 	end
 	get_models()

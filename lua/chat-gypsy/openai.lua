@@ -1,4 +1,5 @@
 local Config = require("chat-gypsy").Config
+local opts = Config.get("opts")
 local History = require("chat-gypsy").History
 local validate = require("chat-gypsy.validate")
 
@@ -17,7 +18,7 @@ function OpenAI:new()
 	self:init_openai()
 	self:init_request()
 	self.validate = function()
-		return validate.openai_key(true)
+		return validate.openai_key(opts.openai.openai_key, true)
 	end
 	return self
 end
