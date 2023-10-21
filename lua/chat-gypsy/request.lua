@@ -79,7 +79,7 @@ function Request:init_request()
 				raw = { "--no-buffer" },
 				headers = {
 					content_type = "application/json",
-					Authorization = "Bearer " .. opts.openai_key,
+					Authorization = "Bearer " .. opts.openai.openai_key,
 				},
 				body = vim.json.encode(self._.openai_params),
 				stream = function(_, chunk)
@@ -138,7 +138,7 @@ function Request:init_request()
 			url = "https://api.openai.com/v1/chat/completions",
 			headers = {
 				content_type = "application/json",
-				Authorization = "Bearer " .. opts.openai_key,
+				Authorization = "Bearer " .. opts.openai.openai_key,
 			},
 			body = vim.json.encode(openai_params),
 			callback = vim.schedule_wrap(function(response)
