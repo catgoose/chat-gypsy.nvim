@@ -112,6 +112,8 @@ function Writer:set_bufnr(bufnr)
 	return self
 end
 
+--  BUG: 2023-10-21 - model should be read from database when replaying a
+--  message and not from current model
 function Writer:from_role(role, time)
 	if not utils.check_roles(role, true) then
 		return self
