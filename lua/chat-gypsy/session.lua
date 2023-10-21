@@ -8,7 +8,7 @@ function Session:new()
 	self.chat = nil
 	self:init()
 	self.validate = function()
-		if not validate.openai_key() then
+		if not validate.openai_key(true) then
 			return
 		end
 	end
