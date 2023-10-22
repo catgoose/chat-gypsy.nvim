@@ -10,30 +10,32 @@ Validate.openai_key = function(openai_key)
 	return true
 end
 
-local function validateTable(o, _o, throw, path)
+--  TODO: 2023-10-22 - How to handle opts types that can be of multiple
+--  types?
+local function validateTable(t, _t, path)
 	path = path or ""
-	for key, value in pairs(o) do
-		local newPath = (#path > 0 and (path .. "." .. key)) or key
-		local templateValue = _o[key]
+	for k, v in pairs(t) do
+		local newPath = (#path > 0 and (path .. "." .. k)) or k
+		local templateValue = _t[k]
 
 		if templateValue == nil then
-			error(string.format("Invalid key: %s", newPath), throw)
+			error(string.format("Invalid k: %s", newPath))
 		end
 
-		local valueType, templateType = type(value), type(templateValue)
+		local vType, templateType = type(v), type(templateValue)
 
-		if valueType ~= templateType then
-			error(string.format("Type mismatch at %s:\nexpected %s\ngot %s", newPath, templateType, valueType), throw)
+		if vType ~= templateType then
+			error(string.format("Type mismatch at opts.%s:\nexpected %s\ngot %s", newPath, templateType, vType))
 		end
 
-		if valueType == "table" then
-			validateTable(value, templateValue, newPath)
+		if vType == "table" then
+			validateTable(v, templateValue, newPath)
 		end
 	end
 end
 
-Validate.opts = function(o, _o)
-	validateTable(o, _o)
+Validate.opts = function(t, _t)
+	validateTable(t, _t)
 end
 
 return Validate
