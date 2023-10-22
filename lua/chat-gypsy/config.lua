@@ -47,6 +47,8 @@ local _plugin_opts = {
 }
 
 local _opts = {
+	dev = false,
+	log_level = "warn",
 	openai = {
 		openai_key = os.getenv("OPENAI_API_KEY") or "",
 		openai_params = {
@@ -193,7 +195,6 @@ Config.init = function(opts)
 	opts = vim.tbl_deep_extend("force", _opts, opts)
 	_plugin_opts.log_level = vim.tbl_contains(log_levels, opts.log_level) and opts.log_level or default_log_level
 	_opts = opts
-
 	_plugin_opts.dev = _plugin_opts.dev or _opts.dev
 	if _plugin_opts.dev then
 		_dev = vim.tbl_deep_extend("force", _dev, _opts.dev_opts)
