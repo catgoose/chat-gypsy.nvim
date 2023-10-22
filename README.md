@@ -71,6 +71,7 @@ sudo dnf install sqlite sqlite-devel # Fedora
 ```lua
 -- defaults
 local opts = {
+  log_level = "warn", -- trace, debug, info, warn, error, fatal
   openai = {
     openai_key = os.getenv("OPENAI_API_KEY"),
     openai_params = {
@@ -84,7 +85,6 @@ local opts = {
       },
     },
   },
-  log_level = "warn", -- trace, debug, info, warn, error, fatal
   ui = {
     highlight = {
      role = {
