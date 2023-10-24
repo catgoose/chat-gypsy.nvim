@@ -65,20 +65,21 @@ end
 
 local define_preview = function(self, item)
 	local entries = item.value
+	local model = entries.openai_params.model
 	vim.api.nvim_buf_set_option(self.state.bufnr, "filetype", "markdown")
 	vim.api.nvim_win_set_option(self.state.winid, "wrap", true)
 	writer:set_bufnr(self.state.bufnr):set_winid(self.state.winid):reset()
-	writer:newline():heading(entries.openai_params.model):newlines()
+	writer:newline():heading(model):newlines()
 	writer:heading(entries.description):newlines()
 	writer:horiz_line():newlines()
 	for _, messages in pairs(entries.messages) do
-		writer:from_role(messages.role, messages.time):newlines()
+		writer:from_role(messages.role, messages.time, model):newlines()
 		if messages.role == "system" then
 			writer:lines(messages.content, { hlgroup = config_opts.ui.highlight.role[messages.role] }):newlines()
 		else
 			writer:lines(messages.content):newlines()
 		end
-		writer:token_summary(messages.tokens, messages.role):newlines()
+		writer:token_summary(messages.tokens, messages.role, model):newlines()
 	end
 end
 
