@@ -4,6 +4,7 @@ local openai_models = Config.get("openai_models")
 local opts = Config.get("opts")
 local Log = require("chat-gypsy").Log
 local curl = require("plenary.curl")
+local validate = require("chat-gypsy.validate")
 
 Models = {}
 
@@ -12,7 +13,7 @@ local get_models = function()
 		url = "https://api.openai.com/v1/models",
 		headers = {
 			content_type = "application/json",
-			Authorization = "Bearer " .. opts.openai_key,
+			Authorization = "Bearer " .. opts.openai.openai_key,
 		},
 		callback = function(response)
 			if response.status ~= 200 then
@@ -57,6 +58,9 @@ local get_models = function()
 end
 
 M.init = function()
+	if not validate.openai_key(opts.openai.openai_key) then
+		return
+	end
 	get_models()
 end
 

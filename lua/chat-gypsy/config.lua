@@ -2,8 +2,8 @@ local log_levels = { "trace", "debug", "info", "warn", "error", "fatal" }
 local default_log_level = "warn"
 local Events = require("chat-gypsy").Events
 local utils = require("chat-gypsy.utils")
+local validate = require("chat-gypsy.validate")
 
---  TODO: 2023-09-30 - validate config with vim.validate
 --  TODO: 2023-09-30 - Add @type and @param for project
 
 local Config = {}
@@ -46,14 +46,18 @@ local _plugin_opts = {
 }
 
 local _opts = {
-	openai_key = os.getenv("OPENAI_API_KEY"),
-	openai_params = {
-		model = "gpt-3.5-turbo",
-		temperature = 0.7,
-		messages = {
-			{
-				role = "system",
-				content = "You are gypsy, a chatbot that can talk to anyone.",
+	dev = false,
+	log_level = "warn",
+	openai = {
+		openai_key = os.getenv("OPENAI_API_KEY") or "",
+		openai_params = {
+			model = "gpt-3.5-turbo",
+			temperature = 0.7,
+			messages = {
+				{
+					role = "system",
+					content = "You are gypsy, a chatbot that can talk to anyone.",
+				},
 			},
 		},
 	},
@@ -185,15 +189,11 @@ local init_event_hooks = function()
 end
 
 Config.init = function(opts)
+	local opts_schema = Config.get("opts")
 	opts = opts or {}
 	opts = vim.tbl_deep_extend("force", _opts, opts)
-	if not opts.openai_key then
-		local err_msg = string.format("opts:new: invalid opts: missing openai_key\nopts: %s", vim.inspect(_opts))
-		error(err_msg)
-	end
 	_plugin_opts.log_level = vim.tbl_contains(log_levels, opts.log_level) and opts.log_level or default_log_level
 	_opts = opts
-
 	_plugin_opts.dev = _plugin_opts.dev or _opts.dev
 	if _plugin_opts.dev then
 		_dev = vim.tbl_deep_extend("force", _dev, _opts.dev_opts)
@@ -202,6 +202,8 @@ Config.init = function(opts)
 			table.insert(_dev.prompt.message, word)
 		end
 	end
+
+	validate.opts(opts, opts_schema)
 
 	init_event_hooks()
 end

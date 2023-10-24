@@ -64,7 +64,7 @@ function Writer:init()
 		if not role or not utils.check_roles(role, true) then
 			return
 		end
-		local model_config = models.get_config(opts.openai_params.model)
+		local model_config = models.get_config(opts.openai.openai_params.model)
 		local source = role == "user" and "You"
 			or role == "assistant" and model_config.model
 			or role == "system" and "System"
@@ -112,6 +112,8 @@ function Writer:set_bufnr(bufnr)
 	return self
 end
 
+--  BUG: 2023-10-21 - model should be read from database when replaying a
+--  message and not from current model
 function Writer:from_role(role, time)
 	if not utils.check_roles(role, true) then
 		return self
@@ -178,7 +180,7 @@ function Writer:replay_tokens(tokens, role)
 end
 
 function Writer:token_summary(tokens, role)
-	local model_config = models.get_config(opts.openai_params.model)
+	local model_config = models.get_config(opts.openai.openai_params.model)
 	local token_format = string.format(" %s (%s/%s) ", tokens[role], tokens.total, model_config.max_tokens)
 	local summary = string.format("%s%s", symbols.space:rep(self._.win_width - #token_format), token_format)
 	self:lines(summary, { hlgroup = opts.ui.highlight.tokens, col_start = self._.win_width - #token_format })

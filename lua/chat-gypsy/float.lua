@@ -78,7 +78,7 @@ function Float:init()
 		self._.mounted = true
 		self.Log.trace("Configuring boxes")
 		self:configure()
-		if opts.ui.behavior.prompt.start_insert then
+		if opts.ui.prompt.start_insert then
 			vim.cmd.startinsert()
 		end
 	end
