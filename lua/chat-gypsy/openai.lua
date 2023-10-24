@@ -18,7 +18,7 @@ function OpenAI:new()
 	self:init_openai()
 	self:init_request()
 	self.validate = function()
-		return validate.openai_key(opts.openai.openai_key, true)
+		return validate.openai_key(opts.openai.openai_key)
 	end
 	return self
 end
