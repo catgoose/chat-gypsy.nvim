@@ -10,8 +10,26 @@ Validate.openai_key = function(openai_key)
 	return true
 end
 
---  TODO: 2023-10-22 - How to handle opts types that can be of multiple
---  types?
+local ui_layout_types = { "string", "number" }
+local overrides = {
+	["ui.layout.left.size.width"] = ui_layout_types,
+	["ui.layout.left.size.height"] = ui_layout_types,
+	["ui.layout.left.position.row"] = ui_layout_types,
+	["ui.layout.left.position.col"] = ui_layout_types,
+	["ui.layout.right.size.width"] = ui_layout_types,
+	["ui.layout.right.size.height"] = ui_layout_types,
+	["ui.layout.right.position.row"] = ui_layout_types,
+	["ui.layout.right.position.col"] = ui_layout_types,
+	["ui.layout.center.size.width"] = ui_layout_types,
+	["ui.layout.center.size.height"] = ui_layout_types,
+	["ui.layout.center.position.row"] = ui_layout_types,
+	["ui.layout.center.position.col"] = ui_layout_types,
+}
+
+local validateError = function(path, expectedType, gotType)
+	error(string.format("Type mismatch at opts.%s:\nexpected %s\ngot %s", path, expectedType, gotType))
+end
+
 local function validateTable(t, _t, path)
 	path = path or ""
 	for k, v in pairs(t) do
@@ -24,8 +42,14 @@ local function validateTable(t, _t, path)
 
 		local vType, templateType = type(v), type(templateValue)
 
-		if vType ~= templateType then
-			error(string.format("Type mismatch at opts.%s:\nexpected %s\ngot %s", newPath, templateType, vType))
+		if overrides[newPath] and not vim.tbl_contains(overrides[newPath], vType) then
+			validateError(
+				newPath,
+				#overrides[newPath] == 1 and overrides[newPath] or table.concat(overrides[newPath], " or "),
+				vType
+			)
+		elseif vType ~= templateType then
+			validateError(newPath, templateType, vType)
 		end
 
 		if vType == "table" then
