@@ -106,27 +106,27 @@ function Float:init()
 	end
 
 	-- writing callbacks
-	self.system_writer = function(message)
+	self.system_writer = function(message, model)
 		self._.should_compose_entries = false
-		self.writer:from_role(message.role):newlines()
+		self.writer:from_role(message.role, model):newlines()
 		self.writer:lines(message.content, { hlgroup = opts.ui.highlight.role[message.role] }):newlines()
-		self.writer:calculate_tokens(message.content, message.role):newlines()
+		self.writer:calculate_tokens(message.content, message.role, model):newlines()
 	end
 	self.before_request = function()
 		vim.api.nvim_buf_set_lines(self._.prompt.bufnr, 0, -1, false, {})
 		self._.should_compose_entries = true
 	end
-	self.on_chunk_stream_start = function(lines)
+	self.on_chunk_stream_start = function(lines, model)
 		self._.should_compose_entries = false
 		self.writer:from_role("user"):newlines():lines(lines):newlines()
-		self.writer:calculate_tokens(lines, "user"):newlines()
-		self.writer:from_role("assistant"):newlines()
+		self.writer:calculate_tokens(lines, "user", model):newlines()
+		self.writer:from_role("assistant", model):newlines()
 	end
 	self.on_chunk = function(chunk)
 		self.writer:append_chunk(chunk)
 	end
-	self.on_chunks_complete = function(chunks)
-		self.writer:newlines():calculate_tokens(chunks, "assistant"):newlines()
+	self.on_chunks_complete = function(chunks, model)
+		self.writer:newlines():calculate_tokens(chunks, "assistant", model):newlines()
 		self._.should_compose_entries = true
 	end
 	self.on_chunk_error = function(err)
