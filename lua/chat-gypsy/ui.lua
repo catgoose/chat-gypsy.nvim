@@ -72,10 +72,7 @@ local function build_ui(placement)
 		if _placement == "center" then
 			return float
 		end
-		if _placement == "right" then
-			return create_side_layout(_placement)
-		end
-		if _placement == "left" then
+		if _placement == "right" or _placement == "left" then
 			return create_side_layout(_placement)
 		end
 	end
@@ -102,7 +99,7 @@ function UI:new(ui_opts)
 		},
 	}
 	ui_opts = vim.tbl_deep_extend("force", default, ui_opts)
-	local ui = build_ui(ui_opts.layout_placement)
+	local ui = build_ui(ui_opts.placement)
 	self.Log.trace(string.format("Building new ui with layout config: \n%s", vim.inspect(ui_opts.layout)))
 	self.layout = ui.layout
 	self.boxes = ui.boxes
