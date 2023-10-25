@@ -73,7 +73,7 @@ local define_preview = function(self, item)
 	writer:heading(entries.description):newlines()
 	writer:horiz_line():newlines()
 	for _, messages in pairs(entries.messages) do
-		writer:from_role(messages.role, messages.time, model):newlines()
+		writer:from_role(messages.role, model, messages.time):newlines()
 		if messages.role == "system" then
 			writer:lines(messages.content, { hlgroup = config_opts.ui.highlight.role[messages.role] }):newlines()
 		else

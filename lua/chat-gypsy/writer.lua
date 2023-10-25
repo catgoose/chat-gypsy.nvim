@@ -1,7 +1,7 @@
 local History = require("chat-gypsy").History
 local Config = require("chat-gypsy").Config
 local models = require("chat-gypsy.models")
-local opts, symbols, openai_models = Config.get("opts"), Config.get("symbols"), Config.get("openai_models")
+local opts, symbols = Config.get("opts"), Config.get("symbols")
 local utils = require("chat-gypsy.utils")
 
 local Writer = {}
@@ -112,9 +112,7 @@ function Writer:set_bufnr(bufnr)
 	return self
 end
 
---  BUG: 2023-10-21 - model should be read from database when replaying a
---  message and not from current model
-function Writer:from_role(role, time, model)
+function Writer:from_role(role, model, time)
 	if not utils.check_roles(role, true) then
 		return self
 	end
