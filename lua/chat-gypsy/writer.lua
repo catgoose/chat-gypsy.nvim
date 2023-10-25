@@ -60,11 +60,11 @@ function Writer:init()
 		return self
 	end
 
-	self.format_role = function(role)
+	self.format_role = function(role, model)
 		if not role or not utils.check_roles(role, true) then
 			return
 		end
-		local model_config = models.get_config(opts.openai.openai_params.model)
+		local model_config = models.get_config(model)
 		local source = role == "user" and "You"
 			or role == "assistant" and model_config.model
 			or role == "system" and "System"
@@ -112,14 +112,12 @@ function Writer:set_bufnr(bufnr)
 	return self
 end
 
---  BUG: 2023-10-21 - model should be read from database when replaying a
---  message and not from current model
-function Writer:from_role(role, time)
+function Writer:from_role(role, model, time)
 	if not utils.check_roles(role, true) then
 		return self
 	end
 	time = time or os.time()
-	local role_format = self.format_role(role)
+	local role_format = self.format_role(role, model)
 	local date = self.date(time, "%m/%d/%Y %I:%M%p")
 	local line = string.format("%s%s%s", role_format, (" "):rep(self._.win_width - #role_format - #date), date)
 	self:lines(line, { hlgroup = opts.ui.highlight.role[role] })
@@ -157,13 +155,13 @@ function Writer:heading(lines)
 	return self
 end
 
-function Writer:calculate_tokens(content, role)
+function Writer:calculate_tokens(content, role, model)
 	if not utils.check_roles(role) then
 		return self
 	end
 	content = type(content) == "table" and table.concat(content, "") or content
 	local on_tokens = function(tokens)
-		self:token_summary(tokens, role)
+		self:token_summary(tokens, role, model)
 		History:add_message(content, role, tokens)
 	end
 	self.tokenizer:calculate(content, role, on_tokens)
@@ -171,16 +169,16 @@ function Writer:calculate_tokens(content, role)
 	return self
 end
 
-function Writer:replay_tokens(tokens, role)
+function Writer:replay_tokens(tokens, role, model)
 	tokens = utils.deep_copy(tokens)
 	self.tokenizer:set(tokens)
-	self:token_summary(tokens, role)
+	self:token_summary(tokens, role, model)
 	vim.cmd("silent! undojoin")
 	return self
 end
 
-function Writer:token_summary(tokens, role)
-	local model_config = models.get_config(opts.openai.openai_params.model)
+function Writer:token_summary(tokens, role, model)
+	local model_config = models.get_config(model)
 	local token_format = string.format(" %s (%s/%s) ", tokens[role], tokens.total, model_config.max_tokens)
 	local summary = string.format("%s%s", symbols.space:rep(self._.win_width - #token_format), token_format)
 	self:lines(summary, { hlgroup = opts.ui.highlight.tokens, col_start = self._.win_width - #token_format })
