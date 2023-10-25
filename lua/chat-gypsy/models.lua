@@ -72,7 +72,7 @@ M.get_config = function(model)
 	end, openai_models)
 	if not vim.tbl_contains(M.names, model) or not model or not found_model then
 		return {
-			model = "no_model_found",
+			model = "no-model-found",
 			max_tokens = 0,
 			priority = 1,
 		}
