@@ -67,6 +67,11 @@ function Float:init()
 	self.is_focused = function()
 		return vim.tbl_contains({ self._.prompt_winid, self._.chat.winid }, vim.api.nvim_get_current_win())
 	end
+	self.return_to_win = function()
+		if vim.api.nvim_win_is_valid(self._.returning_winid) then
+			vim.api.nvim_set_current_win(self._.returning_winid)
+		end
+	end
 
 	-- mounting
 	self.mount = function()
@@ -89,15 +94,16 @@ function Float:init()
 		if self._.should_compose_entries then
 			self.request:summarize_chat(self.request)
 		end
-		if vim.api.nvim_win_is_valid(self._.returning_winid) then
-			vim.api.nvim_set_current_win(self._.returning_winid)
-		end
+		self.return_to_win()
 	end
 	self.hide = function()
 		self.layout:hide()
 		self._.hidden = true
+		self.return_to_win()
 	end
 	self.show = function()
+		local returning_winid = vim.api.nvim_get_current_win()
+		self._.returning_winid = returning_winid
 		self.layout:show()
 		self._.hidden = false
 		self.set_winids()
