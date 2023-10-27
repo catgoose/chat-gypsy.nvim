@@ -46,4 +46,8 @@ Gypsy.history = function()
 	require("chat-gypsy.telescope").history()
 end
 
+Gypsy.model_picker = function()
+	require("chat-gypsy.telescope").models()
+end
+
 return Gypsy

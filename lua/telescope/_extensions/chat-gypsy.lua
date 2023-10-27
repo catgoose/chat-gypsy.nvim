@@ -12,5 +12,8 @@ return telescope.register_extension({
 		history = function(opts)
 			pickers.history(opts)
 		end,
+		models = function(opts)
+			pickers.models(opts)
+		end,
 	},
 })
