@@ -60,4 +60,3 @@ function Tokenizer:set(tokens)
 end
 
 return Tokenizer
-
