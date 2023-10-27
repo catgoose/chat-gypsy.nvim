@@ -104,19 +104,20 @@ function OpenAI:send(
 	if not self.validate() then
 		return
 	end
+	local model = self._.openai_params.model
 	before_request()
 	if not self._.system_written and self._.openai_params.messages[1].role == "system" then
-		system_writer(self._.openai_params.messages[1], self._.openai_params.model)
+		system_writer(self._.openai_params.messages[1], model)
 		self._.system_written = true
 	end
 	self.Log.trace(string.format("adding request to queue: \nmessage: %s", table.concat(prompt_lines, "\n")))
 	local action = function(queue_next)
 		local on_stream_start = function(lines)
-			on_chunk_stream_start(lines, self._.openai_params.model)
+			on_chunk_stream_start(lines, model)
 		end
 		local on_complete = function(complete_chunks)
 			self.Log.trace("request completed")
-			on_chunks_complete(complete_chunks, self._.openai_params.model)
+			on_chunks_complete(complete_chunks, model)
 			queue_next()
 		end
 
