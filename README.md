@@ -239,7 +239,6 @@ Several event hooks are provided for customization:
 
 - [ ] Create model picker
 - [ ] Create templating for system prompts
-- [ ] When destroying layout, last window focused should be refocused
 - [ ] Check tokens before sending to model.
 - [ ] Add to configuration the option to select which model to use for entry
       composition
