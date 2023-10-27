@@ -6,7 +6,6 @@ local validate = require("chat-gypsy.validate")
 local OpenAI = {}
 OpenAI.__index = OpenAI
 
---  TODO: 2023-10-10 - Create picker for openai model
 function OpenAI:new()
 	setmetatable(self, OpenAI)
 	self.sql = require("chat-gypsy.sql"):new()
