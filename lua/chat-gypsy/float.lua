@@ -20,7 +20,7 @@ local state = {
 	returning_winid = nil,
 }
 
-Float = setmetatable({}, UI)
+local Float = setmetatable({}, UI)
 Float.__index = Float
 setmetatable(Float, {
 	__index = UI,

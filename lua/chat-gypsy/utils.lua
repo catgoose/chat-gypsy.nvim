@@ -1,4 +1,4 @@
-Utils = {}
+local Utils = {}
 
 Utils.generate_random_id = function(len)
 	local charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"

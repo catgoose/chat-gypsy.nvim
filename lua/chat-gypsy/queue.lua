@@ -1,4 +1,4 @@
-FuncQueue = {}
+local FuncQueue = {}
 
 function FuncQueue:new(cfg)
 	local instance = {}
