@@ -46,10 +46,9 @@ local get_models = function()
 					table.sort(models, function(a, b)
 						return model_priority[a] < model_priority[b]
 					end)
-					Log.trace("getModels: success: " .. vim.inspect(models))
-					Events.pub("hook:models:get", models)
 					if #models > 0 then
-						M.names = models
+						Log.debug("getModels: success: " .. vim.inspect(models))
+						Events.pub("hook:models:get", models)
 					end
 				end
 			end
