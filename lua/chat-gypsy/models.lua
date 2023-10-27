@@ -49,6 +49,7 @@ local get_models = function()
 					if #models > 0 then
 						Log.debug("getModels: success: " .. vim.inspect(models))
 						Events.pub("hook:models:get", models)
+						Models.names = models
 					end
 				end
 			end
