@@ -42,12 +42,16 @@ Gypsy.close = function()
 	Gypsy.Session:close()
 end
 
-Gypsy.history = function()
-	require("chat-gypsy.telescope").history()
+Gypsy.history = function(opts)
+	opts = opts or {}
+	local telescope = require("chat-gypsy.telescope.history"):new()
+	telescope:history(opts)
 end
 
-Gypsy.models = function()
-	require("chat-gypsy.telescope").models()
+Gypsy.models = function(opts)
+	opts = opts or {}
+	local telescope = require("chat-gypsy.telescope.models"):new()
+	telescope:models(opts)
 end
 
 return Gypsy
