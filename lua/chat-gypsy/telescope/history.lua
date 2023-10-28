@@ -1,9 +1,9 @@
-local TelescopePrototype = require("chat-gypsy.telescope.prototype")
+local TelescopeProto = require("chat-gypsy.telescope.prototype")
 
-local TelescopeHistory = setmetatable({}, TelescopePrototype)
+local TelescopeHistory = setmetatable({}, TelescopeProto)
 TelescopeHistory.__index = TelescopeHistory
 setmetatable(TelescopeHistory, {
-	__index = TelescopePrototype,
+	__index = TelescopeProto,
 })
 
 ---@diagnostic disable-next-line: duplicate-set-field
