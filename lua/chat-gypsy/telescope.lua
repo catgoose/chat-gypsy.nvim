@@ -6,9 +6,7 @@ end
 
 function Telescope.models(opts)
 	opts = opts or {}
-	vim.print("pick a model")
-	-- local entries = sql:get_models()
-	-- picker(entries, opts)
+	require("chat-gypsy.telescope.models").models(opts)
 end
 
 return Telescope
