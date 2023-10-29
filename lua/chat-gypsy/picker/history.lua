@@ -141,7 +141,7 @@ function TelescopeHistory:init()
 	self.picker = function(entries, opts)
 		self.telescope.pickers
 			.new(opts, {
-				prompt_title = "History",
+				prompt_title = "Search history",
 				finder = self.telescope.finders.new_table({
 					results = entries,
 					entry_maker = self.entry_maker,
