@@ -12,11 +12,20 @@ function TelescopePrototype:new()
 		action_state = require("telescope.actions.state"),
 		previewers = require("telescope.previewers"),
 	}
+	self.config = {}
 	self.writer = require("chat-gypsy.writer"):new():set_move_cursor(false)
-	self.config = {
-		opts = require("chat-gypsy").Config.get("opts"),
-		symbols = require("chat-gypsy").Config.get("symbols"),
-	}
+	self.set_config = function(config_key)
+		local set_config = function(key)
+			self.config[key] = require("chat-gypsy").Config.get(key)
+		end
+		if type(config_key) == "table" then
+			for _, key in ipairs(config_key) do
+				set_config(key)
+			end
+			return
+		end
+		set_config(config_key)
+	end
 	self.sql = require("chat-gypsy.sql"):new()
 	self.utils = require("chat-gypsy.utils")
 

@@ -8,6 +8,8 @@ setmetatable(TelescopeHistory, {
 
 ---@diagnostic disable-next-line: duplicate-set-field
 function TelescopeHistory:init()
+	self.set_config({ "symbols", "opts" })
+
 	self.entry_ordinal = function(entry)
 		local tags = vim.tbl_map(function(keyword)
 			return self.config.symbols.hash .. keyword
