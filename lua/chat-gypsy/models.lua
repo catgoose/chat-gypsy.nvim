@@ -47,7 +47,7 @@ local get_models = function()
 						return model_priority[a] < model_priority[b]
 					end)
 					if #models > 0 then
-						Log.debug("getModels: success: " .. vim.inspect(models))
+						Log.trace("getModels: success: " .. vim.inspect(models))
 						Events.pub("hook:models:get", models)
 						Models.names = models
 					end
