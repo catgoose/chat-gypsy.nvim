@@ -29,6 +29,7 @@ function OpenAI:init_openai()
 	--  of model from the picker.
 	self._.openai_params.model = require("chat-gypsy.models").selected
 	self._.session_id = nil
+	--  TODO: 2023-10-29 - Perhaps this can be set from Events
 end
 
 function OpenAI:restore(selection)
