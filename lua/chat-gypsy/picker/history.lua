@@ -137,6 +137,7 @@ function TelescopeHistory:init()
 		return entries
 	end
 
+	--  TODO: 2023-10-29 - Flex layout_strategy
 	self.picker = function(entries, opts)
 		self.telescope.pickers
 			.new(opts, {
