@@ -1,5 +1,4 @@
 local TelescopeProto = require("chat-gypsy.picker.prototype")
-local models = require("chat-gypsy.models")
 
 local TelescopeModels = setmetatable({}, TelescopeProto)
 TelescopeModels.__index = TelescopeModels
