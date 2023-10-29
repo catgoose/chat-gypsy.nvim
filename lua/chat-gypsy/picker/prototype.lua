@@ -24,12 +24,8 @@ function TelescopePrototype:new()
 	return self
 end
 
-function TelescopePrototype:history(opts)
-	require("chat-gypsy.telescope.history").history(opts)
-end
-
-function TelescopePrototype:models(opts)
-	require("chat-gypsy.telescope.models").models(opts)
+function TelescopePrototype:pick(_)
+	self.Log.warn("TelescopePrototype:pick: not implemented")
 end
 
 function TelescopePrototype:init()

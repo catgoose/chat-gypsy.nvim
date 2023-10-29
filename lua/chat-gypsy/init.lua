@@ -44,14 +44,12 @@ end
 
 Gypsy.history = function(opts)
 	opts = opts or {}
-	local telescope = require("chat-gypsy.telescope.history"):new()
-	telescope:history(opts)
+	require("chat-gypsy.picker").history(opts)
 end
 
 Gypsy.models = function(opts)
 	opts = opts or {}
-	local telescope = require("chat-gypsy.telescope.models"):new()
-	telescope:models(opts)
+	require("chat-gypsy.picker").models(opts)
 end
 
 return Gypsy

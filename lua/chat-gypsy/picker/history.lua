@@ -1,4 +1,4 @@
-local TelescopeProto = require("chat-gypsy.telescope.prototype")
+local TelescopeProto = require("chat-gypsy.picker.prototype")
 
 local TelescopeHistory = setmetatable({}, TelescopeProto)
 TelescopeHistory.__index = TelescopeHistory
@@ -156,7 +156,7 @@ function TelescopeHistory:init()
 end
 
 ---@diagnostic disable-next-line: duplicate-set-field
-function TelescopeHistory:history(opts)
+function TelescopeHistory:pick(opts)
 	local entries = self.collect_entries()
 	self.picker(entries, opts)
 end
