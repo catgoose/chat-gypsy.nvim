@@ -25,6 +25,9 @@ end
 function OpenAI:init_openai()
 	self._.system_written = false
 	self._.openai_params = Config.get("opts").openai.openai_params
+	--  HACK: 2023-10-29 - This is a temporary measure to allow for selection
+	--  of model from the picker.
+	self._.openai_params.model = require("chat-gypsy.models").selected
 	self._.session_id = nil
 end
 
