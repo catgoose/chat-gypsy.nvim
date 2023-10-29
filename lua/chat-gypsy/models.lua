@@ -6,7 +6,7 @@ local Log = require("chat-gypsy").Log
 local curl = require("plenary.curl")
 local validate = require("chat-gypsy.validate")
 
-Models = {}
+local Models = {}
 
 local get_models = function()
 	curl.get({
@@ -46,10 +46,10 @@ local get_models = function()
 					table.sort(models, function(a, b)
 						return model_priority[a] < model_priority[b]
 					end)
-					Log.trace("getModels: success: " .. vim.inspect(models))
-					Events.pub("hook:models:get", models)
 					if #models > 0 then
-						M.names = models
+						Log.trace("getModels: success: " .. vim.inspect(models))
+						Events.pub("hook:models:get", models)
+						Models.names = models
 					end
 				end
 			end
@@ -57,20 +57,20 @@ local get_models = function()
 	})
 end
 
-M.init = function()
+Models.init = function()
 	if not validate.openai_key(opts.openai.openai_key) then
 		return
 	end
 	get_models()
 end
 
-M.names = {}
+Models.names = {}
 
-M.get_config = function(model)
+Models.get_config = function(model)
 	local found_model = vim.tbl_filter(function(m)
 		return m.model == model
 	end, openai_models)
-	if not vim.tbl_contains(M.names, model) or not model or not found_model then
+	if not vim.tbl_contains(Models.names, model) or not model or not found_model then
 		return {
 			model = "no-model-found",
 			max_tokens = 0,
@@ -80,4 +80,4 @@ M.get_config = function(model)
 	return found_model[1]
 end
 
-return M
+return Models

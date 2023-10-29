@@ -6,7 +6,6 @@ local validate = require("chat-gypsy.validate")
 local OpenAI = {}
 OpenAI.__index = OpenAI
 
---  TODO: 2023-10-10 - Create picker for openai model
 function OpenAI:new()
 	setmetatable(self, OpenAI)
 	self.sql = require("chat-gypsy.sql"):new()
@@ -15,39 +14,46 @@ function OpenAI:new()
 	self.Log = require("chat-gypsy").Log
 	self._ = {}
 	self.queue = require("chat-gypsy.queue"):new()
-	self:init_openai()
-	self:init_request()
 	self.validate = function()
 		return validate.openai_key(opts.openai.openai_key)
 	end
+
+	self.init_openai = function()
+		self._.system_written = false
+		self._.openai_params = Config.get("opts").openai.openai_params
+		self._.session_id = nil
+	end
+
+	self.init_session = function()
+		if not self._.session_id then
+			local status = self.sql:new_session(self._.openai_params)
+			if status.success then
+				self._.session_id = status.data
+			else
+				local err = "OpenAI:send: on_stream_start: Session could not be set"
+				self.Log.error(err)
+				error(err)
+			end
+		end
+	end
+
+	self.init_openai()
+	self:init_request()
+
 	return self
 end
 
-function OpenAI:init_openai()
-	self._.system_written = false
-	self._.openai_params = Config.get("opts").openai.openai_params
-	self._.session_id = nil
+function OpenAI:set_model(model)
+	self._.openai_params.model = model
 end
 
 function OpenAI:restore(selection)
 	selection = self.utils.deep_copy(selection)
 	self.Log.trace(string.format("OpenAI:restore: current: %s", vim.inspect(selection)))
 	self._.openai_params = selection.openai_params
+	-- self.update_model()
 	self._.system_written = true
 	self._.session_id = selection.id
-end
-
-function OpenAI:init_session()
-	if not self._.session_id then
-		local status = self.sql:new_session(self._.openai_params)
-		if status.success then
-			self._.session_id = status.data
-		else
-			local err = "OpenAI:send: on_stream_start: Session could not be set"
-			self.Log.error(err)
-			error(err)
-		end
-	end
 end
 
 function OpenAI:summarize_chat(request)
@@ -65,13 +71,13 @@ function OpenAI:summarize_chat(request)
 		local status = self.sql:session_summary(self._.session_id, entries)
 		if status.success then
 			self.Log.debug(string.format("Composed entries for session: %s", self._.session_id))
-			self:init_openai()
+			self.init_openai()
 		else
 			on_error(status.err)
 		end
 	end
 
-	self:init_session()
+	self.init_session()
 	local do_compose = false
 	local messages = History:get()
 	for _, message in ipairs(messages) do
@@ -105,19 +111,21 @@ function OpenAI:send(
 	if not self.validate() then
 		return
 	end
+	-- self.update_model()
+	local model = self._.openai_params.model
 	before_request()
 	if not self._.system_written and self._.openai_params.messages[1].role == "system" then
-		system_writer(self._.openai_params.messages[1], self._.openai_params.model)
+		system_writer(self._.openai_params.messages[1], model)
 		self._.system_written = true
 	end
 	self.Log.trace(string.format("adding request to queue: \nmessage: %s", table.concat(prompt_lines, "\n")))
 	local action = function(queue_next)
 		local on_stream_start = function(lines)
-			on_chunk_stream_start(lines, self._.openai_params.model)
+			on_chunk_stream_start(lines, model)
 		end
 		local on_complete = function(complete_chunks)
 			self.Log.trace("request completed")
-			on_chunks_complete(complete_chunks, self._.openai_params.model)
+			on_chunks_complete(complete_chunks, model)
 			queue_next()
 		end
 

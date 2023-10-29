@@ -159,6 +159,16 @@ local opts = {
       },
     },
   },
+  telescope = {
+    models = {
+      layout_strategy = "center",
+      layout_config = {
+        width = 0.25,
+        height = 8,
+        prompt_position = "bottom",
+      },
+    },
+  },
   hooks = {
     request = {
       start = function(content) end,

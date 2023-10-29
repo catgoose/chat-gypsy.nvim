@@ -50,6 +50,8 @@ local _opts = {
 	log_level = "warn",
 	openai = {
 		openai_key = os.getenv("OPENAI_API_KEY") or "",
+		--  QUESTION: 2023-10-29 - Should the _opts table that is deep
+		--  copied be updated with the selected model from the picker?
 		openai_params = {
 			model = "gpt-3.5-turbo",
 			temperature = 0.7,
@@ -132,6 +134,16 @@ local _opts = {
 					width = "70%",
 					height = "70%",
 				},
+			},
+		},
+	},
+	telescope = {
+		models = {
+			layout_strategy = "center",
+			layout_config = {
+				width = 0.25,
+				height = 8,
+				prompt_position = "bottom",
 			},
 		},
 	},

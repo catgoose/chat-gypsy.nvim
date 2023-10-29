@@ -2,7 +2,7 @@ local OpenAI = require("chat-gypsy.openai")
 local opts = require("chat-gypsy").Config.get("opts")
 local curl = require("plenary.curl")
 
-Request = setmetatable({}, OpenAI)
+local Request = setmetatable({}, OpenAI)
 Request.__index = Request
 setmetatable(Request, {
 	__index = OpenAI,
