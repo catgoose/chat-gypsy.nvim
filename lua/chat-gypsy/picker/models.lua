@@ -1,4 +1,5 @@
 local TelescopeProto = require("chat-gypsy.picker.prototype")
+local models = require("chat-gypsy.models")
 
 local TelescopeModels = setmetatable({}, TelescopeProto)
 TelescopeModels.__index = TelescopeModels
@@ -30,7 +31,7 @@ function TelescopeModels:init()
 		self.telescope.actions.select_default:replace(function()
 			self.telescope.actions.close(prompt_bufnr)
 			local selection = self.telescope.action_state.get_selected_entry()
-			local model = selection.value
+			models.selected = selection.value.model
 		end)
 		return true
 	end
