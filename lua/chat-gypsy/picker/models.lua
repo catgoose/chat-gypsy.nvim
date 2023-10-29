@@ -31,7 +31,9 @@ function TelescopeModels:init()
 		self.telescope.actions.select_default:replace(function()
 			self.telescope.actions.close(prompt_bufnr)
 			local selection = self.telescope.action_state.get_selected_entry()
-			models.selected = selection.value.model
+			--  BUG: 2023-10-29 - Selecting a model that you don't have
+			--  access to displays error in float that is chunked by line
+			require("chat-gypsy.request"):new():set_model(selection.value.model)
 		end)
 		return true
 	end

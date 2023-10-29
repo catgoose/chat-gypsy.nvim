@@ -18,13 +18,6 @@ function OpenAI:new()
 		return validate.openai_key(opts.openai.openai_key)
 	end
 
-	--  TODO: 2023-10-29 - Perhaps this can be set from Events
-	self.update_model = function()
-		--  HACK: 2023-10-29 - This is a temporary measure to allow for selection
-		--  of model from the picker.
-		self._.openai_params.model = require("chat-gypsy.models").selected
-	end
-
 	self.init_openai = function()
 		self._.system_written = false
 		self._.openai_params = Config.get("opts").openai.openai_params
@@ -50,11 +43,15 @@ function OpenAI:new()
 	return self
 end
 
+function OpenAI:set_model(model)
+	self._.openai_params.model = model
+end
+
 function OpenAI:restore(selection)
 	selection = self.utils.deep_copy(selection)
 	self.Log.trace(string.format("OpenAI:restore: current: %s", vim.inspect(selection)))
 	self._.openai_params = selection.openai_params
-	self.update_model()
+	-- self.update_model()
 	self._.system_written = true
 	self._.session_id = selection.id
 end
@@ -114,7 +111,7 @@ function OpenAI:send(
 	if not self.validate() then
 		return
 	end
-	self.update_model()
+	-- self.update_model()
 	local model = self._.openai_params.model
 	before_request()
 	if not self._.system_written and self._.openai_params.messages[1].role == "system" then

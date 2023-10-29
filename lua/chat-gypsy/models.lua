@@ -8,9 +8,6 @@ local validate = require("chat-gypsy.validate")
 
 local Models = {}
 
---  QUESTION: 2023-10-29 - Should selected model be stored here or should
-Models.selected = opts.openai.openai_params.model
-
 local get_models = function()
 	curl.get({
 		url = "https://api.openai.com/v1/models",
