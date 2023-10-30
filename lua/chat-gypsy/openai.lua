@@ -38,7 +38,9 @@ function OpenAI:new()
 	end
 
 	self.init_openai()
-	self:init_request()
+	if OpenAI.__index.init_child then
+		self:init_child()
+	end
 
 	return self
 end
@@ -51,7 +53,6 @@ function OpenAI:restore(selection)
 	selection = self.utils.deep_copy(selection)
 	self.Log.trace(string.format("OpenAI:restore: current: %s", vim.inspect(selection)))
 	self._.openai_params = selection.openai_params
-	-- self.update_model()
 	self._.system_written = true
 	self._.session_id = selection.id
 end
@@ -111,7 +112,6 @@ function OpenAI:send(
 	if not self.validate() then
 		return
 	end
-	-- self.update_model()
 	local model = self._.openai_params.model
 	before_request()
 	if not self._.system_written and self._.openai_params.messages[1].role == "system" then
@@ -140,12 +140,8 @@ function OpenAI:send(
 	self.queue:add(action)
 end
 
-function OpenAI:query(...)
-	self.Log.warn(string.format("OpenAI:query: not implemented: %s"), vim.inspect({ ... }))
-end
+function OpenAI:query(...) end
 
-function OpenAI:init_request(...)
-	self.Log.warn(string.format("OpenAI:init_request: not implemented: %s"), vim.inspect({ ... }))
-end
+function OpenAI:init_child(...) end
 
 return OpenAI

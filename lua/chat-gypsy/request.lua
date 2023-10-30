@@ -9,7 +9,7 @@ setmetatable(Request, {
 })
 
 ---@diagnostic disable-next-line: duplicate-set-field
-function Request:init_request()
+function Request:init_child()
 	self.chunks = {}
 	self.error_chunks = {}
 	self.content = ""
