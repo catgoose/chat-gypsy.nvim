@@ -93,7 +93,7 @@ function UI:new(ui_opts)
 		mount = false,
 		placement = opts.ui.layout_placement,
 		restore_history = false,
-		current = {
+		history = {
 			openai_params = {},
 			messages = {},
 		},
