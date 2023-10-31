@@ -47,12 +47,16 @@ end
 
 function OpenAI:set_model(model)
 	self._.openai_params.model = model
+	vim.print("set_model")
+	vim.print(self._.openai_params)
 end
 
 function OpenAI:restore(selection)
 	selection = self.utils.deep_copy(selection)
 	self.Log.trace(string.format("OpenAI:restore: current: %s", vim.inspect(selection)))
 	self._.openai_params = selection.openai_params
+	vim.print("restore")
+	vim.print(self._.openai_params)
 	self._.system_written = true
 	self._.session_id = selection.id
 end
