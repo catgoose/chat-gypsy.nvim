@@ -50,7 +50,9 @@ local get_models = function()
 						Log.trace("getModels: success: " .. vim.inspect(models))
 						Events.pub("hook:models:get", models)
 						Models.names = models
-						Models.selected = models[1]
+						Models.selected = vim.tbl_contains(models, opts.openai.openai_params.model)
+								and opts.openai.openai_params.model
+							or models[1]
 					end
 				end
 			end

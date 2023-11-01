@@ -10,27 +10,11 @@ setmetatable(TelescopeModels, {
 function TelescopeModels:init()
 	self.set_config({ "openai_models", "opts" })
 
-	self.entry_display = function(item)
-		return item.value.model
-	end
-
-	self.entry_ordinal = function(entry)
-		return entry.model
-	end
-
-	self.entry_maker = function(item)
-		return {
-			value = item,
-			display = self.entry_display,
-			ordinal = self.entry_ordinal(item),
-		}
-	end
-
 	self.attach_mappings = function(prompt_bufnr)
 		self.telescope.actions.select_default:replace(function()
 			self.telescope.actions.close(prompt_bufnr)
 			local selection = self.telescope.action_state.get_selected_entry()
-			self.Events.pub("hook:models:set", selection.value.model)
+			self.Events.pub("hook:models:set", selection.value)
 		end)
 		return true
 	end
@@ -41,7 +25,6 @@ function TelescopeModels:init()
 				prompt_title = "Models",
 				finder = self.telescope.finders.new_table({
 					results = entries,
-					entry_maker = self.entry_maker,
 				}),
 				sorter = self.telescope.conf.generic_sorter(),
 				attach_mappings = self.attach_mappings,
@@ -54,8 +37,7 @@ end
 
 ---@diagnostic disable-next-line: duplicate-set-field
 function TelescopeModels:pick(opts)
-	--  TODO: 2023-10-31 - Do not show models that are not available
-	local entries = self.config.openai_models
+	local entries = self.Models.names
 	self.picker(entries, opts)
 end
 
