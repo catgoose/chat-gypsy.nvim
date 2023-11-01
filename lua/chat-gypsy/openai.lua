@@ -37,6 +37,10 @@ function OpenAI:new()
 		end
 	end
 
+	self.Events.sub("hook:models:set_model", function(model)
+		self._.openai_params.model = model
+	end)
+
 	self.init_openai()
 	if OpenAI.__index.init_child then
 		self:init_child()
@@ -45,18 +49,10 @@ function OpenAI:new()
 	return self
 end
 
-function OpenAI:set_model(model)
-	self._.openai_params.model = model
-	vim.print("set_model")
-	vim.print(self._.openai_params)
-end
-
 function OpenAI:restore(selection)
 	selection = self.utils.deep_copy(selection)
 	self.Log.trace(string.format("OpenAI:restore: current: %s", vim.inspect(selection)))
 	self._.openai_params = selection.openai_params
-	vim.print("restore")
-	vim.print(self._.openai_params)
 	self._.system_written = true
 	self._.session_id = selection.id
 end
@@ -75,7 +71,7 @@ function OpenAI:summarize_chat(request)
 	local on_complete = function(entries)
 		local status = self.sql:session_summary(self._.session_id, entries)
 		if status.success then
-			self.Log.debug(string.format("Composed entries for session: %s", self._.session_id))
+			self.Log.trace(string.format("Composed entries for session: %s", self._.session_id))
 			self.init_openai()
 		else
 			on_error(status.err)

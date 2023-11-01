@@ -28,6 +28,7 @@ function TelescopePrototype:new()
 	end
 	self.sql = require("chat-gypsy.sql"):new()
 	self.utils = require("chat-gypsy.utils")
+	self.Events = require("chat-gypsy").Events
 
 	self:init()
 	return self

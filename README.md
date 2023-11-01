@@ -179,7 +179,12 @@ local opts = {
     models = {
       get = function(models) end,
       error = function(source, error_tbl) end
-    }
+      set_model = function(model) end
+    },
+    entries = {
+      start = function(response) end,
+      complete = function(response) end,
+    },
   },
 }
 
@@ -241,6 +246,7 @@ Several event hooks are provided for customization:
 | request.complete | response          | Response is received from openai      |
 | request.error    | source, error_tbl | An error has occurred in a request    |
 | models.get       | models            | Models retrieved from OpenAI          |
+| models.set_model | model             | Setting model from telescope picker   |
 | models.error     | source, error_tbl | Error occurred retrieving models      |
 | entries.start    | response          | Start response composing entries      |
 | entries.complete | response          | Complete response composing entries   |
