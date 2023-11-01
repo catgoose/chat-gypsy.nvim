@@ -30,8 +30,6 @@ function TelescopeModels:init()
 		self.telescope.actions.select_default:replace(function()
 			self.telescope.actions.close(prompt_bufnr)
 			local selection = self.telescope.action_state.get_selected_entry()
-			--  BUG: 2023-10-29 - Selecting a model that you don't have
-			--  access to displays error in float that is chunked by line
 			self.Events.pub("hook:models:set", selection.value.model)
 		end)
 		return true
@@ -56,6 +54,7 @@ end
 
 ---@diagnostic disable-next-line: duplicate-set-field
 function TelescopeModels:pick(opts)
+	--  TODO: 2023-10-31 - Do not show models that are not available
 	local entries = self.config.openai_models
 	self.picker(entries, opts)
 end
