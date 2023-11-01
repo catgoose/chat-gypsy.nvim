@@ -1,8 +1,8 @@
 local History = require("chat-gypsy").History
 local Config = require("chat-gypsy").Config
-local models = require("chat-gypsy.models")
+local Models = require("chat-gypsy.models")
 local opts, symbols = Config.get("opts"), Config.get("symbols")
-local utils = require("chat-gypsy.utils")
+local Utils = require("chat-gypsy.utils")
 
 local Writer = {}
 Writer.__index = Writer
@@ -61,10 +61,10 @@ function Writer:init()
 	end
 
 	self.format_role = function(role, model)
-		if not role or not utils.check_roles(role, true) then
+		if not role or not Utils.check_roles(role, true) then
 			return
 		end
-		local model_config = models.get_config(model)
+		local model_config = Models.get_config(model)
 		local source = role == "user" and "You"
 			or role == "assistant" and model_config.model
 			or role == "system" and "System"
@@ -113,7 +113,7 @@ function Writer:set_bufnr(bufnr)
 end
 
 function Writer:from_role(role, model, time)
-	if not utils.check_roles(role, true) then
+	if not Utils.check_roles(role, true) then
 		return self
 	end
 	time = time or os.time()
@@ -129,7 +129,7 @@ function Writer:lines(lines, highlight_cfg)
 		return self
 	end
 	if type(lines) == "string" then
-		lines = utils.string_to_lines_tbl(lines)
+		lines = Utils.string_to_lines_tbl(lines)
 	end
 	self.set_lines(lines)
 	if highlight_cfg and highlight_cfg.hlgroup and self.is_buf() then
@@ -150,13 +150,13 @@ function Writer:heading(lines)
 	if not lines then
 		return self
 	end
-	lines = utils.string_to_lines_tbl(lines)
+	lines = Utils.string_to_lines_tbl(lines)
 	self:lines(lines, { hlgroup = opts.ui.highlight.heading })
 	return self
 end
 
 function Writer:calculate_tokens(content, role, model)
-	if not utils.check_roles(role) then
+	if not Utils.check_roles(role) then
 		return self
 	end
 	content = type(content) == "table" and table.concat(content, "") or content
@@ -170,7 +170,7 @@ function Writer:calculate_tokens(content, role, model)
 end
 
 function Writer:replay_tokens(tokens, role, model)
-	tokens = utils.deep_copy(tokens)
+	tokens = Utils.deep_copy(tokens)
 	self.tokenizer:set(tokens)
 	self:token_summary(tokens, role, model)
 	vim.cmd("silent! undojoin")
@@ -178,7 +178,7 @@ function Writer:replay_tokens(tokens, role, model)
 end
 
 function Writer:token_summary(tokens, role, model)
-	local model_config = models.get_config(model)
+	local model_config = Models.get_config(model)
 	local token_format = string.format(" %s (%s/%s) ", tokens[role], tokens.total, model_config.max_tokens)
 	local summary = string.format("%s%s", symbols.space:rep(self._.win_width - #token_format), token_format)
 	self:lines(summary, { hlgroup = opts.ui.highlight.tokens, col_start = self._.win_width - #token_format })

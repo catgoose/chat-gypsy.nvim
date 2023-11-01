@@ -179,7 +179,7 @@ local opts = {
     models = {
       get = function(models) end,
       error = function(source, error_tbl) end
-      set_model = function(model) end
+      set = function(model) end
     },
     entries = {
       start = function(response) end,

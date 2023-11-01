@@ -1,7 +1,8 @@
 local Config = require("chat-gypsy").Config
 local opts = Config.get("opts")
 local History = require("chat-gypsy").History
-local validate = require("chat-gypsy.validate")
+local Validate = require("chat-gypsy.validate")
+local Models = require("chat-gypsy.models")
 
 local OpenAI = {}
 OpenAI.__index = OpenAI
@@ -15,12 +16,16 @@ function OpenAI:new()
 	self._ = {}
 	self.queue = require("chat-gypsy.queue"):new()
 	self.validate = function()
-		return validate.openai_key(opts.openai.openai_key)
+		return Validate.openai_key(opts.openai.openai_key)
 	end
 
+	self.set_model = function(model)
+		self._.openai_params.model = model
+	end
 	self.init_openai = function()
 		self._.system_written = false
 		self._.openai_params = Config.get("opts").openai.openai_params
+		self.set_model(Models.selected)
 		self._.session_id = nil
 	end
 
@@ -37,8 +42,8 @@ function OpenAI:new()
 		end
 	end
 
-	self.Events.sub("hook:models:set_model", function(model)
-		self._.openai_params.model = model
+	self.Events.sub("hook:models:set", function(model)
+		self.set_model(model)
 	end)
 
 	self.init_openai()

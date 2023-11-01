@@ -1,5 +1,5 @@
 local Log = require("chat-gypsy").Log
-local utils = require("chat-gypsy.utils")
+local Utils = require("chat-gypsy.utils")
 
 local History = {}
 History.__index = History
@@ -15,10 +15,10 @@ function History:reset()
 end
 
 function History:add_message(content, role, tokens)
-	if not role or not utils.check_roles(role) then
+	if not role or not Utils.check_roles(role) then
 		return
 	end
-	tokens = utils.deep_copy(tokens)
+	tokens = Utils.deep_copy(tokens)
 	Log.trace(
 		string.format(
 			[[Adding to history: content "%s" of role "%s" with tokens %s]],
@@ -37,7 +37,7 @@ function History:add_message(content, role, tokens)
 end
 
 function History:get()
-	return utils.deep_copy(self.messages)
+	return Utils.deep_copy(self.messages)
 end
 
 return History

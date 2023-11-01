@@ -1,7 +1,7 @@
 local Config = require("chat-gypsy").Config
 local UI = require("chat-gypsy.ui")
 local plugin_opts, dev, opts = Config.get("plugin_opts"), Config.get("dev"), Config.get("opts")
-local utils = require("chat-gypsy.utils")
+local Utils = require("chat-gypsy.utils")
 local nui_lo = require("nui.layout")
 local ev = require("nui.utils.autocmd").event
 
@@ -33,7 +33,7 @@ function Float:init()
 	self.writer = require("chat-gypsy.writer"):new()
 
 	self.init_state = function()
-		self._ = utils.deep_copy(state)
+		self._ = Utils.deep_copy(state)
 		self._.chat.bufnr = self.layout._.box.box[1].component.bufnr
 		self._.prompt.bufnr = self.layout._.box.box[2].component.bufnr
 		self._.should_compose_entries = false

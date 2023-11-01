@@ -4,7 +4,7 @@ local openai_models = Config.get("openai_models")
 local opts = Config.get("opts")
 local Log = require("chat-gypsy").Log
 local curl = require("plenary.curl")
-local validate = require("chat-gypsy.validate")
+local Validate = require("chat-gypsy.validate")
 
 local Models = {}
 
@@ -50,6 +50,7 @@ local get_models = function()
 						Log.trace("getModels: success: " .. vim.inspect(models))
 						Events.pub("hook:models:get", models)
 						Models.names = models
+						Models.selected = models[1]
 					end
 				end
 			end
@@ -58,13 +59,15 @@ local get_models = function()
 end
 
 Models.init = function()
-	if not validate.openai_key(opts.openai.openai_key) then
+	if not Validate.openai_key(opts.openai.openai_key) then
 		return
 	end
 	get_models()
 end
 
 Models.names = {}
+
+Models.selected = ""
 
 Models.get_config = function(model)
 	local found_model = vim.tbl_filter(function(m)
@@ -79,5 +82,12 @@ Models.get_config = function(model)
 	end
 	return found_model[1]
 end
+
+Events.sub("hook:models:set", function(model)
+	if not model or not vim.tbl_contains(Models.names, model) then
+		return
+	end
+	Models.selected = model
+end)
 
 return Models

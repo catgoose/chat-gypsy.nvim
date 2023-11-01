@@ -32,7 +32,7 @@ function TelescopeModels:init()
 			local selection = self.telescope.action_state.get_selected_entry()
 			--  BUG: 2023-10-29 - Selecting a model that you don't have
 			--  access to displays error in float that is chunked by line
-			self.Events.pub("hook:openai:set_model", selection.value.model)
+			self.Events.pub("hook:models:set", selection.value.model)
 		end)
 		return true
 	end
