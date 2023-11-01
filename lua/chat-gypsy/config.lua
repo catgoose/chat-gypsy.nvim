@@ -1,10 +1,8 @@
 local log_levels = { "trace", "debug", "info", "warn", "error", "fatal" }
 local default_log_level = "warn"
 local Events = require("chat-gypsy").Events
-local utils = require("chat-gypsy.utils")
-local validate = require("chat-gypsy.validate")
-
---  TODO: 2023-09-30 - Add @type and @param for project
+local Utils = require("chat-gypsy.utils")
+local Validate = require("chat-gypsy.validate")
 
 local Config = {}
 
@@ -157,6 +155,7 @@ local _opts = {
 		models = {
 			get = function(--[[models]]) end,
 			error = function(--[[source, error_tbl]]) end,
+			set = function(--[[model]]) end,
 		},
 		entries = {
 			start = function(--[[response]]) end,
@@ -179,15 +178,15 @@ local _dev = _opts.dev_opts
 
 Config.get = function(cfg)
 	if cfg == "openai_models" then
-		return utils.deep_copy(_openai_models)
+		return Utils.deep_copy(_openai_models)
 	elseif cfg == "symbols" then
-		return utils.deep_copy(_symbols)
+		return Utils.deep_copy(_symbols)
 	elseif cfg == "plugin_opts" then
-		return utils.deep_copy(_plugin_opts)
+		return Utils.deep_copy(_plugin_opts)
 	elseif cfg == "opts" then
-		return utils.deep_copy(_opts)
+		return Utils.deep_copy(_opts)
 	elseif cfg == "dev" then
-		return utils.deep_copy(_dev)
+		return Utils.deep_copy(_dev)
 	end
 end
 
@@ -215,7 +214,7 @@ Config.init = function(opts)
 		end
 	end
 
-	validate.opts(opts, opts_schema)
+	Validate.opts(opts, opts_schema)
 
 	init_event_hooks()
 end

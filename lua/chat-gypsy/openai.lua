@@ -1,7 +1,8 @@
 local Config = require("chat-gypsy").Config
 local opts = Config.get("opts")
 local History = require("chat-gypsy").History
-local validate = require("chat-gypsy.validate")
+local Validate = require("chat-gypsy.validate")
+local Models = require("chat-gypsy.models")
 
 local OpenAI = {}
 OpenAI.__index = OpenAI
@@ -15,12 +16,16 @@ function OpenAI:new()
 	self._ = {}
 	self.queue = require("chat-gypsy.queue"):new()
 	self.validate = function()
-		return validate.openai_key(opts.openai.openai_key)
+		return Validate.openai_key(opts.openai.openai_key)
 	end
 
+	self.set_model = function(model)
+		self._.openai_params.model = model
+	end
 	self.init_openai = function()
 		self._.system_written = false
 		self._.openai_params = Config.get("opts").openai.openai_params
+		self.set_model(Models.selected)
 		self._.session_id = nil
 	end
 
@@ -37,21 +42,22 @@ function OpenAI:new()
 		end
 	end
 
+	self.Events.sub("hook:models:set", function(model)
+		self.set_model(model)
+	end)
+
 	self.init_openai()
-	self:init_request()
+	if OpenAI.__index.init_child then
+		self:init_child()
+	end
 
 	return self
-end
-
-function OpenAI:set_model(model)
-	self._.openai_params.model = model
 end
 
 function OpenAI:restore(selection)
 	selection = self.utils.deep_copy(selection)
 	self.Log.trace(string.format("OpenAI:restore: current: %s", vim.inspect(selection)))
 	self._.openai_params = selection.openai_params
-	-- self.update_model()
 	self._.system_written = true
 	self._.session_id = selection.id
 end
@@ -70,7 +76,7 @@ function OpenAI:summarize_chat(request)
 	local on_complete = function(entries)
 		local status = self.sql:session_summary(self._.session_id, entries)
 		if status.success then
-			self.Log.debug(string.format("Composed entries for session: %s", self._.session_id))
+			self.Log.trace(string.format("Composed entries for session: %s", self._.session_id))
 			self.init_openai()
 		else
 			on_error(status.err)
@@ -111,7 +117,6 @@ function OpenAI:send(
 	if not self.validate() then
 		return
 	end
-	-- self.update_model()
 	local model = self._.openai_params.model
 	before_request()
 	if not self._.system_written and self._.openai_params.messages[1].role == "system" then
@@ -140,12 +145,8 @@ function OpenAI:send(
 	self.queue:add(action)
 end
 
-function OpenAI:query(...)
-	self.Log.warn(string.format("OpenAI:query: not implemented: %s"), vim.inspect({ ... }))
-end
+function OpenAI:query(...) end
 
-function OpenAI:init_request(...)
-	self.Log.warn(string.format("OpenAI:init_request: not implemented: %s"), vim.inspect({ ... }))
-end
+function OpenAI:init_child(...) end
 
 return OpenAI

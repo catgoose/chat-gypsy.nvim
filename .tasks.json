@@ -1,0 +1,18 @@
+{
+  "tasks": [
+    {
+      "name": "Delete database",
+      "cmd": "rm ~/.local/share/nvim/chat-gypsy.db",
+      "tags": [
+        "db",
+        "rm",
+        "reset",
+        "database"
+      ],
+      "window": {
+        "close": true,
+        "keep_current": true
+      }
+    }
+  ]
+}
