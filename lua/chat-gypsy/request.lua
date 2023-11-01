@@ -61,11 +61,6 @@ function Request:init_child()
 		end
 	end
 
-	self.extract_error = function(chunk, on_error)
-		table.insert(self.error_chunks, chunk .. "\n")
-		on_error(self.error_chunks)
-	end
-
 	self.completions = function(prompt_lines, before_request, on_stream_start, on_chunk, on_complete, on_error)
 		local response_type
 		if opts.dev_opts.request.throw_error then
@@ -102,22 +97,21 @@ function Request:init_child()
 						end)
 					end
 				end,
-				on_error = on_error,
 			})
 			handler:after_success(function()
-				if #self.error_chunks > 0 then
-					local error = table.concat(self.error_chunks, "")
-					local ok, json = pcall(vim.json.decode, error)
-					if ok then
-						on_error(json)
+				vim.schedule(function()
+					if #self.error_chunks > 0 then
+						local error = table.concat(self.error_chunks, "")
+						local ok, json = pcall(vim.json.decode, error)
+						if ok then
+							on_error(json)
+						else
+							on_error(self.error_chunks)
+						end
 					else
-						on_error(self.error_chunks)
-					end
-				else
-					vim.schedule(function()
 						on_complete()
-					end)
-				end
+					end
+				end)
 			end)
 			table.insert(self.handlers, handler)
 		end
@@ -200,10 +194,8 @@ function Request:query(prompt_lines, on_stream_start, on_response_chunk, on_resp
 
 	local on_error = function(err)
 		self.Events.pub("hook:request:error", "completions", err)
-		if type(err) == "table" then
-			err = vim.inspect(err)
-		end
-		self.Log.error(string.format("query: on_error: %s", err))
+		local err_str = type(err) == "table" and vim.inspect(err) or err
+		self.Log.error(string.format("query: on_error: %s", err_str))
 		on_response_error(err)
 	end
 
@@ -213,7 +205,7 @@ function Request:query(prompt_lines, on_stream_start, on_response_chunk, on_resp
 		elseif response_type == "data" then
 			self.extract_data(chunk, on_response_chunk)
 		elseif response_type == "error" then
-			self.extract_error(chunk, on_error)
+			table.insert(self.error_chunks, chunk .. "\n")
 		end
 	end
 
