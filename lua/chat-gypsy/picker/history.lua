@@ -74,6 +74,30 @@ function TelescopeHistory:init()
 				end
 			end
 		end)
+		--  TODO: 2023-11-02 - Add custome action instead of overriding qflist
+		--  functionality
+		self.telescope.actions.send_selected_to_qflist:replace(function()
+			local current_picker = self.telescope.action_state.get_current_picker(prompt_bufnr)
+			local ms = current_picker:get_multi_selection()
+			local ids = vim.tbl_map(function(entry)
+				return entry.value.id
+			end, ms)
+			local success = false
+			for _, id in ipairs(ids) do
+				local status = self.sql:inactivate(id)
+				if not status.success then
+					self.Log.error(string.format("Failed to inactivate session: %s %s", status.err, id))
+					break
+				else
+					success = true
+				end
+			end
+			if not success then
+				return
+			end
+			current_picker:delete_selection(function() end)
+		end)
+		self.telescope.actions.open_qflist:replace(function() end)
 		return true
 	end
 
