@@ -57,6 +57,23 @@ function TelescopeHistory:init()
 			self.Log.trace(string.format("history %s selected", vim.inspect(history)))
 			require("chat-gypsy").Session:restore(history)
 		end)
+		self.telescope.actions.toggle_selection:replace(function()
+			local selection = self.telescope.action_state.get_selected_entry()
+			local current_picker = self.telescope.action_state.get_current_picker(prompt_bufnr)
+			local ms = current_picker:get_multi_selection()
+			if #ms == 0 then
+				self.telescope.actions.add_selection(prompt_bufnr)
+			else
+				local idxs = vim.tbl_map(function(entry)
+					return entry.index
+				end, ms)
+				if not vim.tbl_contains(idxs, selection.index) then
+					self.telescope.actions.add_selection(prompt_bufnr)
+				else
+					self.telescope.actions.remove_selection(prompt_bufnr)
+				end
+			end
+		end)
 		return true
 	end
 
