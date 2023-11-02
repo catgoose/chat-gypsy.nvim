@@ -20,6 +20,7 @@ function Sql:new()
 
 	Log.trace(string.format("Opened database %s", uri))
 	self:initialize()
+	-- self.db:update("sessions", { where = { active = 0 }, set = { active = 1 } })
 	self:cleanup()
 	return self
 end
@@ -143,6 +144,12 @@ function Sql:session_summary(id, summary)
 		or not success and "No session updated"
 		or nil
 	return self.status(success, err, summary)
+end
+
+function Sql:inactivate(id)
+	local success = id and self.db:update("sessions", { where = { id = id }, set = { active = false } })
+	local err = not success and not id and "No session id provided" or not success and "Error updating session" or nil
+	return self.status(success, err, id)
 end
 
 return Sql
