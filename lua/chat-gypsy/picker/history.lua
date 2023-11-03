@@ -49,7 +49,57 @@ function TelescopeHistory:init()
 		}
 	end
 
-	self.attach_mappings = function(prompt_bufnr)
+	local toggle_selection = function(prompt_bufnr)
+		local selection = self.telescope.action_state.get_selected_entry()
+		local current_picker = self.telescope.action_state.get_current_picker(prompt_bufnr)
+		local ms = current_picker:get_multi_selection()
+		if #ms == 0 then
+			self.telescope.actions.add_selection(prompt_bufnr)
+		else
+			local idxs = vim.tbl_map(function(entry)
+				return entry.index
+			end, ms)
+			if not vim.tbl_contains(idxs, selection.index) then
+				self.telescope.actions.add_selection(prompt_bufnr)
+			else
+				self.telescope.actions.remove_selection(prompt_bufnr)
+			end
+		end
+	end
+
+	self.actions = {
+		toggle_move_up = function(prompt_bufnr)
+			toggle_selection(prompt_bufnr)
+			self.telescope.actions.move_selection_worse(prompt_bufnr)
+		end,
+		toggle_move_down = function(prompt_bufnr)
+			toggle_selection(prompt_bufnr)
+			self.telescope.actions.move_selection_better(prompt_bufnr)
+		end,
+		inactivate_selection = function(prompt_bufnr)
+			local current_picker = self.telescope.action_state.get_current_picker(prompt_bufnr)
+			local ms = current_picker:get_multi_selection()
+			local ids = vim.tbl_map(function(entry)
+				return entry.value.id
+			end, ms)
+			local success = false
+			for _, id in ipairs(ids) do
+				local status = self.sql:inactivate(id)
+				if not status.success then
+					self.Log.error(string.format("Failed to inactivate session: %s %s", status.err, id))
+					break
+				else
+					success = true
+				end
+			end
+			if not success then
+				return
+			end
+			current_picker:delete_selection(function() end)
+		end,
+	}
+
+	self.attach_mappings = function(prompt_bufnr, map)
 		self.telescope.actions.select_default:replace(function()
 			self.telescope.actions.close(prompt_bufnr)
 			local selection = self.telescope.action_state.get_selected_entry()
@@ -57,6 +107,15 @@ function TelescopeHistory:init()
 			self.Log.trace(string.format("history %s selected", vim.inspect(history)))
 			require("chat-gypsy").Session:restore(history)
 		end)
+
+		local modes = { "i", "n" }
+		for action, keymap in pairs(self.config.opts.telescope.mappings.history) do
+			if keymap ~= "" and self.actions[action] ~= nil then
+				for _, mode in ipairs(modes) do
+					map(mode, keymap, self.actions[action])
+				end
+			end
+		end
 		return true
 	end
 

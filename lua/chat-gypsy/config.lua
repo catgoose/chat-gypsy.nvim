@@ -142,6 +142,13 @@ local _opts = {
 				prompt_position = "bottom",
 			},
 		},
+		mappings = {
+			history = {
+				toggle_move_up = "<Tab>",
+				toggle_move_down = "<S-Tab>",
+				inactivate_selection = "<C-q>",
+			},
+		},
 	},
 	hooks = {
 		request = {
