@@ -1,6 +1,13 @@
 local Tokenizer = {}
 Tokenizer.__index = Tokenizer
 
+---@class Tokenizer
+---@field init fun(self: Tokenizer)
+---@field perform_calculation fun(str: string, on_tokens_success: fun(tokens))
+---@field calculate fun(self, message: string, role: Role, on_tokens: fun(tokens: Token))
+---@field set fun(self, tokens: Token)
+---@field tokens Token
+---@return Tokenizer
 function Tokenizer:new()
 	local instance = {}
 	setmetatable(instance, Tokenizer)
@@ -15,8 +22,8 @@ function Tokenizer:new()
 end
 
 function Tokenizer:init()
-	self.perform_calculation = function(string, on_tokens_success)
-		local escaped_string = string.gsub(string, '"', '\\"')
+	self.perform_calculation = function(str, on_tokens_success)
+		local escaped_string = string.gsub(str, '"', '\\"')
 		local ok, result = pcall(
 			vim.api.nvim_exec2,
 			string.format(

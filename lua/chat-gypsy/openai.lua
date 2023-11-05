@@ -4,6 +4,29 @@ local History = require("chat-gypsy").History
 local Validate = require("chat-gypsy.validate")
 local Models = require("chat-gypsy.models")
 
+---@class OpenAIParamsMessage
+---@field role Role
+---@field content string
+
+---@class OpenAIParams
+---@field model string
+---@field temperature number
+---@field messages OpenAIParamsMessage[]
+---@field stream boolean
+
+---@class OpenAIState
+---@field openai_params? OpenAIParams
+---@field session_id? number
+---@field system_written? boolean
+
+---@class OpenAI
+---@field sql Sql
+---@field utils Utils
+---@field Events Events
+---@field Log Logger
+---@field _ OpenAIState
+---@field queue FuncQueue
+---@field validate fun(): boolean
 local OpenAI = {}
 OpenAI.__index = OpenAI
 

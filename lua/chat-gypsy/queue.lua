@@ -1,3 +1,14 @@
+---@class FuncQueueCfg
+---@field sequential? boolean
+
+---@class FuncQueue
+---@field sequential boolean
+---@field queue function[]
+---@field isRunning boolean
+---@field new fun(self: FuncQueue, cfg?: FuncQueueCfg): FuncQueue
+---@field add fun(self: FuncQueue, ...: function)
+---@field executeNext fun(self: FuncQueue)
+---@field clear fun(self: FuncQueue)
 local FuncQueue = {}
 
 function FuncQueue:new(cfg)

@@ -20,6 +20,21 @@ local state = {
 	returning_winid = nil,
 }
 
+---@class FloatState
+---@field hidden? boolean
+---@field mounted? boolean
+---@field focused_win? string
+---@field chat? table
+---@field prompt? table
+---@field returning_winid? number
+---@field should_compose_entries? boolean
+---@field prompt_winid? number
+---@field instance? boolean
+
+-- Opens float and sends prompt contents to OpenAI API
+---@class Float : UI
+---@field _ FloatState
+
 local Float = setmetatable({}, UI)
 Float.__index = Float
 setmetatable(Float, {

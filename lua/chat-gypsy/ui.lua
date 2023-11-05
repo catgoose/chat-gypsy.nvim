@@ -83,6 +83,14 @@ local function build_ui(placement)
 	}
 end
 
+-- UI class prototype for opening floats using nui
+---@class UI
+---@field layout table
+---@field boxes table
+---@field ui_opts table
+---@field Log Logger
+---@field init fun(self: UI)
+---@return UI
 local UI = {}
 UI.__index = UI
 
