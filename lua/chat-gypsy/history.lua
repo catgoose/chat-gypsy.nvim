@@ -26,6 +26,7 @@ History.__index = History
 ---@return History
 function History:new()
 	setmetatable(self, History)
+	self.messages = {}
 	return self
 end
 
