@@ -1,13 +1,14 @@
+---@class Tokenizer
+---@field public new fun(self): Tokenizer
+---@field public init fun(self: Tokenizer)
+---@field public calculate fun(self, message: string, role: Role, on_tokens: fun(tokens: Token))
+---@field public set fun(self, tokens: Token)
+---@field private perform_calculation fun(str: string, on_tokens_success: fun(message_tokens: number))
+---@field private tokens Token
+
 local Tokenizer = {}
 Tokenizer.__index = Tokenizer
 
----@class Tokenizer
----@field init fun(self: Tokenizer)
----@field perform_calculation fun(str: string, on_tokens_success: fun(tokens))
----@field calculate fun(self, message: string, role: Role, on_tokens: fun(tokens: Token))
----@field set fun(self, tokens: Token)
----@field tokens Token
----@return Tokenizer
 function Tokenizer:new()
 	local instance = {}
 	setmetatable(instance, Tokenizer)
@@ -21,39 +22,34 @@ function Tokenizer:new()
 	return instance
 end
 
-function Tokenizer:init()
-	self.perform_calculation = function(str, on_tokens_success)
-		local escaped_string = string.gsub(str, '"', '\\"')
-		local ok, result = pcall(
-			vim.api.nvim_exec2,
-			string.format(
-				[[
+---@language python
+local tiktoken = [[
 python3 << EOF
 import tiktoken
 encoder = tiktoken.get_encoding("cl100k_base")
 encoded = encoder.encode("""%s""")
 print(len(encoded))
 EOF
-]],
-				escaped_string
-			),
-			{ output = true }
-		)
+]]
+
+function Tokenizer:init()
+	self.perform_calculation = function(message, on_tokens_success)
+		local escaped_string = string.gsub(message, '"', '\\"')
+		local ok, result = pcall(vim.api.nvim_exec2, string.format(tiktoken, escaped_string), { output = true })
 		local output = 0
 		if ok then
 			output = result.output
 		end
 		if on_tokens_success then
-			local tokens = tonumber(output)
-			on_tokens_success(tokens)
+			local message_tokens = tonumber(output) or 0
+			on_tokens_success(message_tokens)
 		end
 	end
 end
 
 function Tokenizer:calculate(message, role, on_tokens)
-	local on_tokens_success = function(tokens)
-		tokens = tokens or 0
-		self.tokens[role] = tokens
+	local on_tokens_success = function(message_tokens)
+		self.tokens[role] = message_tokens
 		self.tokens.total = self.tokens.total + self.tokens[role]
 		on_tokens(self.tokens)
 	end
