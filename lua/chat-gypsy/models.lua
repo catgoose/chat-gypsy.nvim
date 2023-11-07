@@ -1,3 +1,10 @@
+---@class Models
+---@field names table
+---@field selected string
+---@field get_config fun(model: string): table
+---@field init fun()
+---@field set fun(model: string)
+
 local Config = require("chat-gypsy").Config
 local Events = require("chat-gypsy").Events
 local openai_models = Config.get("openai_models")

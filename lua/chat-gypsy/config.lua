@@ -1,3 +1,9 @@
+---@alias Model "gpt-3.5-turbo" | "gpt-3.5-turbo-16k" | "gpt-4" | "gpt-4-32k"
+
+---@class Config
+---@field public get fun(cfg: string): table
+---@field public init fun(opts: table)
+
 local log_levels = { "trace", "debug", "info", "warn", "error", "fatal" }
 local default_log_level = "warn"
 local Events = require("chat-gypsy").Events

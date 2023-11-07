@@ -1,3 +1,14 @@
+---@class TelescopeModels
+---@field public init fun()
+---@field public pick fun(opts: table)
+---@field private Models Models
+---@field private Events Events
+---@field private telescope table
+---@field private config table
+---@field private attach_mappings fun(prompt_bufnr: number): boolean
+---@field private picker fun(entries: table, opts: table)
+---@field private set_config fun(path: table)
+
 local TelescopeProto = require("chat-gypsy.picker.prototype")
 
 local TelescopeModels = setmetatable({}, TelescopeProto)

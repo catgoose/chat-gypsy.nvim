@@ -1,3 +1,17 @@
+---@class TelescopePrototype @telescope picker prototype
+---@field public new fun(): TelescopePrototype
+---@field public pick fun() @abstract
+---@field public init fun() @abstract
+---@field private Log table Logger
+---@field private telescope table @telescope
+---@field private config table @plugic config
+---@field private set_config fun(config_key: string|table)
+---@field private writer Writer
+---@field private sql Sql
+---@field private utils Utils
+---@field private Events Events
+---@field private Models Models
+
 local TelescopePrototype = {}
 TelescopePrototype.__index = TelescopePrototype
 

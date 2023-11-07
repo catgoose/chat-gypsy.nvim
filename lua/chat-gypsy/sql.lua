@@ -1,3 +1,37 @@
+---@class Sqlite
+---@field lib table
+---@field open fun(uri: string, opts: table): Database
+---@field Database Database
+
+---@class Database
+---@field eval fun(query: string, params: table): table
+---@field create fun(tbl: string, schema: table): boolean
+---@field insert fun(tbl: string, data: table): boolean
+---@field update fun(tbl: string, data: table): boolean
+---@field delete fun(tbl: string, data: table): boolean
+
+---@class Table
+---@field new fun(self: Table, db: Database, tbl: string): Table
+---@field create fun(self: Table, schema: table): boolean
+---@field insert fun(self: Table, data: table): boolean
+---@field update fun(self: Table, data: table): boolean
+---@field delete fun(self: Table, data: table): boolean
+
+---@class Sql
+---@field public new fun(self: Sql): Sql
+---@field public initialize fun(self: Sql): nil
+---@field public cleanup fun(self: Sql): nil
+---@field public get_sessions fun(self: Sql): table
+---@field public new_session fun(self: Sql, openai_params: table): table
+---@field public get_messages_for_session fun(self: Sql, id: number): table
+---@field public insert_message fun(self: Sql, message: table): table
+---@field public session_summary fun(self: Sql, id: number, summary: table): table
+---@field private status fun(success: boolean, err: string, data: any): table
+---@field private inactivate fun(self: Sql, id: number): table
+---@field private sqlite Sqlite
+---@field private db Database
+---@field private tbl Table
+
 local Log = require("chat-gypsy").Log
 
 local Sql = {}

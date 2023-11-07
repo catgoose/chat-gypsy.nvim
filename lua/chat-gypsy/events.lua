@@ -1,3 +1,8 @@
+---@class Events
+---@field sub fun(event: string, callback: fun(...))
+---@field unsub fun(event: string, callback: fun(...))
+---@field pub fun(event: string, ...)
+
 local Events = {}
 local listeners = {}
 

@@ -1,3 +1,10 @@
+---@class Utils
+---@field public deep_copy fun(orig: any): any
+---@field public generate_random_id fun(len: number): string
+---@field public string_to_lines_tbl fun(str: string): string[]
+---@field public split_string fun(str: string, sep: string, include_empty: boolean): string[]
+---@field public check_roles fun(role: string, include_error: boolean): boolean
+
 local Utils = {}
 
 Utils.generate_random_id = function(len)

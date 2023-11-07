@@ -1,8 +1,19 @@
 local plugin_opts = require("chat-gypsy").Config.get("plugin_opts")
 
+---@class Logger
+---@field log fun(msg: string, ...) | table
+---@field trace fun(msg: string, ...)
+---@field debug fun(msg: string, ...)
+---@field info fun(msg: string, ...)
+---@field warn fun(msg: string, ...)
+---@field error fun(msg: string, ...)
+---@field fatal fun(msg: string, ...)
+---@alias LogLevel "trace"|"debug"|"info"|"warn"|"error"|"fatal"
+---@return Logger
 local Logger = {}
-Logger.log = {}
+Logger.log = nil
 
+--- Initializes the logger.
 Logger.init = function()
 	Logger.log = require("plenary.log").new({
 		plugin_opts = plugin_opts.name,

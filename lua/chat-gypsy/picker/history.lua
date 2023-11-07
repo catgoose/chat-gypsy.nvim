@@ -1,3 +1,21 @@
+---@class TelescopeHistory
+---@field public init fun(self: table)
+---@field public pick fun(opts: table)
+---@field private telescope table
+---@field private config table
+---@field private sql Sql
+---@field private utils Utils
+---@field private writer Writer
+---@field private Log Logger
+---@field private actions table
+---@field private picker fun(entries: table, opts: table)
+---@field private attach_mappings fun(prompt_bufnr: number, map: table): boolean
+---@field private define_preview fun(_self: table, item: table)
+---@field private collect_entries fun(): table
+---@field private entry_ordinal fun(entry: table): string
+---@field private entry_display fun(item: table): string, table
+---@field private entry_maker fun(item: table): table
+
 local TelescopeProto = require("chat-gypsy.picker.prototype")
 
 local TelescopeHistory = setmetatable({}, TelescopeProto)

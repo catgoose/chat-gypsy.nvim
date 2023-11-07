@@ -1,3 +1,46 @@
+---@class FloatStateIds
+---@field bufnr number
+---@field winid number
+
+---@class FloatState
+---@field hidden? boolean
+---@field mounted? boolean
+---@field focused_win? string
+---@field chat? FloatStateIds
+---@field prompt? FloatStateIds
+---@field returning_winid? number
+---@field should_compose_entries? boolean
+---@field prompt_winid? number
+---@field instance? boolean
+
+---@class Float : UI
+---@field public init fun()
+---@field public configure fun()
+---@field private _ FloatState
+---@field private Log Logger
+---@field private request Request
+---@field private writer Writer
+---@field private ui_opts UIOpts
+---@field private init_state fun()
+---@field private set_winids fun()
+---@field private focus_chat fun()
+---@field private focus_prompt fun()
+---@field private focus_last_win fun()
+---@field private is_focused fun():boolean
+---@field private return_to_win fun()
+---@field private mount fun()
+---@field private unmount fun()
+---@field private hide fun()
+---@field private show fun()
+---@field private system_writer fun(message: Message, model: Model)
+---@field private before_request fun()
+---@field private on_chunk_stream_start fun(lines: string[], model: Model)
+---@field private on_chunk fun(chunk: string)
+---@field private on_chunks_complete fun(chunks: string[], model: Model)
+---@field private on_chunk_error fun(err: string)
+---@field private boxes table
+---@field private layout table
+
 local Config = require("chat-gypsy").Config
 local UI = require("chat-gypsy.ui")
 local plugin_opts, dev, opts = Config.get("plugin_opts"), Config.get("dev"), Config.get("opts")
@@ -141,10 +184,7 @@ function Float:init()
 		self._.should_compose_entries = false
 	end
 
-	self:actions()
-end
-
-function Float:actions()
+	-- automount and restore history
 	if self.ui_opts.mount then
 		self.mount()
 	end
