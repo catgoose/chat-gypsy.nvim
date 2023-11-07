@@ -1,3 +1,7 @@
+---@class Picker
+---@field history fun(opts: table)
+---@field models  fun(opts: table)
+
 local Picker = {}
 
 local get_picker = function(picker)

@@ -1,9 +1,3 @@
-local History = require("chat-gypsy").History
-local Config = require("chat-gypsy").Config
-local Models = require("chat-gypsy.models")
-local opts, symbols = Config.get("opts"), Config.get("symbols")
-local Utils = require("chat-gypsy.utils")
-
 ---@class WriterState
 ---@field winid number
 ---@field bufnr number
@@ -11,34 +5,40 @@ local Utils = require("chat-gypsy.utils")
 ---@field line string
 ---@field row number
 
--- Builder class for writing to the chat buffer
--- Class instances are unique
 ---@class Writer
----@field _ WriterState
----@field reset fun(): Writer
----@field set_move_cursor fun(state: boolean): Writer
----@field init fun(): Writer
----@field set_cursor fun(): Writer
----@field newline fun(new_lines: number): Writer
----@field newlines fun(): Writer
----@field set_winid fun(winid: number): Writer
----@field set_bufnr fun(bufnr: number): Writer
----@field from_role fun(role: Role, model: string, time: number): Writer
----@field lines fun(lines: string[]|string, highlight_cfg: { hlgroup: string, col_start: number }): Writer
----@field heading fun(lines: string[]|string): Writer
----@field calculate_tokens fun(content: string, role: Role, model: string): Writer
----@field replay_tokens fun(tokens: Token[], role: Role, model: string): Writer
----@field token_summary fun(tokens: Token[], role: Role, model: string): Writer
----@field horiz_line fun(): Writer
----@field append_chunk fun(chunk: string): Writer
----@field error fun(err: string|{ error: { message: string } }): Writer
----@field date fun(time: number, format: string): string
----@field tokenizer Tokenizer
----@field move_cursor boolean
----@field is_buf fun(): boolean
----@field set_lines fun(lines: string[]|string): Writer
----@field format_role fun(role: Role, model: string): string
+---@field public new fun(cfg: { winid: number, bufnr: number }): Writer
+---@field public reset fun(): Writer
+---@field public set_move_cursor fun(state: boolean): Writer
+---@field public init fun(): Writer
+---@field public set_cursor fun(): Writer
+---@field public newline fun(new_lines: number): Writer
+---@field public newlines fun(): Writer
+---@field public set_winid fun(winid: number): Writer
+---@field public set_bufnr fun(bufnr: number): Writer
+---@field public from_role fun(role: Role, model: string, time: number): Writer
+---@field public lines fun(lines: string[]|string, highlight_cfg: { hlgroup: string, col_start: number }): Writer
+---@field public heading fun(lines: string[]|string): Writer
+---@field public calculate_tokens fun(content: string, role: Role, model: string): Writer
+---@field public replay_tokens fun(tokens: Token[], role: Role, model: string): Writer
+---@field public token_summary fun(tokens: Token[], role: Role, model: string): Writer
+---@field public horiz_line fun(): Writer
+---@field public append_chunk fun(chunk: string): Writer
+---@field public error fun(err: string|{ error: { message: string } }): Writer
+---@field private tokenizer Tokenizer
+---@field private _ WriterState
+---@field private format_role fun(role: Role, model: string): string
+---@field private date fun(time: number, format: string): string
+---@field private move_cursor boolean
+---@field private is_buf fun(): boolean
+---@field private set_lines fun(lines: string[]|string): Writer
 ---@return Writer
+
+local History = require("chat-gypsy").History
+local Config = require("chat-gypsy").Config
+local Models = require("chat-gypsy.models")
+local opts, symbols = Config.get("opts"), Config.get("symbols")
+local Utils = require("chat-gypsy.utils")
+
 local Writer = {}
 Writer.__index = Writer
 

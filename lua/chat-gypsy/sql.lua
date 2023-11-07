@@ -1,5 +1,3 @@
-local Log = require("chat-gypsy").Log
-
 ---@class Sqlite
 ---@field lib table
 ---@field open fun(uri: string, opts: table): Database
@@ -20,19 +18,21 @@ local Log = require("chat-gypsy").Log
 ---@field delete fun(self: Table, data: table): boolean
 
 ---@class Sql
----@field sqlite Sqlite
----@field db Database
----@field tbl Table
----@field status fun(success: boolean, err: string, data: any): table
----@field new fun(self: Sql): Sql
----@field initialize fun(self: Sql): nil
----@field cleanup fun(self: Sql): nil
----@field new_session fun(self: Sql, openai_params: table): table
----@field get_sessions fun(self: Sql): table
----@field get_messages_for_session fun(self: Sql, id: number): table
----@field insert_message fun(self: Sql, message: table): table
----@field session_summary fun(self: Sql, id: number, summary: table): table
----@field inactivate fun(self: Sql, id: number): table
+---@field public new fun(self: Sql): Sql
+---@field public initialize fun(self: Sql): nil
+---@field public cleanup fun(self: Sql): nil
+---@field public get_sessions fun(self: Sql): table
+---@field public new_session fun(self: Sql, openai_params: table): table
+---@field public get_messages_for_session fun(self: Sql, id: number): table
+---@field public insert_message fun(self: Sql, message: table): table
+---@field public session_summary fun(self: Sql, id: number, summary: table): table
+---@field private status fun(success: boolean, err: string, data: any): table
+---@field private inactivate fun(self: Sql, id: number): table
+---@field private sqlite Sqlite
+---@field private db Database
+---@field private tbl Table
+
+local Log = require("chat-gypsy").Log
 
 local Sql = {}
 Sql.__index = Sql

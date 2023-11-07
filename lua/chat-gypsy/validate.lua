@@ -1,7 +1,7 @@
---- Validate module for chat-gypsy
 ---@class Validate
 ---@field openai_key fun(openai_key: string): boolean
 ---@field opts fun(t: table, _t: table)
+
 local Validate = {}
 
 Validate.openai_key = function(openai_key)

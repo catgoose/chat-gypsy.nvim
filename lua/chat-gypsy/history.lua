@@ -1,6 +1,3 @@
-local Log = require("chat-gypsy").Log
-local Utils = require("chat-gypsy.utils")
-
 ---@alias Role "user"|"system"|"assistant"
 
 ---@class Token
@@ -15,11 +12,13 @@ local Utils = require("chat-gypsy.utils")
 ---@field time number
 ---@field tokens table
 
--- Stores messages, tokens, timestamps of current session
 ---@class History
 ---@field new fun(self: History): History
 ---@field add_message fun(self, content: string, role: string, tokens: Token)
 ---@field get fun(self): Message[]
+
+local Log = require("chat-gypsy").Log
+local Utils = require("chat-gypsy.utils")
 
 local History = {}
 History.__index = History

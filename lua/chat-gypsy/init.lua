@@ -1,3 +1,18 @@
+---@class Gypsy
+---@field Log Logger
+---@field History History
+---@field Events Events
+---@field Config Config
+---@field Session Session
+---@field setup fun(opts: table)
+---@field toggle fun()
+---@field open fun()
+---@field hide fun()
+---@field show fun()
+---@field close fun()
+---@field history fun(opts: table)
+---@field models fun(opts: table)
+
 Gypsy = {}
 
 Gypsy.Log = {}

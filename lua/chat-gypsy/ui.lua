@@ -1,3 +1,23 @@
+---@class UIOptsHistory
+---@field openai_params table
+---@field messages table
+
+---@class UIOpts
+---@field mount boolean
+---@field placement string
+---@field restore_history boolean
+---@field history UIOptsHistory
+
+-- UI class prototype for opening floats using nui
+---@class UI
+---@field public new fun(ui_opts: table): UI
+---@field public init fun(self: UI) @abstract
+---@field private layout table
+---@field private boxes table
+---@field private ui_opts UIOpts
+---@field private Log Logger
+---@return UI
+
 local opts = require("chat-gypsy").Config.get("opts")
 local nui_pu, nui_lo = require("nui.popup"), require("nui.layout")
 
@@ -83,14 +103,6 @@ local function build_ui(placement)
 	}
 end
 
--- UI class prototype for opening floats using nui
----@class UI
----@field layout table
----@field boxes table
----@field ui_opts table
----@field Log Logger
----@field init fun(self: UI)
----@return UI
 local UI = {}
 UI.__index = UI
 

@@ -1,3 +1,6 @@
+---@class Usercmd
+---@field init function
+
 local Usercmd = {}
 
 Usercmd.init = function()

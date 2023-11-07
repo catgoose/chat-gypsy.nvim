@@ -1,22 +1,23 @@
+---@class Request : OpenAI
+---@field public init_child fun(self: Request): Request @override OpenAI.  Initializes
+---@field public compose_entries fun(openai_params: table, on_complete: fun(content_json: table), on_error: fun(err: string))
+---@field public shutdown_handlers fun()
+---@field public query fun(prompt_lines: string[], on_stream_start: fun(prompt_lines: string[]), on_response_chunk: fun(content: string), on_response_complete: fun(), on_response_error: fun(err: string))
+---@field private chunks string[]
+---@field private error_chunks string[]
+---@field private content string
+---@field private handlers table
+---@field private join_content fun()
+---@field private on_assistant_response fun()
+---@field private on_user_prompt fun(prompt_lines: string[])
+---@field private reset fun()
+---@field private extract_data fun(chunk: string, on_chunk: fun(content: string))
+---@field private completions fun(prompt_lines: string[], before_request: fun(), on_stream_start: fun(prompt_lines: string[]), on_chunk: fun(chunk: string, response_type: string), on_complete: fun(), on_error: fun(err: string)) @override OpenAI
+
 local OpenAI = require("chat-gypsy.openai")
 local opts = require("chat-gypsy").Config.get("opts")
 local curl = require("plenary.curl")
 
----@class Request : OpenAI
----@field chunks string[]
----@field error_chunks string[]
----@field content string
----@field handlers table
----@field join_content fun()
----@field on_assistant_response fun()
----@field on_user_prompt fun(prompt_lines: string[])
----@field reset fun()
----@field extract_data fun(chunk: string, on_chunk: fun(content: string))
----@field completions fun(prompt_lines: string[], before_request: fun(), on_stream_start: fun(prompt_lines: string[]), on_chunk: fun(chunk: string, response_type: string), on_complete: fun(), on_error: fun(err: string))
----@field compose_entries fun(openai_params: table, on_complete: fun(content_json: table), on_error: fun(err: string))
----@field init_child fun(self: Request): Request
----@field shutdown_handlers fun()
----@field query fun(prompt_lines: string[], on_stream_start: fun(prompt_lines: string[]), on_response_chunk: fun(content: string), on_response_complete: fun(), on_response_error: fun(err: string))
 local Request = setmetatable({}, OpenAI)
 Request.__index = Request
 setmetatable(Request, {

@@ -1,9 +1,3 @@
-local Config = require("chat-gypsy").Config
-local opts = Config.get("opts")
-local History = require("chat-gypsy").History
-local Validate = require("chat-gypsy.validate")
-local Models = require("chat-gypsy.models")
-
 ---@class OpenAIParamsMessage
 ---@field role Role
 ---@field content string
@@ -15,18 +9,34 @@ local Models = require("chat-gypsy.models")
 ---@field stream boolean
 
 ---@class OpenAIState
----@field openai_params? OpenAIParams
----@field session_id? number
----@field system_written? boolean
+---@field openai_params OpenAIParams
+---@field session_id number
+---@field system_written boolean
 
 ---@class OpenAI
----@field sql Sql
----@field utils Utils
----@field Events Events
----@field Log Logger
----@field _ OpenAIState
----@field queue FuncQueue
----@field validate fun(): boolean
+---@field public new fun(): OpenAI
+---@field public restore fun(selection: OpenAIState)
+---@field private sql Sql
+---@field private utils Utils
+---@field private Events Events
+---@field private Log Logger
+---@field private _ OpenAIState
+---@field private queue FuncQueue
+---@field private validate fun(): boolean
+---@field private set_model fun(model: string)
+---@field private init_openai fun()
+---@field private init_session fun()
+---@field private init_child fun()
+---@field private summarize_chat fun(request: Request)
+---@field private send fun(prompt_lines: string[], before_request: fun(), system_writer: fun(message: OpenAIParamsMessage, model: string), on_chunk_stream_start: fun(lines: string[], model: string), on_chunk: fun(chunk: string, model: string), on_chunks_complete: fun(complete_chunks: string[], model: string), on_chunk_error: fun(chunk_error: string))
+---@field private query fun(prompt_lines: string[], on_stream_start: fun(lines: string[]), on_chunk: fun(chunk: string), on_complete: fun(complete_chunks: string[]), on_error: fun(chunk_error: string))
+
+local Config = require("chat-gypsy").Config
+local opts = Config.get("opts")
+local History = require("chat-gypsy").History
+local Validate = require("chat-gypsy.validate")
+local Models = require("chat-gypsy.models")
+
 local OpenAI = {}
 OpenAI.__index = OpenAI
 

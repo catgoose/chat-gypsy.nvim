@@ -1,3 +1,13 @@
+---@class Session
+---@field public new fun(): Session
+---@field public init fun(self: Session)
+---@field public toggle fun(self: Session)
+---@field public open fun(self: Session)
+---@field public restore fun(self: Session, history: History)
+---@field public hide fun(self: Session)
+---@field public show fun(self: Session)
+---@field public close fun(self: Session)
+
 local Session = {}
 Session.__index = Session
 
