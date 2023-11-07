@@ -1,8 +1,8 @@
 ---@class Tokenizer
 ---@field public new fun(self): Tokenizer
----@field public init fun(self: Tokenizer)
+---@field public init fun()
 ---@field public calculate fun(self, message: string, role: Role, on_tokens: fun(tokens: Token))
----@field public set fun(self, tokens: Token)
+---@field public set fun()
 ---@field private perform_calculation fun(str: string, on_tokens_success: fun(message_tokens: number))
 ---@field private tokens Token
 

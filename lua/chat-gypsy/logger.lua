@@ -1,4 +1,4 @@
-local plugin_opts = require("chat-gypsy").Config.get("plugin_opts")
+---@alias LogLevel "trace"|"debug"|"info"|"warn"|"error"|"fatal"
 
 ---@class Logger
 ---@field log fun(msg: string, ...) | table
@@ -8,8 +8,10 @@ local plugin_opts = require("chat-gypsy").Config.get("plugin_opts")
 ---@field warn fun(msg: string, ...)
 ---@field error fun(msg: string, ...)
 ---@field fatal fun(msg: string, ...)
----@alias LogLevel "trace"|"debug"|"info"|"warn"|"error"|"fatal"
 ---@return Logger
+
+local plugin_opts = require("chat-gypsy").Config.get("plugin_opts")
+
 local Logger = {}
 Logger.log = nil
 

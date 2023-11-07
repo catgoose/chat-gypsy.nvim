@@ -5,10 +5,10 @@
 ---@field sequential boolean
 ---@field queue function[]
 ---@field isRunning boolean
----@field new fun(self: FuncQueue, cfg?: FuncQueueCfg): FuncQueue
----@field add fun(self: FuncQueue, ...: function)
----@field executeNext fun(self: FuncQueue)
----@field clear fun(self: FuncQueue)
+---@field new fun(cfg?: FuncQueueCfg): FuncQueue
+---@field add fun(...: function)
+---@field executeNext fun()
+---@field clear fun()
 
 local FuncQueue = {}
 

@@ -11,23 +11,23 @@
 ---@field delete fun(tbl: string, data: table): boolean
 
 ---@class Table
----@field new fun(self: Table, db: Database, tbl: string): Table
----@field create fun(self: Table, schema: table): boolean
----@field insert fun(self: Table, data: table): boolean
----@field update fun(self: Table, data: table): boolean
----@field delete fun(self: Table, data: table): boolean
+---@field new fun(db: Database, tbl: string): Table
+---@field create fun(schema: table): boolean
+---@field insert fun(data: table): boolean
+---@field update fun(data: table): boolean
+---@field delete fun(data: table): boolean
 
 ---@class Sql
----@field public new fun(self: Sql): Sql
----@field public initialize fun(self: Sql): nil
----@field public cleanup fun(self: Sql): nil
----@field public get_sessions fun(self: Sql): table
----@field public new_session fun(self: Sql, openai_params: table): table
----@field public get_messages_for_session fun(self: Sql, id: number): table
----@field public insert_message fun(self: Sql, message: table): table
----@field public session_summary fun(self: Sql, id: number, summary: table): table
+---@field public new fun(): Sql
+---@field public initialize fun(): nil
+---@field public cleanup fun(): nil
+---@field public get_sessions fun(): table
+---@field public new_session fun(openai_params: table): table
+---@field public get_messages_for_session fun(id: number): table
+---@field public insert_message fun(message: table): table
+---@field public session_summary fun(id: number, summary: table): table
 ---@field private status fun(success: boolean, err: string, data: any): table
----@field private inactivate fun(self: Sql, id: number): table
+---@field private inactivate fun(id: number): table
 ---@field private sqlite Sqlite
 ---@field private db Database
 ---@field private tbl Table

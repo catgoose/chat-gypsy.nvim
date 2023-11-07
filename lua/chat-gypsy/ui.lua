@@ -11,7 +11,7 @@
 -- UI class prototype for opening floats using nui
 ---@class UI
 ---@field public new fun(ui_opts: table): UI
----@field public init fun(self: UI) @abstract
+---@field public init fun() @abstract
 ---@field private layout table
 ---@field private boxes table
 ---@field private ui_opts UIOpts

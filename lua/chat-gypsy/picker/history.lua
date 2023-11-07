@@ -1,6 +1,6 @@
 ---@class TelescopeHistory
----@field public init fun(self: table)
----@field public pick fun(opts: table)
+---@field public init fun()
+---@field public pick fun()
 ---@field private telescope table
 ---@field private config table
 ---@field private sql Sql

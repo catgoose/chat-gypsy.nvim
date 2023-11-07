@@ -13,9 +13,11 @@
 ---@field tokens table
 
 ---@class History
----@field new fun(self: History): History
----@field add_message fun(self, content: string, role: string, tokens: Token)
----@field get fun(self): Message[]
+---@field public new fun(): History
+---@field public add_message fun(content: string, role: string, tokens: Token)
+---@field public get fun(): Message[]
+---@field private messages Message[]
+---@return History
 
 local Log = require("chat-gypsy").Log
 local Utils = require("chat-gypsy.utils")
