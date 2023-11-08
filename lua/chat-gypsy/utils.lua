@@ -58,4 +58,11 @@ Utils.check_roles = function(role, include_error)
 	return vim.tbl_contains({ "system", "user", "assistant" }, role)
 end
 
+Utils.get_visual = function()
+	local vstart = vim.fn.getpos("v")[2]
+	local current_line = vim.fn.line(".")
+	local lines = vim.api.nvim_get_mode().mode == "V" and vim.fn.getline(vstart, current_line) or nil
+	return lines
+end
+
 return Utils

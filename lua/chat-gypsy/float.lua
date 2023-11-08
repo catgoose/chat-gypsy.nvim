@@ -75,6 +75,11 @@ function Float:init()
 	self.request = require("chat-gypsy.request"):new()
 	self.writer = require("chat-gypsy.writer"):new()
 
+	if self.ui_opts.injection then
+		local prompt = table.concat(self.ui_opts.injection, "\n")
+		self.request:inject_prompt(prompt)
+	end
+
 	self.init_state = function()
 		self._ = Utils.deep_copy(state)
 		self._.chat.bufnr = self.layout._.box.box[1].component.bufnr

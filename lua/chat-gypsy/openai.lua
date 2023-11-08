@@ -16,6 +16,7 @@
 ---@class OpenAI
 ---@field public new fun(): OpenAI
 ---@field public restore fun(selection: OpenAIState)
+---@field public inject_prompt fun(prompt: string)
 ---@field private sql Sql
 ---@field private utils Utils
 ---@field private Events Events
@@ -176,6 +177,10 @@ function OpenAI:send(
 	end
 
 	self.queue:add(action)
+end
+
+function OpenAI:inject_prompt(prompt)
+	self._.openai_params.messages[1].content = prompt
 end
 
 function OpenAI:query(...) end

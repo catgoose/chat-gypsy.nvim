@@ -5,10 +5,10 @@
 ---@class UIOpts
 ---@field mount boolean
 ---@field placement string
+---@field injection string[] | nil
 ---@field restore_history boolean
 ---@field history UIOptsHistory
 
--- UI class prototype for opening floats using nui
 ---@class UI
 ---@field public new fun(ui_opts: table): UI
 ---@field public init fun() @abstract
@@ -111,6 +111,7 @@ function UI:new(ui_opts)
 	self.Log = require("chat-gypsy").Log
 	local default = {
 		mount = false,
+		injection = nil,
 		placement = opts.ui.layout_placement,
 		restore_history = false,
 		history = {
