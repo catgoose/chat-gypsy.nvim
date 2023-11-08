@@ -7,6 +7,9 @@
 ---@field public hide fun()
 ---@field public show fun()
 ---@field public close fun()
+---@field public chat Float
+
+local Utils = require("chat-gypsy.utils")
 
 local Session = {}
 Session.__index = Session
@@ -50,9 +53,11 @@ end
 
 function Session:open()
 	if not self.chat._.instance then
-		self.chat = require("chat-gypsy.float"):new({
+		local ui_opts = {
 			mount = true,
-		})
+			injection = Utils.get_visual(),
+		}
+		self.chat = require("chat-gypsy.float"):new(ui_opts)
 		self.chat._.instance = true
 		return
 	else

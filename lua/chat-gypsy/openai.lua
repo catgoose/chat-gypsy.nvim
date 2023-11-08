@@ -12,10 +12,12 @@
 ---@field openai_params OpenAIParams
 ---@field session_id number
 ---@field system_written boolean
+---@field injected_prompt boolean
 
 ---@class OpenAI
 ---@field public new fun(): OpenAI
 ---@field public restore fun(selection: OpenAIState)
+---@field public inject_prompt fun(prompt: string)
 ---@field private sql Sql
 ---@field private utils Utils
 ---@field private Events Events
@@ -36,6 +38,7 @@ local opts = Config.get("opts")
 local History = require("chat-gypsy").History
 local Validate = require("chat-gypsy.validate")
 local Models = require("chat-gypsy.models")
+local Utils = require("chat-gypsy.utils")
 
 local OpenAI = {}
 OpenAI.__index = OpenAI
@@ -57,6 +60,7 @@ function OpenAI:new()
 	end
 	self.init_openai = function()
 		self._.system_written = false
+		self._.injected_prompt = false
 		self._.openai_params = Config.get("opts").openai.openai_params
 		self.set_model(Models.selected)
 		self._.session_id = nil
@@ -153,7 +157,11 @@ function OpenAI:send(
 	local model = self._.openai_params.model
 	before_request()
 	if not self._.system_written and self._.openai_params.messages[1].role == "system" then
-		system_writer(self._.openai_params.messages[1], model)
+		local message = Utils.deep_copy(self._.openai_params.messages[1])
+		if self._.injected_prompt then
+			message.content = Utils.split_string(message.content, "\n", false)
+		end
+		system_writer(message, model)
 		self._.system_written = true
 	end
 	self.Log.trace(string.format("adding request to queue: \nmessage: %s", table.concat(prompt_lines, "\n")))
@@ -176,6 +184,11 @@ function OpenAI:send(
 	end
 
 	self.queue:add(action)
+end
+
+function OpenAI:inject_prompt(prompt)
+	self._.openai_params.messages[1].content = table.concat(prompt, "\n")
+	self._.injected_prompt = true
 end
 
 function OpenAI:query(...) end
