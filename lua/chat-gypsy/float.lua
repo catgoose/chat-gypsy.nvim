@@ -76,7 +76,7 @@ function Float:init()
 	self.writer = require("chat-gypsy.writer"):new()
 
 	if self.ui_opts.injection then
-		local prompt = table.concat(self.ui_opts.injection, "\n")
+		local prompt = self.ui_opts.injection
 		self.request:inject_prompt(prompt)
 	end
 
