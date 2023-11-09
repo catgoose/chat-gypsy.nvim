@@ -267,3 +267,5 @@ Several event hooks are provided for customization:
       composition
 - [ ] When requests are queued, show indicator in ui
 - [ ] In history picker allow for selecting chats to mark as "Inactive"
+- [ ] Create system message picker
+- [ ] Display system message in chat upon mounting, before pormpt is sent
