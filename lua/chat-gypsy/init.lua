@@ -21,6 +21,7 @@ Gypsy.History = {}
 Gypsy.Events = require("chat-gypsy.core.events")
 Gypsy.Config = {}
 Gypsy.Session = {}
+Gypsy.UI = {}
 
 Gypsy.setup = function(opts)
 	Gypsy.Config = require("chat-gypsy.config")
@@ -36,10 +37,13 @@ Gypsy.setup = function(opts)
 	if Gypsy.Config.get("plugin_opts").dev then
 		Gypsy.Log.trace("Gypsy:setup: dev mode enabled")
 	end
+
+	Gypsy.UI = require("chat-gypsy.ui"):new()
 end
 
 Gypsy.toggle = function()
-	Gypsy.Session:toggle()
+	-- Gypsy.Session:toggle()
+	Gypsy.UI:toggle()
 end
 
 Gypsy.open = function()
