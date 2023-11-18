@@ -36,8 +36,8 @@
 local Config = require("chat-gypsy").Config
 local opts = Config.get("opts")
 local History = require("chat-gypsy").History
-local Validate = require("chat-gypsy.validate")
-local Models = require("chat-gypsy.models")
+local Validate = require("chat-gypsy.config.validate")
+local Models = require("chat-gypsy.ai.models")
 local Utils = require("chat-gypsy.utils")
 
 local OpenAI = {}
@@ -45,12 +45,12 @@ OpenAI.__index = OpenAI
 
 function OpenAI:new()
 	setmetatable(self, OpenAI)
-	self.sql = require("chat-gypsy.sql"):new()
+	self.sql = require("chat-gypsy.db.sql"):new()
 	self.utils = require("chat-gypsy.utils")
 	self.Events = require("chat-gypsy").Events
 	self.Log = require("chat-gypsy").Log
 	self._ = {}
-	self.queue = require("chat-gypsy.queue"):new()
+	self.queue = require("chat-gypsy.core.queue"):new()
 	self.validate = function()
 		return Validate.openai_key(opts.openai.openai_key)
 	end

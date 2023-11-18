@@ -35,7 +35,7 @@
 
 local History = require("chat-gypsy").History
 local Config = require("chat-gypsy").Config
-local Models = require("chat-gypsy.models")
+local Models = require("chat-gypsy.ai.models")
 local opts, symbols = Config.get("opts"), Config.get("symbols")
 local Utils = require("chat-gypsy.utils")
 
@@ -56,7 +56,7 @@ function Writer:new(cfg)
 		bufnr = cfg.bufnr,
 		win_width = cfg.winid and vim.api.nvim_win_get_width(cfg.winid) or 0,
 	}
-	instance.tokenizer = require("chat-gypsy.tokenizer"):new()
+	instance.tokenizer = require("chat-gypsy.chat.tokenizer"):new()
 	instance.move_cursor = true
 	instance:reset()
 	instance:init()

@@ -57,7 +57,7 @@ function Session:open()
 			mount = true,
 			injection = Utils.get_visual(),
 		}
-		self.chat = require("chat-gypsy.float"):new(ui_opts)
+		self.chat = require("chat-gypsy.old-float"):new(ui_opts)
 		self.chat._.instance = true
 		return
 	else
@@ -67,7 +67,7 @@ end
 
 function Session:restore(history)
 	if not self.chat._.instance then
-		self.chat = require("chat-gypsy.float"):new({
+		self.chat = require("chat-gypsy.old-float"):new({
 			mount = true,
 			restore_history = true,
 			history = history,

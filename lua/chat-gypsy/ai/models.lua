@@ -11,7 +11,7 @@ local openai_models = Config.get("openai_models")
 local opts = Config.get("opts")
 local Log = require("chat-gypsy").Log
 local curl = require("plenary.curl")
-local Validate = require("chat-gypsy.validate")
+local Validate = require("chat-gypsy.config.validate")
 
 local Models = {}
 

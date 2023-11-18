@@ -16,8 +16,9 @@
 Gypsy = {}
 
 Gypsy.Log = {}
+---@diagnostic disable-next-line: missing-fields
 Gypsy.History = {}
-Gypsy.Events = require("chat-gypsy.events")
+Gypsy.Events = require("chat-gypsy.core.events")
 Gypsy.Config = {}
 Gypsy.Session = {}
 
@@ -25,12 +26,12 @@ Gypsy.setup = function(opts)
 	Gypsy.Config = require("chat-gypsy.config")
 	Gypsy.Config.init(opts)
 
-	Gypsy.Log = require("chat-gypsy.logger").init()
-	Gypsy.History = require("chat-gypsy.history"):new()
-	Gypsy.Session = require("chat-gypsy.session"):new()
+	Gypsy.Log = require("chat-gypsy.core.logger").init()
+	Gypsy.History = require("chat-gypsy.chat.history"):new()
+	Gypsy.Session = require("chat-gypsy.chat.session"):new()
 
-	require("chat-gypsy.usercmd").init()
-	require("chat-gypsy.models").init()
+	require("chat-gypsy.config.usercmd").init()
+	require("chat-gypsy.ai.models").init()
 
 	if Gypsy.Config.get("plugin_opts").dev then
 		Gypsy.Log.trace("Gypsy:setup: dev mode enabled")

@@ -42,7 +42,7 @@
 ---@field private layout table
 
 local Config = require("chat-gypsy").Config
-local UI = require("chat-gypsy.ui")
+local UI = require("chat-gypsy.old-ui")
 local plugin_opts, dev, opts = Config.get("plugin_opts"), Config.get("dev"), Config.get("opts")
 local Utils = require("chat-gypsy.utils")
 local nui_lo = require("nui.layout")
@@ -72,8 +72,8 @@ setmetatable(Float, {
 ---@diagnostic disable-next-line: duplicate-set-field
 function Float:init()
 	self._ = {}
-	self.request = require("chat-gypsy.request"):new()
-	self.writer = require("chat-gypsy.writer"):new()
+	self.request = require("chat-gypsy.ai.request"):new()
+	self.writer = require("chat-gypsy.chat.writer"):new()
 
 	if self.ui_opts.injection then
 		local prompt = self.ui_opts.injection

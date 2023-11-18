@@ -27,7 +27,7 @@ function TelescopePrototype:new()
 		previewers = require("telescope.previewers"),
 	}
 	self.config = {}
-	self.writer = require("chat-gypsy.writer"):new():set_move_cursor(false)
+	self.writer = require("chat-gypsy.chat.writer"):new():set_move_cursor(false)
 	self.set_config = function(config_key)
 		local set_config = function(key)
 			self.config[key] = require("chat-gypsy").Config.get(key)
@@ -40,10 +40,10 @@ function TelescopePrototype:new()
 		end
 		set_config(config_key)
 	end
-	self.sql = require("chat-gypsy.sql"):new()
+	self.sql = require("chat-gypsy.db.sql"):new()
 	self.utils = require("chat-gypsy.utils")
 	self.Events = require("chat-gypsy").Events
-	self.Models = require("chat-gypsy.models")
+	self.Models = require("chat-gypsy.ai.models")
 
 	self:init()
 	return self

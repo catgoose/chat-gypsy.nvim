@@ -1,5 +1,5 @@
 ---@class Request : OpenAI
----@field public init_child fun(): Request @override OpenAI.  Initializes
+---@field public init_child fun(self: Request): Request @override OpenAI.  Initializes
 ---@field public compose_entries fun(openai_params: table, on_complete: fun(content_json: table), on_error: fun(err: string))
 ---@field public shutdown_handlers fun()
 ---@field public query fun(prompt_lines: string[], on_stream_start: fun(prompt_lines: string[]), on_response_chunk: fun(content: string), on_response_complete: fun(), on_response_error: fun(err: string))
@@ -14,7 +14,7 @@
 ---@field private extract_data fun(chunk: string, on_chunk: fun(content: string))
 ---@field private completions fun(prompt_lines: string[], before_request: fun(), on_stream_start: fun(prompt_lines: string[]), on_chunk: fun(chunk: string, response_type: string), on_complete: fun(), on_error: fun(err: string)) @override OpenAI
 
-local OpenAI = require("chat-gypsy.openai")
+local OpenAI = require("chat-gypsy.ai.openai")
 local opts = require("chat-gypsy").Config.get("opts")
 local curl = require("plenary.curl")
 

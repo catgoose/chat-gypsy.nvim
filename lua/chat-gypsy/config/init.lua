@@ -8,7 +8,7 @@ local log_levels = { "trace", "debug", "info", "warn", "error", "fatal" }
 local default_log_level = "warn"
 local Events = require("chat-gypsy").Events
 local Utils = require("chat-gypsy.utils")
-local Validate = require("chat-gypsy.validate")
+local Validate = require("chat-gypsy.config.validate")
 
 local Config = {}
 
