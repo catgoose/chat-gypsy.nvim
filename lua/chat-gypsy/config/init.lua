@@ -56,6 +56,8 @@ local _opts = {
 		openai_key = os.getenv("OPENAI_API_KEY") or "",
 		openai_params = {
 			model = "gpt-3.5-turbo",
+			--  TODO: 2023-11-24 - response_format can be set:
+			--  https://platform.openai.com/docs/guides/text-generation/json-mode
 			temperature = 0.7,
 			messages = {
 				{
